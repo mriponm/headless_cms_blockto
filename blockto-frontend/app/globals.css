@@ -794,42 +794,91 @@ html.light .art-takeaways {
 html.light .art-fa-btn { background: rgba(255,255,255,0.8); border-color: rgba(0,0,0,0.15); }
 
 /* ─── WordPress content rendering ──────────────────────────── */
+.prose-wp {
+  font-family: var(--font-lora), Georgia, serif;
+}
 .prose-wp p {
   margin-bottom: 1.1rem;
-  font-size: 15px;
+  font-size: 15.5px;
   line-height: 1.75;
   color: #d5d5d5;
+  font-weight: 400;
+}
+/* Drop cap on first paragraph */
+.prose-wp > p:first-of-type::first-letter {
+  font-size: 50px;
+  font-weight: 700;
+  float: left;
+  line-height: 0.95;
+  margin: 4px 10px 0 0;
+  font-family: var(--font-display);
+  background: linear-gradient(135deg,#ff6a00,#ffaa44);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 .prose-wp h2 {
+  font-family: var(--font-display);
   font-size: 22px;
   font-weight: 800;
-  color: #f0f0f0;
-  margin: 1.8rem 0 0.8rem;
+  color: #fff;
+  margin: 2rem 0 0.9rem;
   line-height: 1.2;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.6px;
+  position: relative;
+  padding-top: 12px;
+}
+.prose-wp h2::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 30px;
+  height: 2px;
+  background: linear-gradient(90deg,#ff6a00,transparent);
 }
 .prose-wp h3 {
+  font-family: var(--font-display);
   font-size: 17px;
   font-weight: 700;
   color: #f0f0f0;
   margin: 1.4rem 0 0.6rem;
+  letter-spacing: -0.3px;
 }
 .prose-wp ul, .prose-wp ol {
   margin-left: 1.4rem;
   margin-bottom: 1rem;
   color: #d5d5d5;
-  font-size: 15px;
+  font-size: 15.5px;
   line-height: 1.75;
 }
-.prose-wp li { margin-bottom: 0.4rem; }
-.prose-wp strong { color: #f0f0f0; font-weight: 600; }
-.prose-wp a { color: #ff6a00; text-decoration: underline; }
+.prose-wp li { margin-bottom: 0.55rem; padding-left: 0.3rem; }
+.prose-wp li::marker { color: #ff6a00; font-weight: 700; }
+.prose-wp strong { color: #fff; font-weight: 600; }
+.prose-wp a { color: #ff6a00; text-decoration: none; border-bottom: 0.5px solid rgba(255,106,0,0.4); font-weight: 500; }
 .prose-wp blockquote {
-  border-left: 3px solid #ff6a00;
-  padding-left: 1rem;
-  margin: 1.5rem 0;
-  color: #aaa;
+  margin: 1.8rem 0;
+  padding: 20px 22px 20px 26px;
+  border-radius: 16px;
+  background: linear-gradient(135deg,rgba(255,106,0,0.06),rgba(255,106,0,0));
+  border: 0.5px solid rgba(255,106,0,0.18);
   font-style: italic;
+  color: #e0e0e0;
+  font-size: 15.5px;
+  line-height: 1.6;
+  position: relative;
+}
+.prose-wp blockquote::before {
+  content: '"';
+  position: absolute;
+  top: -8px;
+  left: 14px;
+  font-family: var(--font-display);
+  font-size: 56px;
+  font-weight: 900;
+  color: #ff6a00;
+  line-height: 1;
+  opacity: 0.6;
+  font-style: normal;
 }
 .prose-wp figure { margin: 1.5rem 0; }
 .prose-wp figure img {
@@ -842,6 +891,7 @@ html.light .art-fa-btn { background: rgba(255,255,255,0.8); border-color: rgba(0
   color: #666;
   margin-top: 0.4rem;
   text-align: center;
+  font-family: var(--font-display);
 }
 html.light .prose-wp p,
 html.light .prose-wp ul,
@@ -849,6 +899,7 @@ html.light .prose-wp ol { color: #333; }
 html.light .prose-wp h2,
 html.light .prose-wp h3,
 html.light .prose-wp strong { color: #111; }
+html.light .prose-wp blockquote { background: rgba(255,106,0,0.04); color: #333; }
 
 @utility scrollbar-hide {
   scrollbar-width: none;

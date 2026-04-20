@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Bell, Search, Menu, ChevronDown } from "lucide-react";
 import PriceTicker from "@/components/features/PriceTicker";
@@ -36,6 +37,7 @@ export default function Header() {
   const { openModal } = useAuthModal();
   const { resolved } = useTheme();
   const isLight = resolved === "light";
+  const pathname = usePathname();
 
   const ddStyle = {
     background: isLight ? "#ffffff" : "rgba(14,14,14,0.98)",
@@ -192,8 +194,8 @@ export default function Header() {
         </div>
       </div>
 
-      {/* ── Price ticker ────────────────────────────────────── */}
-      <PriceTicker />
+      {/* ── Price ticker (hidden on article pages) ──────────── */}
+      {!pathname.startsWith("/news/") && <PriceTicker />}
 
       <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
       <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
