@@ -12,6 +12,7 @@ import BrandLogo from "@/components/ui/BrandLogo";
 import { useI18n } from "@/components/providers/I18nProvider";
 import { useTheme, type Theme } from "@/components/providers/ThemeProvider";
 import { LANGUAGES, type LangCode } from "@/lib/i18n/languages";
+import { useAuthModal } from "@/components/providers/AuthModalProvider";
 
 const NEWS_SUBS = ["General news", "Bitcoin", "Ethereum", "Altcoins", "NFTs", "Blockchain"];
 
@@ -217,6 +218,7 @@ function DrawerLanguagePicker() {
 export default function MobileDrawer({ open, onClose }: Props) {
   const { resolved } = useTheme();
   const drawerRef = useRef<HTMLDivElement>(null);
+  const { openModal } = useAuthModal();
 
   useEffect(() => {
     if (open) { document.body.style.overflow = "hidden"; document.body.classList.add("drawer-open"); }
@@ -293,7 +295,7 @@ export default function MobileDrawer({ open, onClose }: Props) {
         </div>
 
         {/* Sign-in card */}
-        <div className="mx-4 mt-4 mb-1 p-3.5 rounded-[14px] flex items-center gap-3 cursor-pointer relative overflow-hidden drawer-user-card transition-all duration-200">
+        <div className="mx-4 mt-4 mb-1 p-3.5 rounded-[14px] flex items-center gap-3 cursor-pointer relative overflow-hidden drawer-user-card transition-all duration-200" onClick={() => { openModal("signin"); onClose(); }}>
           <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(255,106,0,0.3)] to-transparent" />
           <div className="w-10 h-10 rounded-full flex items-center justify-center text-[14px] font-extrabold text-black flex-shrink-0" style={{ background: "linear-gradient(135deg,#ff6a00,#ff8a30)", boxShadow: "0 0 14px rgba(255,106,0,0.25)" }}>
             TL

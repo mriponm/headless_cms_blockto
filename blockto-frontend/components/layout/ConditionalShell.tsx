@@ -4,7 +4,7 @@ import Header from "./Header";
 import Footer from "./Footer";
 import BottomNav from "./BottomNav";
 
-const AUTH_PATHS = ["/signin", "/signup"];
+const AUTH_PATHS: string[] = [];
 
 export default function ConditionalShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
