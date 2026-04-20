@@ -1,8 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import Link from "next/link";
-import { Bookmark, Share2, Zap, TrendingUp, AlertCircle, ArrowUpRight, ChevronLeft, MoreHorizontal } from "lucide-react";
-import BrandLogo from "@/components/ui/BrandLogo";
+import { Bookmark, Share2, Zap, TrendingUp, AlertCircle, ArrowUpRight } from "lucide-react";
 
 /* ─── Reading progress ─── */
 function ReadingProgress() {
@@ -17,10 +15,8 @@ function ReadingProgress() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
   return (
-    <div className="flex-1 h-[3px] art-progress-bg rounded-full overflow-hidden mx-2.5">
-      <div className="h-full rounded-full transition-none"
-        style={{ width: `${progress}%`, background: "linear-gradient(90deg,#ff6a00,#ffaa44)", boxShadow: "0 0 8px rgba(255,106,0,0.5)" }} />
-    </div>
+    <div className="h-full transition-none"
+      style={{ width: `${progress}%`, background: "linear-gradient(90deg,#ff6a00,#ffaa44)", boxShadow: "0 0 8px rgba(255,106,0,0.5)" }} />
   );
 }
 
@@ -77,22 +73,9 @@ export default function ArticlePage() {
 
   return (
     <>
-      {/* ── Sticky Top Bar ── */}
-      <div className="sticky top-0 z-40 flex items-center gap-2.5 px-3.5 py-3 art-top-bar">
-        <span className="absolute bottom-0 left-[10%] right-[10%] h-px bg-gradient-to-r from-transparent via-[rgba(255,106,0,0.25)] to-transparent pointer-events-none" />
-        <Link href="/" className="art-top-bar-btn w-[34px] h-[34px] rounded-[10px] flex items-center justify-center flex-shrink-0">
-          <ChevronLeft size={14} className="art-sub-text" />
-        </Link>
-        <div className="flex items-center gap-2 flex-shrink-0">
-          <BrandLogo size={28} />
-          <span className="text-[16px] font-black tracking-[-0.8px] font-[family-name:var(--font-display)] header-brand-text">
-            block<span className="gradient-text-alt">to</span>
-          </span>
-        </div>
+      {/* ── Sticky reading progress bar ── */}
+      <div className="sticky top-0 z-40 h-[3px] art-progress-bg">
         <ReadingProgress />
-        <button className="art-top-bar-btn w-[34px] h-[34px] rounded-[10px] flex items-center justify-center flex-shrink-0">
-          <MoreHorizontal size={14} className="art-sub-text" />
-        </button>
       </div>
 
       {/* ── Main content: full-width on mobile, centered on desktop ── */}

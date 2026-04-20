@@ -54,10 +54,10 @@ const THEME_OPTIONS: { value: Theme; Icon: React.ElementType; label: string }[] 
 interface Props { open: boolean; onClose: () => void; }
 
 function NavItem({
-  icon: Icon, label, sub, badge, tag, href,
+  icon: Icon, label, sub, badge, tag, href, onClose,
 }: {
   icon: React.ElementType; label: string; sub?: { label: string; href: string }[];
-  badge?: string; tag?: string; href: string;
+  badge?: string; tag?: string; href: string; onClose: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const isActive = badge != null;
@@ -104,7 +104,7 @@ function NavItem({
             >
               <div className="pl-[50px] flex flex-col gap-0.5 pb-1.5">
                 {sub.map((s) => (
-                  <Link key={s.href} href={s.href} className="flex items-center gap-2.5 px-3 py-[9px] rounded-[9px] cursor-pointer transition-all duration-150 drawer-sub-item w-full text-left group">
+                  <Link key={s.href} href={s.href} onClick={onClose} className="flex items-center gap-2.5 px-3 py-[9px] rounded-[9px] cursor-pointer transition-all duration-150 drawer-sub-item w-full text-left group">
                     <span className="w-[5px] h-[5px] rounded-full flex-shrink-0 drawer-sub-dot group-hover:bg-[#ff6a00] group-hover:shadow-[0_0_6px_rgba(255,106,0,0.5)] transition-all" />
                     <span className="text-[12px] font-medium drawer-sub-text group-hover:text-[#ff6a00] transition-colors">{s.label}</span>
                   </Link>
@@ -118,7 +118,7 @@ function NavItem({
   }
 
   return (
-    <Link href={href} className={`drawer-mi flex items-center gap-3.5 px-3 py-3 rounded-xl cursor-pointer transition-all duration-200 mb-0.5 relative ${isActive ? "drawer-mi-active" : ""}`}>
+    <Link href={href} onClick={onClose} className={`drawer-mi flex items-center gap-3.5 px-3 py-3 rounded-xl cursor-pointer transition-all duration-200 mb-0.5 relative ${isActive ? "drawer-mi-active" : ""}`}>
       {inner}
     </Link>
   );
@@ -319,7 +319,7 @@ export default function MobileDrawer({ open, onClose }: Props) {
           <div className="px-3">
             <SectionLabel>Menu</SectionLabel>
             {MAIN_NAV.map((item) => (
-              <NavItem key={item.label} {...item} />
+              <NavItem key={item.label} {...item} onClose={onClose} />
             ))}
           </div>
 
@@ -335,7 +335,7 @@ export default function MobileDrawer({ open, onClose }: Props) {
           <div className="px-3">
             <SectionLabel>More</SectionLabel>
             {MORE_NAV.map((item) => (
-              <NavItem key={item.label} {...item} />
+              <NavItem key={item.label} {...item} onClose={onClose} />
             ))}
           </div>
         </div>

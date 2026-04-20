@@ -1,7 +1,7 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Bell, Search, Menu } from "lucide-react";
+import { Bell, Search, Menu, ChevronDown } from "lucide-react";
 import PriceTicker from "@/components/features/PriceTicker";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import BrandLogo from "@/components/ui/BrandLogo";
@@ -10,7 +10,7 @@ import SearchOverlay from "@/components/ui/SearchOverlay";
 import { useAuthModal } from "@/components/providers/AuthModalProvider";
 
 const NAV = [
-  { label: "News",      href: "/",        active: true },
+  { label: "News",      href: "/",        active: true, hasDropdown: true },
   { label: "Markets",   href: "/markets", dot: true },
   { label: "Prices",    href: "/prices" },
   { label: "Buy & sell",href: "/buy" },
@@ -18,10 +18,31 @@ const NAV = [
   { label: "Events",    href: "/events" },
 ];
 
+const NEWS_CATS = [
+  { label: "General News", href: "/category/general-news", emoji: "📰" },
+  { label: "Bitcoin",      href: "/category/bitcoin",      emoji: "₿" },
+  { label: "Ethereum",     href: "/category/ethereum",     emoji: "Ξ" },
+  { label: "Altcoins",     href: "/category/altcoins",     emoji: "🪙" },
+  { label: "NFTs",         href: "/category/nfts",         emoji: "🎨" },
+  { label: "Blockchain",   href: "/category/blockchain",   emoji: "⛓️" },
+];
+
 export default function Header() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [newsDropdown, setNewsDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const { openModal } = useAuthModal();
+
+  useEffect(() => {
+    function onClickOutside(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setNewsDropdown(false);
+      }
+    }
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, []);
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -48,22 +69,54 @@ export default function Header() {
 
         {/* Nav links */}
         <nav className="flex gap-1 flex-1">
-          {NAV.map((n) => (
-            <Link
-              key={n.label}
-              href={n.href}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-sm font-semibold transition-all duration-150 cursor-pointer font-[family-name:var(--font-display)] ${
-                n.active
-                  ? "text-[var(--color-brand)] bg-[rgba(255,106,0,0.08)] border border-[rgba(255,106,0,0.2)]"
-                  : "nav-link"
-              }`}
-            >
-              {n.label}
-              {n.dot && (
-                <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-brand)] shadow-[0_0_8px_var(--color-brand)] pls-anim" />
-              )}
-            </Link>
-          ))}
+          {NAV.map((n) =>
+            n.hasDropdown ? (
+              <div key={n.label} className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setNewsDropdown((v) => !v)}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-sm font-semibold transition-all duration-150 cursor-pointer font-[family-name:var(--font-display)] ${
+                    n.active
+                      ? "text-[var(--color-brand)] bg-[rgba(255,106,0,0.08)] border border-[rgba(255,106,0,0.2)]"
+                      : "nav-link"
+                  }`}
+                >
+                  {n.label}
+                  <ChevronDown size={12} className={`transition-transform duration-200 ${newsDropdown ? "rotate-180" : ""}`} />
+                </button>
+                {newsDropdown && (
+                  <div className="absolute top-full left-0 mt-2 w-[200px] rounded-[14px] overflow-hidden z-50 py-1.5"
+                    style={{ background: "rgba(14,14,14,0.98)", border: "0.5px solid rgba(255,255,255,0.09)", boxShadow: "0 16px 40px rgba(0,0,0,0.6), 0 4px 16px rgba(255,106,0,0.08)" }}>
+                    <span className="block h-px mx-3 mb-1.5 bg-gradient-to-r from-transparent via-[rgba(255,106,0,0.3)] to-transparent" />
+                    {NEWS_CATS.map((cat) => (
+                      <Link key={cat.href} href={cat.href}
+                        onClick={() => setNewsDropdown(false)}
+                        className="flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] font-medium transition-all duration-150 hover:bg-[rgba(255,106,0,0.08)] hover:text-[#ff6a00] group font-[family-name:var(--font-display)]"
+                        style={{ color: "#aaa" }}>
+                        <span className="w-6 h-6 rounded-[7px] flex items-center justify-center text-[13px] flex-shrink-0"
+                          style={{ background: "rgba(255,106,0,0.06)", border: "0.5px solid rgba(255,106,0,0.15)" }}>
+                          {cat.emoji}
+                        </span>
+                        {cat.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                key={n.label}
+                href={n.href}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-sm font-semibold transition-all duration-150 cursor-pointer font-[family-name:var(--font-display)] ${
+                  n.active ? "nav-link" : "nav-link"
+                }`}
+              >
+                {n.label}
+                {n.dot && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-brand)] shadow-[0_0_8px_var(--color-brand)] pls-anim" />
+                )}
+              </Link>
+            )
+          )}
         </nav>
 
         {/* Search box */}
