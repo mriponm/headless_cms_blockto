@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import FadeIn from "@/components/ui/FadeIn";
+import SignalFeedScroll from "./SignalFeedScroll";
 import {
   Check, ChevronRight, Zap, Shield, BarChart3,
   Clock, Users, Eye,
@@ -73,12 +74,9 @@ const FEED: FeedMsg[] = [
 
 /* ─── Single feed message render ────────────────────────────── */
 function SignalBubble({ msg }: { msg: FeedMsg }) {
-  const bubbleBg = "rgba(0,0,0,0.35)";
-  const border   = "0.5px solid rgba(255,255,255,0.05)";
-
   if (msg.kind === "closed") {
     return (
-      <div className="px-[18px] py-[14px]" style={{ borderBottom: "0.5px solid rgba(255,255,255,0.04)" }}>
+      <div className="sig-row-border px-[18px] py-[14px]">
         <div
           className="rounded-[12px] p-[14px] flex items-start gap-3"
           style={{ background: "rgba(0,212,123,0.06)", border: "0.5px solid rgba(0,212,123,0.15)" }}
@@ -113,8 +111,8 @@ function SignalBubble({ msg }: { msg: FeedMsg }) {
   const dirColor = msg.dir === "BUY" ? "#00d47b" : "#ff3b4f";
 
   return (
-    <div className="px-[18px] py-[14px]" style={{ borderBottom: "0.5px solid rgba(255,255,255,0.04)" }}>
-      <div className="rounded-[12px] p-[14px]" style={{ background: bubbleBg, border }}>
+    <div className="sig-row-border px-[18px] py-[14px]">
+      <div className="sig-bubble">
 
         {/* header row */}
         <div className="flex items-center gap-1.5 mb-2.5">
@@ -143,7 +141,7 @@ function SignalBubble({ msg }: { msg: FeedMsg }) {
           </span>
         </div>
 
-        <div className="h-px mb-2" style={{ background: "rgba(255,255,255,0.05)" }} />
+        <div className="h-px mb-2" style={{ background: "var(--color-border)" }} />
 
         {/* entry + stop */}
         {[
@@ -161,7 +159,7 @@ function SignalBubble({ msg }: { msg: FeedMsg }) {
           </div>
         ))}
 
-        <div className="h-px my-2" style={{ background: "rgba(255,255,255,0.05)" }} />
+        <div className="h-px my-2" style={{ background: "var(--color-border)" }} />
 
         {/* take profits */}
         {msg.tps.map((tp, i) => (
@@ -177,7 +175,7 @@ function SignalBubble({ msg }: { msg: FeedMsg }) {
         {/* footer */}
         <div
           className="flex items-center justify-between mt-2.5 pt-2.5 text-[10px] font-semibold"
-          style={{ borderTop: "0.5px solid rgba(255,255,255,0.04)", color: "#555" }}
+          style={{ borderTop: "0.5px solid var(--color-border)", color: "#555" }}
         >
           <div className="flex items-center gap-1"><Eye size={11} />{msg.views} views</div>
           <span className="font-[family-name:var(--font-data)]">{msg.time}</span>
@@ -189,16 +187,15 @@ function SignalBubble({ msg }: { msg: FeedMsg }) {
 
 /* ─── Animated signal feed ───────────────────────────────────── */
 function SignalFeed() {
-  const doubled = [...FEED, ...FEED]; // duplicate for seamless loop
+  const doubled = [...FEED, ...FEED];
 
   return (
-    <div className="trading-sig-card relative rounded-[18px] overflow-hidden flex flex-col" style={{ minHeight: 0 }}>
+    <div className="trading-sig-card relative rounded-[18px] overflow-hidden flex flex-col" style={{ height: "460px" }}>
       <span className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.08] to-transparent z-10" />
 
       {/* channel header */}
       <div
-        className="flex items-center gap-3 px-[18px] py-[14px] flex-shrink-0 relative z-10"
-        style={{ borderBottom: "0.5px solid rgba(255,255,255,0.06)", background: "rgba(0,0,0,0.3)", backdropFilter: "blur(12px)" }}
+        className="sig-sticky-bar flex items-center gap-3 px-[18px] py-[14px] flex-shrink-0 relative z-10 sig-row-border"
       >
         <div
           className="w-[44px] h-[44px] rounded-full flex items-center justify-center font-black text-[18px] text-black flex-shrink-0"
@@ -223,34 +220,21 @@ function SignalFeed() {
         </div>
       </div>
 
-      {/* scrolling feed */}
-      <div
-        className="signal-scroll-wrap relative overflow-hidden flex-1"
-        style={{ height: "460px" }}
-      >
-        {/* top fade */}
-        <div
-          className="absolute inset-x-0 top-0 h-10 pointer-events-none z-10"
-          style={{ background: "linear-gradient(to bottom,rgba(0,0,0,0.5),transparent)" }}
-        />
-        {/* bottom fade */}
-        <div
-          className="absolute inset-x-0 bottom-0 h-16 pointer-events-none z-10"
-          style={{ background: "linear-gradient(to top,rgba(0,0,0,0.7),transparent)" }}
-        />
-
-        <div className="signal-scroll-anim">
+      {/* scrolling feed — client component handles rAF auto-scroll */}
+      <div className="relative flex-1 min-h-0">
+        {/* top fade overlay */}
+        <div className="sig-fade-top absolute inset-x-0 top-0 h-16 pointer-events-none z-10" />
+        {/* bottom fade overlay */}
+        <div className="sig-fade-bottom absolute inset-x-0 bottom-0 h-20 pointer-events-none z-10" />
+        <SignalFeedScroll>
           {doubled.map((msg, i) => (
             <SignalBubble key={`${msg.id}-${i}`} msg={msg} />
           ))}
-        </div>
+        </SignalFeedScroll>
       </div>
 
       {/* join CTA */}
-      <div
-        className="px-[18px] py-[14px] flex-shrink-0 relative z-10"
-        style={{ borderTop: "0.5px solid rgba(255,255,255,0.06)", background: "rgba(0,0,0,0.3)", backdropFilter: "blur(12px)" }}
-      >
+      <div className="sig-sticky-bar px-[18px] py-[14px] flex-shrink-0 relative z-10" style={{ borderTop: "0.5px solid var(--color-border)" }}>
         <a
           href="#"
           className="w-full py-[13px] rounded-[12px] font-extrabold text-[14px] text-white flex items-center justify-center gap-2.5 cursor-pointer font-[family-name:var(--font-display)] transition-all duration-200 hover:-translate-y-[1px] relative overflow-hidden"
@@ -399,7 +383,7 @@ export default function TradingPage() {
             <div className="flex flex-col">
               {CHECKLIST.map((item, i) => (
                 <div key={item} className="flex items-center gap-3 py-[10px]"
-                  style={{ borderBottom: i < CHECKLIST.length - 1 ? "0.5px solid rgba(255,255,255,0.04)" : "none" }}>
+                  style={{ borderBottom: i < CHECKLIST.length - 1 ? "0.5px solid var(--color-border)" : "none" }}>
                   <span className="w-6 h-6 rounded-[8px] flex items-center justify-center flex-shrink-0"
                     style={{ background: "linear-gradient(135deg,#00d47b,#00a862)", boxShadow: "0 0 10px rgba(0,212,123,0.2)" }}>
                     <Check size={12} strokeWidth={3} color="#000" />

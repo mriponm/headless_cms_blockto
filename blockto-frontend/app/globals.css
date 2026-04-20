@@ -228,6 +228,7 @@ html.light {
   --nav-dd-border: rgba(0,0,0,0.10);
   --nav-dd-shadow: 0 16px 40px rgba(0,0,0,0.12), 0 4px 16px rgba(255,106,0,0.06);
   --nav-dd-color:  #444;
+  --color-border:  rgba(0,0,0,0.08);
 }
 
 /* --- Nav dropdown --- */
@@ -472,17 +473,43 @@ html.light .trading-final-cta {
   border-color: rgba(255,106,0,0.15);
 }
 
-/* Signal feed scroll */
-@keyframes signal-scroll {
-  0%   { transform: translateY(0); }
-  100% { transform: translateY(-50%); }
+/* Signal feed — light/dark adaptive classes */
+.sig-fade-top {
+  background: linear-gradient(to bottom,rgba(6,6,6,0.95) 0%,rgba(6,6,6,0.5) 50%,transparent 100%);
 }
-.signal-scroll-anim {
-  animation: signal-scroll 32s linear infinite;
+.sig-fade-bottom {
+  background: linear-gradient(to top,rgba(6,6,6,0.98) 0%,rgba(6,6,6,0.6) 50%,transparent 100%);
 }
-.signal-scroll-wrap:hover .signal-scroll-anim {
-  animation-play-state: paused;
+.sig-sticky-bar {
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(12px);
 }
+.sig-bubble {
+  background: rgba(0,0,0,0.35);
+  border: 0.5px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 14px;
+}
+.sig-divider { background: rgba(255,255,255,0.06); }
+.sig-row-border { border-bottom: 0.5px solid var(--color-border); }
+
+html.light .sig-fade-top {
+  background: linear-gradient(to bottom,rgba(250,250,250,0.98) 0%,rgba(250,250,250,0.55) 50%,transparent 100%);
+}
+html.light .sig-fade-bottom {
+  background: linear-gradient(to top,rgba(250,250,250,0.99) 0%,rgba(250,250,250,0.65) 50%,transparent 100%);
+}
+html.light .sig-sticky-bar {
+  background: rgba(255,255,255,0.88);
+  backdrop-filter: blur(12px);
+}
+html.light .sig-bubble {
+  background: rgba(0,0,0,0.04);
+  border-color: rgba(0,0,0,0.07);
+}
+html.light .sig-divider { background: rgba(0,0,0,0.07); }
+html.light .sig-row-border { border-bottom-color: rgba(0,0,0,0.05); }
+
 
 /* Section label line in light */
 html.light .sec-line::after {
