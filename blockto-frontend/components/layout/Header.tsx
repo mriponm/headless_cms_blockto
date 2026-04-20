@@ -8,6 +8,7 @@ import BrandLogo from "@/components/ui/BrandLogo";
 import MobileDrawer from "@/components/layout/MobileDrawer";
 import SearchOverlay from "@/components/ui/SearchOverlay";
 import { useAuthModal } from "@/components/providers/AuthModalProvider";
+import { useTheme } from "@/components/providers/ThemeProvider";
 
 const NAV = [
   { label: "News",      href: "/",        active: true, hasDropdown: true },
@@ -33,6 +34,17 @@ export default function Header() {
   const [newsDropdown, setNewsDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { openModal } = useAuthModal();
+  const { resolved } = useTheme();
+  const isLight = resolved === "light";
+
+  const ddStyle = {
+    background: isLight ? "#ffffff" : "rgba(14,14,14,0.98)",
+    border: `0.5px solid ${isLight ? "rgba(0,0,0,0.10)" : "rgba(255,255,255,0.09)"}`,
+    boxShadow: isLight
+      ? "0 16px 40px rgba(0,0,0,0.12), 0 4px 16px rgba(255,106,0,0.06)"
+      : "0 16px 40px rgba(0,0,0,0.6), 0 4px 16px rgba(255,106,0,0.08)",
+  };
+  const ddItemColor = isLight ? "#444" : "#aaa";
 
   useEffect(() => {
     function onClickOutside(e: MouseEvent) {
@@ -85,13 +97,13 @@ export default function Header() {
                 </button>
                 {newsDropdown && (
                   <div className="absolute top-full left-0 mt-2 w-[200px] rounded-[14px] overflow-hidden z-50 py-1.5"
-                    style={{ background: "rgba(14,14,14,0.98)", border: "0.5px solid rgba(255,255,255,0.09)", boxShadow: "0 16px 40px rgba(0,0,0,0.6), 0 4px 16px rgba(255,106,0,0.08)" }}>
+                    style={ddStyle}>
                     <span className="block h-px mx-3 mb-1.5 bg-gradient-to-r from-transparent via-[rgba(255,106,0,0.3)] to-transparent" />
                     {NEWS_CATS.map((cat) => (
                       <Link key={cat.href} href={cat.href}
                         onClick={() => setNewsDropdown(false)}
-                        className="flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] font-medium transition-all duration-150 hover:bg-[rgba(255,106,0,0.08)] hover:text-[#ff6a00] group font-[family-name:var(--font-display)]"
-                        style={{ color: "#aaa" }}>
+                        className="flex items-center gap-2.5 px-3.5 py-2.5 text-[13px] font-medium transition-all duration-150 font-[family-name:var(--font-display)] hover:bg-[rgba(255,106,0,0.08)] hover:text-[#ff6a00]"
+                        style={{ color: ddItemColor }}>
                         <span className="w-6 h-6 rounded-[7px] flex items-center justify-center text-[13px] flex-shrink-0"
                           style={{ background: "rgba(255,106,0,0.06)", border: "0.5px solid rgba(255,106,0,0.15)" }}>
                           {cat.emoji}

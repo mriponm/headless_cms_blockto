@@ -1,6 +1,11 @@
-export default function BreakingBanner() {
+import Link from "next/link";
+import type { WPPost } from "@/lib/wordpress/types";
+
+export default function BreakingBanner({ post }: { post: WPPost | null }) {
+  if (!post) return null;
   return (
-    <div
+    <Link
+      href={`/news/${post.slug}`}
       className="flex items-center gap-3 px-4 py-2.5 rounded-[12px] mb-4 overflow-hidden md:hidden"
       style={{
         background: "linear-gradient(135deg, rgba(255,106,0,0.12), rgba(255,106,0,0.03))",
@@ -15,9 +20,9 @@ export default function BreakingBanner() {
         JUST IN
       </span>
       <p className="text-[12px] font-semibold flex-1 truncate font-[family-name:var(--font-display)]">
-        BlackRock Bitcoin ETF inflows hit $1.34B as institutional demand accelerates
+        {post.title}
       </p>
       <span className="text-[14px] text-[var(--color-brand)] flex-shrink-0">›</span>
-    </div>
+    </Link>
   );
 }

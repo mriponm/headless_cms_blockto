@@ -1,69 +1,118 @@
+import Link from "next/link";
+import Image from "next/image";
 import SectionLabel from "@/components/ui/SectionLabel";
+import type { WPPost } from "@/lib/wordpress/types";
+import { relativeDate, primaryCategory } from "@/lib/wordpress/queries";
 
-const GENERAL_NEWS = [
-  { thumb: "🏛️", thumbBg: "linear-gradient(135deg,#1a1a2e,#2d1b4e)", tag: "GLOBAL", title: "Iran threatens to close Strait of Hormuz again as US blockade continues", author: "Tristan L.", time: "2h" },
-  { thumb: "📈", thumbBg: "linear-gradient(135deg,#1a1a2e,#2d1b4e)", tag: "MARKET", title: "Crypto market recovery remains fragile as liquidity stays weak after October crash", author: "Tristan L.", time: "3h" },
-];
+interface Props {
+  posts: WPPost[];
+  title: string;
+  viewAllHref: string;
+  accentColor?: string;
+  accentBg?: string;
+  accentBorder?: string;
+  variant?: "list" | "bitcoin";
+}
 
-const BTC_NEWS = [
-  { title: "Bitcoin shows seller exhaustion as realized losses decline",           time: "5h ago",  num: "01" },
-  { title: "BTC and ETH approach key levels that could signal reversal",           time: "7h ago",  num: "02" },
-  { title: "Bitcoin holds above $73.5K as Iran tensions persist",                  time: "24h ago", num: "03" },
-];
-
-const ETH_NEWS = [
-  { thumb: "Ξ", thumbBg: "linear-gradient(135deg,#627eea,#3c5ad6)", tag: "ETH", title: "$1.6 billion Ether Machine SPAC deal cancelled amid weak market conditions", author: "Tristan L.", time: "15h" },
-  { thumb: "Ξ", thumbBg: "linear-gradient(135deg,#627eea,#3c5ad6)", tag: "ETH", title: "Ethereum activity climbs past 1.3M daily transactions as staking tops 30%", author: "Tristan L.", time: "2d" },
-];
-
-function NewsCard({ thumb, thumbBg, tag, title, author, time }: { thumb: string; thumbBg: string; tag: string; title: string; author: string; time: string }) {
+function ListCard({ post }: { post: WPPost }) {
+  const cat = primaryCategory(post);
   return (
-    <div className="grid grid-cols-[auto_1fr] gap-3.5 p-3 rounded-[16px] mb-2.5 cursor-pointer relative overflow-hidden border border-[rgba(255,255,255,0.06)]" style={{ background: "rgba(255,255,255,0.03)" }}>
+    <Link href={`/news/${post.slug}`}
+      className="grid grid-cols-[auto_1fr] gap-3.5 p-3 rounded-[16px] mb-2.5 cursor-pointer relative overflow-hidden border border-[rgba(255,255,255,0.06)] block"
+      style={{ background: "rgba(255,255,255,0.03)" }}>
       <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
-      <div className="w-[110px] h-[110px] rounded-[14px] flex items-center justify-center text-[42px] flex-shrink-0 border border-[rgba(255,255,255,0.06)]" style={{ background: thumbBg }}>
-        {thumb}
+      <div className="w-[90px] h-[90px] rounded-[12px] flex-shrink-0 border border-[rgba(255,255,255,0.06)] relative overflow-hidden bg-[#0a0e1a]">
+        {post.featuredImage ? (
+          <Image src={post.featuredImage.node.sourceUrl} alt={post.title} fill
+            className="object-cover" sizes="90px" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-[36px]"
+            style={{ background: "linear-gradient(135deg,#1a1a2e,#2d1b4e)" }}>📰</div>
+        )}
       </div>
       <div className="flex flex-col justify-center min-w-0">
-        <p className="text-[14px] font-bold leading-[1.35] tracking-[-0.3px] mb-2 line-clamp-3 font-[family-name:var(--font-display)]">{title}</p>
+        <p className="text-[13.5px] font-bold leading-[1.35] tracking-[-0.3px] mb-2 line-clamp-3 font-[family-name:var(--font-display)]">
+          {post.title}
+        </p>
         <div className="flex items-center gap-1.5 flex-wrap">
-          <span className="text-[9px] font-extrabold text-[var(--color-brand)] bg-[rgba(255,106,0,0.08)] border border-[rgba(255,106,0,0.15)] px-[7px] py-[2px] rounded-[5px] tracking-[0.5px] font-[family-name:var(--font-data)]">{tag}</span>
-          <span className="text-[10px] text-[#888] font-medium font-[family-name:var(--font-display)]">{author}</span>
-          <span className="flex items-center gap-1 text-[10px] text-[#666] font-medium font-[family-name:var(--font-display)] before:content-[''] before:w-[3px] before:h-[3px] before:bg-[#444] before:rounded-full">{time}</span>
+          <span className="text-[9px] font-extrabold text-[var(--color-brand)] bg-[rgba(255,106,0,0.08)] border border-[rgba(255,106,0,0.15)] px-[7px] py-[2px] rounded-[5px] tracking-[0.5px] font-[family-name:var(--font-data)]">
+            {cat.name.toUpperCase()}
+          </span>
+          <span className="text-[10px] text-[#888] font-medium font-[family-name:var(--font-display)]">
+            {post.author.node.name}
+          </span>
+          <span className="flex items-center gap-1 text-[10px] text-[#666] font-medium font-[family-name:var(--font-display)] before:content-[''] before:w-[3px] before:h-[3px] before:bg-[#444] before:rounded-full">
+            {relativeDate(post.date)}
+          </span>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 
-export default function MobileNewsCards() {
+function HScrollCard({ post, index, accentColor, accentBg, accentBorder }: {
+  post: WPPost; index: number;
+  accentColor: string; accentBg: string; accentBorder: string;
+}) {
+  const cat = primaryCategory(post);
   return (
-    <div className="md:hidden">
-      <SectionLabel title="General news" count={42} viewAllHref="/news" />
-      {GENERAL_NEWS.map(n => <NewsCard key={n.title} {...n} />)}
+    <Link href={`/news/${post.slug}`}
+      className="flex-shrink-0 w-[160px] p-3 rounded-[14px] cursor-pointer relative overflow-hidden border border-[rgba(255,255,255,0.06)] flex flex-col gap-2 block"
+      style={{ background: "rgba(255,255,255,0.03)" }}>
+      <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
+      <span className="text-[24px] font-black font-[family-name:var(--font-data)] leading-none gradient-text-alt">
+        {String(index + 1).padStart(2, "0")}
+      </span>
+      <p className="text-[12px] font-bold leading-[1.35] tracking-[-0.2px] line-clamp-3 font-[family-name:var(--font-display)] flex-1">
+        {post.title}
+      </p>
+      <span className="text-[8px] font-extrabold px-[6px] py-[2px] rounded-[5px] tracking-[0.5px] font-[family-name:var(--font-data)] w-fit"
+        style={{ color: accentColor, background: accentBg, border: `0.5px solid ${accentBorder}` }}>
+        {cat.name.toUpperCase()}
+      </span>
+      <span className="text-[9px] text-[#666] font-medium font-[family-name:var(--font-display)]">
+        {post.author.node.name} · {relativeDate(post.date)}
+      </span>
+    </Link>
+  );
+}
 
-      <SectionLabel title="Bitcoin news" count={24} viewAllHref="/news/bitcoin" />
+export default function MobileNewsCards({
+  posts, title, viewAllHref,
+  accentColor = "#ff6a00",
+  accentBg = "rgba(255,106,0,0.08)",
+  accentBorder = "rgba(255,106,0,0.15)",
+  variant = "list",
+}: Props) {
+  const unique = posts.filter((p, i, a) => a.findIndex(x => x.id === p.id) === i);
 
-      {/* Horizontal scroll trending strip */}
-      <div className="overflow-x-auto scrollbar-hide pb-1 mb-2.5 -mx-3 px-3">
-        <div className="flex gap-2.5" style={{ width: "max-content" }}>
-          {BTC_NEWS.map(n => (
-            <div key={n.num} className="w-[200px] p-3.5 rounded-[14px] cursor-pointer relative overflow-hidden flex-shrink-0 border border-[rgba(255,255,255,0.06)]" style={{ background: "rgba(255,255,255,0.03)" }}>
-              <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
-              <p className="text-[24px] font-black font-[family-name:var(--font-data)] gradient-text-alt leading-none mb-1.5">{n.num}</p>
-              <p className="text-[12px] font-bold leading-[1.3] mb-1.5 line-clamp-2 font-[family-name:var(--font-display)]">{n.title}</p>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[8px] font-extrabold text-[var(--color-brand)] bg-[rgba(255,106,0,0.08)] px-1.5 py-0.5 rounded font-[family-name:var(--font-data)]">BTC</span>
-                <span className="text-[9px] text-[#555] font-semibold font-[family-name:var(--font-display)]">{n.time}</span>
-              </div>
-            </div>
+  if (variant === "bitcoin") {
+    const scrollPosts = unique.slice(0, 3);
+    const listPosts   = unique.slice(3);
+    return (
+      <div className="md:hidden mb-5">
+        <SectionLabel title={title} count={unique.length} viewAllHref={viewAllHref} />
+        {/* Horizontal scroll row */}
+        <div className="flex gap-2.5 overflow-x-auto pb-2 mb-3 scrollbar-hide -mx-3 px-3">
+          {scrollPosts.map((post, i) => (
+            <HScrollCard key={post.id} post={post} index={i}
+              accentColor={accentColor} accentBg={accentBg} accentBorder={accentBorder} />
           ))}
         </div>
+        {/* Remaining as list cards */}
+        {listPosts.map((post) => (
+          <ListCard key={post.id} post={post} />
+        ))}
       </div>
+    );
+  }
 
-      <NewsCard thumb="₿" thumbBg="linear-gradient(135deg,#ff9a40,#ff6a00)" tag="BTC" title="Bhutan government transfers $25M in Bitcoin as weekly outflows exceed 1,000 BTC" author="Tristan L." time="3h" />
-
-      <SectionLabel title="Ethereum news" count={18} viewAllHref="/news/ethereum" />
-      {ETH_NEWS.map(n => <NewsCard key={n.title} {...n} />)}
+  return (
+    <div className="md:hidden mb-5">
+      <SectionLabel title={title} count={unique.length} viewAllHref={viewAllHref} />
+      {unique.map((post) => (
+        <ListCard key={post.id} post={post} />
+      ))}
     </div>
   );
 }
