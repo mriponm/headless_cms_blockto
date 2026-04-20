@@ -14,7 +14,14 @@ import { useTheme, type Theme } from "@/components/providers/ThemeProvider";
 import { LANGUAGES, type LangCode } from "@/lib/i18n/languages";
 import { useAuthModal } from "@/components/providers/AuthModalProvider";
 
-const NEWS_SUBS = ["General news", "Bitcoin", "Ethereum", "Altcoins", "NFTs", "Blockchain"];
+const NEWS_SUBS = [
+  { label: "General news", href: "/category/general-news" },
+  { label: "Bitcoin",      href: "/category/bitcoin" },
+  { label: "Ethereum",     href: "/category/ethereum" },
+  { label: "Altcoins",     href: "/category/altcoins" },
+  { label: "NFTs",         href: "/category/nfts" },
+  { label: "Blockchain",   href: "/category/blockchain" },
+];
 
 const MAIN_NAV = [
   { icon: Newspaper,        label: "News",              sub: NEWS_SUBS, badge: "LIVE", href: "/" },
@@ -49,7 +56,7 @@ interface Props { open: boolean; onClose: () => void; }
 function NavItem({
   icon: Icon, label, sub, badge, tag, href,
 }: {
-  icon: React.ElementType; label: string; sub?: string[];
+  icon: React.ElementType; label: string; sub?: { label: string; href: string }[];
   badge?: string; tag?: string; href: string;
 }) {
   const [expanded, setExpanded] = useState(false);
@@ -97,10 +104,10 @@ function NavItem({
             >
               <div className="pl-[50px] flex flex-col gap-0.5 pb-1.5">
                 {sub.map((s) => (
-                  <button key={s} className="flex items-center gap-2.5 px-3 py-[9px] rounded-[9px] cursor-pointer transition-all duration-150 drawer-sub-item w-full text-left group">
+                  <Link key={s.href} href={s.href} className="flex items-center gap-2.5 px-3 py-[9px] rounded-[9px] cursor-pointer transition-all duration-150 drawer-sub-item w-full text-left group">
                     <span className="w-[5px] h-[5px] rounded-full flex-shrink-0 drawer-sub-dot group-hover:bg-[#ff6a00] group-hover:shadow-[0_0_6px_rgba(255,106,0,0.5)] transition-all" />
-                    <span className="text-[12px] font-medium drawer-sub-text group-hover:text-[#ff6a00] transition-colors">{s}</span>
-                  </button>
+                    <span className="text-[12px] font-medium drawer-sub-text group-hover:text-[#ff6a00] transition-colors">{s.label}</span>
+                  </Link>
                 ))}
               </div>
             </motion.div>
