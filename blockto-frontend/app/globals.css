@@ -427,6 +427,63 @@ html.light .buy-logo-bg {
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.8), 0 1px 4px rgba(0,0,0,0.08);
 }
 
+/* ─── Trading page ───────────────────────────────────────────── */
+.trading-check-card {
+  background: linear-gradient(135deg,rgba(255,106,0,0.06),rgba(0,0,0,0));
+  border: 0.5px solid rgba(255,106,0,0.15);
+}
+.trading-sig-card {
+  background: rgba(255,255,255,0.025);
+  border: 0.5px solid rgba(255,255,255,0.06);
+}
+.trading-sig-msg {
+  background: rgba(0,0,0,0.45);
+  border: 0.5px solid rgba(255,255,255,0.04);
+}
+.trading-feat-txt  { color: #999; }
+.trading-sig-sub   { color: #666; }
+.trading-sig-key   { color: #888; }
+.trading-sig-value { color: #e5e5e5; }
+.trading-check-txt { color: #e5e5e5; }
+.trading-final-cta {
+  background: linear-gradient(135deg,rgba(255,106,0,0.10),rgba(255,106,0,0.02));
+  border: 0.5px solid rgba(255,106,0,0.2);
+}
+
+html.light .trading-check-card {
+  background: linear-gradient(135deg,rgba(255,106,0,0.05),rgba(255,255,255,0));
+  border-color: rgba(255,106,0,0.12);
+}
+html.light .trading-sig-card {
+  background: rgba(255,255,255,0.85);
+  border-color: rgba(0,0,0,0.08);
+}
+html.light .trading-sig-msg {
+  background: rgba(0,0,0,0.04);
+  border-color: rgba(0,0,0,0.06);
+}
+html.light .trading-feat-txt  { color: #555; }
+html.light .trading-sig-sub   { color: #888; }
+html.light .trading-sig-key   { color: #666; }
+html.light .trading-sig-value { color: #111; }
+html.light .trading-check-txt { color: #222; }
+html.light .trading-final-cta {
+  background: linear-gradient(135deg,rgba(255,106,0,0.07),rgba(255,255,255,0));
+  border-color: rgba(255,106,0,0.15);
+}
+
+/* Signal feed scroll */
+@keyframes signal-scroll {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+.signal-scroll-anim {
+  animation: signal-scroll 32s linear infinite;
+}
+.signal-scroll-wrap:hover .signal-scroll-anim {
+  animation-play-state: paused;
+}
+
 /* Section label line in light */
 html.light .sec-line::after {
   background: linear-gradient(90deg, rgba(255,106,0,0.3), transparent);
