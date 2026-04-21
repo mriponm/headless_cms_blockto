@@ -3,12 +3,16 @@ import type { PostsData, CategoriesData, SinglePostData, WPPost, WPCategory } fr
 
 /** Maps the app's URL slugs to WPGraphQL category names */
 export const APP_SLUG_TO_WP: Record<string, string> = {
-  "general-news": "news",
-  "bitcoin":      "bitcoin",
-  "ethereum":     "ethereum",
-  "altcoins":     "altcoin",
-  "nfts":         "nft",
-  "blockchain":   "news",
+  "general-news":    "news",
+  "bitcoin":         "bitcoin",
+  "ethereum":        "ethereum",
+  "altcoins":        "altcoin",
+  "nfts":            "nft",
+  "blockchain":      "news",
+  "markets":         "markets",
+  "analysis":        "analysis",
+  "bitcoin-analysis":"bitcoin",
+  "altcoin-focus":   "altcoin",
 };
 
 const POST_FIELDS = `

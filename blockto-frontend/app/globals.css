@@ -1062,6 +1062,127 @@ html.light .prose-wp blockquote { background: rgba(255,106,0,0.04); color: #333;
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   MARKETS PAGE — dark / light adaptive classes
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Hero card */
+.mkt-hero-img-bg {
+  background: linear-gradient(135deg, #1a0e05, #050302);
+}
+html.light .mkt-hero-img-bg {
+  background: linear-gradient(135deg, #fff8f0, #f5f3ee);
+}
+
+.mkt-hero-overlay {
+  background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.12) 60%, transparent 100%);
+}
+html.light .mkt-hero-overlay {
+  background: linear-gradient(to top, rgba(255,250,244,0.97) 0%, rgba(255,250,244,0.4) 55%, transparent 100%);
+}
+
+.mkt-hero-border { border: 0.5px solid rgba(255,255,255,0.08); }
+html.light .mkt-hero-border { border-color: rgba(255,106,0,0.12); }
+.mkt-hero-border:hover { border-color: rgba(255,106,0,0.25); }
+
+.mkt-hero-title { color: #fff; }
+html.light .mkt-hero-title { color: #0a0a0a; }
+
+.mkt-hero-meta { color: #aaa; }
+html.light .mkt-hero-meta { color: #555; }
+
+/* Key levels strip */
+.mkt-levels-bg { background: rgba(255,255,255,0.03); }
+html.light .mkt-levels-bg { background: rgba(0,0,0,0.04); }
+
+.mkt-levels-cell { background: rgba(0,0,0,0.4); }
+html.light .mkt-levels-cell { background: rgba(255,255,255,0.78); }
+
+.mkt-levels-label { color: #555; }
+html.light .mkt-levels-label { color: #999; }
+
+/* Analysis list card */
+.mkt-ana-card {
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+.mkt-ana-card:hover {
+  border-color: rgba(255,106,0,0.18);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(255,106,0,0.06);
+}
+html.light .mkt-ana-card:hover {
+  box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+}
+
+.mkt-ana-thumb {
+  background: #0a0a0a;
+  border: 0.5px solid rgba(255,255,255,0.06);
+}
+html.light .mkt-ana-thumb {
+  background: #f0efeb;
+  border-color: rgba(0,0,0,0.08);
+}
+
+.mkt-ana-title { color: #fff; }
+html.light .mkt-ana-title { color: #0a0a0a; }
+
+.mkt-ana-author { color: #888; }
+html.light .mkt-ana-author { color: #555; }
+
+.mkt-ana-meta { color: #666; }
+html.light .mkt-ana-meta { color: #888; }
+
+/* Trending scroll card */
+.mkt-trend-card {
+  transition: border-color 0.2s ease;
+}
+.mkt-trend-card:hover { border-color: rgba(255,106,0,0.22); }
+
+.mkt-trend-title { color: #fff; }
+html.light .mkt-trend-title { color: #0a0a0a; }
+
+.mkt-trend-author { color: #555; }
+html.light .mkt-trend-author { color: #888; }
+
+/* View-all button */
+.mkt-viewall-btn {
+  color: #ff6a00;
+  background: rgba(255,106,0,0.05);
+  border: 0.5px solid rgba(255,106,0,0.12);
+  transition: background 0.2s ease;
+}
+html.light .mkt-viewall-btn {
+  background: rgba(255,106,0,0.04);
+  border-color: rgba(255,106,0,0.15);
+}
+.mkt-viewall-btn:hover { background: rgba(255,106,0,0.11); }
+
+/* Sidebar panel (desktop) */
+.mkt-sidebar-panel {
+  background: rgba(255,255,255,0.02);
+  border: 0.5px solid rgba(255,255,255,0.05);
+}
+html.light .mkt-sidebar-panel {
+  background: rgba(255,255,255,0.7);
+  border-color: rgba(0,0,0,0.07);
+}
+
+/* Compact sidebar card */
+.mkt-sidebar-card {
+  transition: border-color 0.2s ease;
+}
+.mkt-sidebar-card:hover { border-color: rgba(255,106,0,0.2); }
+
+.mkt-sidebar-title { color: #f0f0f0; }
+html.light .mkt-sidebar-title { color: #111; }
+
+.mkt-sidebar-meta { color: #666; }
+html.light .mkt-sidebar-meta { color: #888; }
+
+/* Empty state */
+.mkt-empty { color: #555; }
+html.light .mkt-empty { color: #aaa; }
+
+/* ═══════════════════════════════════════════════════════════════
    EVENTS PAGE — text/cell color theming (backgrounds use inline styles)
    ═══════════════════════════════════════════════════════════════ */
 

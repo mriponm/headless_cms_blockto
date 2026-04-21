@@ -6,6 +6,7 @@ import Image from "next/image";
 import {
   TrendingUp, Clock, Flame, ArrowRight, Rss,
   Newspaper, Bitcoin, Layers, BarChart2, ImageIcon, Network,
+  LineChart, PieChart,
 } from "lucide-react";
 import type { WPPost, WPCategory } from "@/lib/wordpress/types";
 import { relativeDate, primaryCategory, stripExcerpt } from "@/lib/wordpress/queries";
@@ -51,6 +52,26 @@ const CAT_META: Record<string, {
     label: "Blockchain",
     Icon: Network,
     description: "Protocol upgrades, network security, consensus mechanisms, and infrastructure developments.",
+  },
+  "markets": {
+    label: "Markets",
+    Icon: TrendingUp,
+    description: "Live market updates, price action, and macro conditions shaping crypto markets today.",
+  },
+  "analysis": {
+    label: "Analysis",
+    Icon: LineChart,
+    description: "In-depth technical and fundamental analysis across major crypto assets.",
+  },
+  "bitcoin-analysis": {
+    label: "Bitcoin Analysis",
+    Icon: Bitcoin,
+    description: "BTC technical analysis, chart breakdowns, key levels and price forecasts.",
+  },
+  "altcoin-focus": {
+    label: "Altcoin Focus",
+    Icon: PieChart,
+    description: "Deep-dives into altcoin setups — SOL, LINK, AVAX, XRP and the broader alt market.",
   },
 };
 

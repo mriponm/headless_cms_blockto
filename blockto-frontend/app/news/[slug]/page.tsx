@@ -42,7 +42,7 @@ function KeyTakeaways({ excerpt }: { excerpt: string }) {
       </div>
       <div className="relative z-10 flex flex-col gap-1">
         {sentences.map((s, i) => (
-          <div key={i} className="flex items-start gap-2.5 py-[7px] text-[13px] leading-[1.5] font-medium text-[#e5e5e5] font-[family-name:var(--font-display)]">
+          <div key={i} className="flex items-start gap-2.5 py-[7px] text-[13px] leading-[1.5] font-medium art-body-text font-[family-name:var(--font-display)]">
             <span className="w-[18px] h-[18px] rounded-[6px] flex items-center justify-center flex-shrink-0 mt-[1px]"
               style={{ background: "linear-gradient(135deg,#00d47b,#00a862)", boxShadow: "0 0 8px rgba(0,212,123,0.2)" }}>
               <svg width="9" height="9" viewBox="0 0 14 14" fill="none" stroke="#000" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -80,14 +80,15 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
       <div className="w-full max-w-[860px] mx-auto pb-16">
 
         {/* ── Hero image ── */}
-        <div className="relative">
-          <div className="w-full h-[360px] overflow-hidden relative bg-[#0a0a0a]">
+        <div className="relative mt-6 md:mt-8">
+          <div className="w-full overflow-hidden relative bg-[#0a0a0a]">
             {post.featuredImage ? (
               <Image
                 src={post.featuredImage.node.sourceUrl}
                 alt={post.title}
-                fill
-                className="object-cover"
+                width={860}
+                height={480}
+                className="w-full h-auto block"
                 sizes="860px"
                 priority
               />
