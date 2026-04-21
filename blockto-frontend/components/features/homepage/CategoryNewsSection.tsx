@@ -21,7 +21,7 @@ function FeaturedCard({ post, accentColor, accentBg, accentBorder, accentGrad }:
   const cat = primaryCategory(post);
   return (
     <Link href={`/news/${post.slug}`}
-      className="block rounded-[20px] overflow-hidden cursor-pointer card-hover border border-[rgba(255,255,255,0.06)] relative group"
+      className="block rounded-[20px] overflow-hidden cursor-pointer card-hover border border-[rgba(255,255,255,0.08)] relative group"
       style={{ background: "rgba(255,255,255,0.025)" }}>
       <div className="h-[200px] relative overflow-hidden bg-[#0a0e1a]">
         {post.featuredImage ? (
@@ -63,7 +63,7 @@ function ListCard({ post, accentColor, accentBg, accentBorder, accentGrad }: {
   const cat = primaryCategory(post);
   return (
     <Link href={`/news/${post.slug}`}
-      className="flex gap-3 p-3 rounded-[14px] cursor-pointer card-hover border border-[rgba(255,255,255,0.06)] relative group block"
+      className="flex gap-3 p-3 rounded-[14px] cursor-pointer card-hover border border-[rgba(255,255,255,0.08)] relative group block"
       style={{ background: "rgba(255,255,255,0.025)" }}>
       <div className="w-[80px] h-[80px] rounded-[10px] overflow-hidden flex-shrink-0 relative bg-[#0a0e1a]">
         {post.featuredImage ? (
@@ -95,7 +95,7 @@ function ListCard({ post, accentColor, accentBg, accentBorder, accentGrad }: {
   );
 }
 
-export default function CategoryNewsSection({ posts, title, viewAllHref, accentColor, accentBg, accentBorder, accentGrad, symbol }: Props) {
+export default function CategoryNewsSection({ posts, title, viewAllHref, accentColor, accentBg, accentBorder, accentGrad }: Props) {
   if (!posts.length) return null;
   const featured = posts.slice(0, 3);
   const list     = posts.slice(3);

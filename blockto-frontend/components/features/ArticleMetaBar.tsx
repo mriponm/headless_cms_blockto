@@ -9,7 +9,9 @@ export default function ArticleMetaBar({
   const initials = authorName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
 
   return (
-    <div className="flex items-center gap-3 pt-4 pb-5 border-t art-border">
+    <div>
+      <div className="h-px my-4 bg-gradient-to-r from-[rgba(255,106,0,0.4)] via-[rgba(255,255,255,0.06)] to-transparent" />
+    <div className="flex items-center gap-3 pb-5">
       {/* Avatar with blue badge */}
       <div className="relative flex-shrink-0">
         <div className="w-[40px] h-[40px] rounded-full flex items-center justify-center text-[13px] font-extrabold text-black"
@@ -48,6 +50,7 @@ export default function ArticleMetaBar({
         <Clock size={10} />
         2 min
       </div>
+    </div>
     </div>
   );
 }
