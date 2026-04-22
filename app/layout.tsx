@@ -8,6 +8,8 @@ import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { I18nProvider } from "@/components/providers/I18nProvider";
 import { AuthModalProvider } from "@/components/providers/AuthModalProvider";
 import AuthModal from "@/components/ui/AuthModal";
+import UserSyncProvider from "@/components/providers/UserSyncProvider";
+import { auth0 } from "@/lib/auth0";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -43,7 +45,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth0.getSession();
+  const isLoggedIn = !!session?.user;
+
   return (
     <html lang="en" className={`${outfit.variable} ${jetbrainsMono.variable} ${lora.variable} dark`} suppressHydrationWarning>
       <head>
@@ -56,6 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body className="min-h-screen flex flex-col relative" suppressHydrationWarning>
+        <UserSyncProvider isLoggedIn={isLoggedIn} />
         <AuthModalProvider>
           <AuthModal />
           <ThemeProvider>
