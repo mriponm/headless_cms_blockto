@@ -46,8 +46,13 @@ export const metadata: Metadata = {
 };
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const session = await auth0.getSession();
-  const isLoggedIn = !!session?.user;
+  let isLoggedIn = false;
+  try {
+    const session = await auth0.getSession();
+    isLoggedIn = !!session?.user;
+  } catch {
+    // AUTH0_DOMAIN not yet configured — skip session check
+  }
 
   return (
     <html lang="en" className={`${outfit.variable} ${jetbrainsMono.variable} ${lora.variable} dark`} suppressHydrationWarning>
