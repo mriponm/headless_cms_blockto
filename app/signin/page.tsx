@@ -14,11 +14,8 @@ export default function SignInPage() {
 
         {/* ── Header ── */}
         <div className="flex items-center justify-between py-4">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center">
             <BrandLogo height={34} />
-            <span className="text-[21px] font-black tracking-[-1px] font-[family-name:var(--font-display)] header-brand-text">
-              block<span className="gradient-text-alt">to</span>
-            </span>
           </div>
           <p className="text-[11px] auth-sub-text font-medium">
             New here?

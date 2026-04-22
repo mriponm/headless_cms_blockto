@@ -273,26 +273,21 @@ export default function AuthModal() {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center px-3 py-6 sm:py-10">
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center px-0 sm:px-3 py-0 sm:py-6">
       {/* Backdrop */}
       <div className="absolute inset-0 auth-modal-backdrop" onClick={closeModal} />
 
       {/* Panel */}
-      <div className="relative w-full max-w-[480px] auth-modal-panel rounded-[24px] overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="relative w-full max-w-[480px] auth-modal-panel sm:rounded-[24px] rounded-t-[24px] overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[90vh]">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pt-5 pb-4 flex-shrink-0">
-          <div className="flex items-center gap-2.5">
-            <BrandLogo height={30} />
-            <span className="text-[19px] font-black tracking-[-0.8px] font-[family-name:var(--font-display)] header-brand-text">
-              block<span className="gradient-text-alt">to</span>
-            </span>
-          </div>
+        <div className="flex items-center justify-between px-4 pt-4 pb-3 flex-shrink-0 gap-2">
+          <BrandLogo height={28} />
 
           {/* Tabs */}
-          <div className="flex items-center gap-1 bg-[rgba(255,255,255,0.04)] rounded-[10px] p-1 border border-[rgba(255,255,255,0.06)]">
+          <div className="flex items-center gap-1 bg-[rgba(255,255,255,0.04)] rounded-[10px] p-1 border border-[rgba(255,255,255,0.06)] flex-shrink-0">
             <button
               onClick={() => setMode("signin")}
-              className={`px-3 py-1.5 rounded-[8px] text-[12px] font-bold transition-all duration-150 cursor-pointer ${
+              className={`px-3 py-1.5 rounded-[8px] text-[11px] font-bold transition-all duration-150 cursor-pointer whitespace-nowrap ${
                 mode === "signin"
                   ? "bg-gradient-to-br from-[#ff6a00] to-[#ff8a30] text-black shadow-[0_0_12px_rgba(255,106,0,0.3)]"
                   : "auth-tab-inactive"
@@ -300,7 +295,7 @@ export default function AuthModal() {
             >Sign in</button>
             <button
               onClick={() => setMode("signup")}
-              className={`px-3 py-1.5 rounded-[8px] text-[12px] font-bold transition-all duration-150 cursor-pointer ${
+              className={`px-3 py-1.5 rounded-[8px] text-[11px] font-bold transition-all duration-150 cursor-pointer whitespace-nowrap ${
                 mode === "signup"
                   ? "bg-gradient-to-br from-[#ff6a00] to-[#ff8a30] text-black shadow-[0_0_12px_rgba(255,106,0,0.3)]"
                   : "auth-tab-inactive"
