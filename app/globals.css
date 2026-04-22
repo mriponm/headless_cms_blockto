@@ -37,6 +37,21 @@ html, body {
   overflow-x: hidden;
 }
 
+/* ─── Full-page gradient layer (fixed, below everything) ─────── */
+html::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 15% 10%,  rgba(255,106,0,0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 85% 5%,   rgba(255,80,0,0.12)  0%, transparent 55%),
+    radial-gradient(ellipse 70% 60% at 50% 50%,  rgba(255,100,0,0.07) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 50% at 10% 90%,  rgba(255,130,0,0.12) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 90% 95%,  rgba(255,80,0,0.10)  0%, transparent 55%);
+}
+
 /* ─── Noise Overlay ──────────────────────────────────────────── */
 body::before {
   content: "";
@@ -49,7 +64,7 @@ body::before {
   background-size: 128px;
 }
 
-/* ─── Glow Orbs ──────────────────────────────────────────────── */
+/* ─── Animated Glow Orbs (layered on top of fixed gradient) ──── */
 .bg-orb {
   position: fixed;
   border-radius: 50%;
@@ -57,45 +72,25 @@ body::before {
   z-index: 0;
 }
 .bg-orb-tr {
-  width: 900px; height: 900px;
-  top: -200px; right: -300px;
-  background: radial-gradient(circle, rgba(255,106,0,0.15) 0%, rgba(255,60,0,0.04) 40%, transparent 70%);
-  filter: blur(80px);
+  width: 100vw; height: 100vh;
+  top: -20vh; right: -20vw;
+  background: radial-gradient(circle, rgba(255,106,0,0.14) 0%, transparent 65%);
+  filter: blur(60px);
   animation: orb-tr 14s ease-in-out infinite alternate;
 }
 .bg-orb-bl {
-  width: 700px; height: 700px;
-  bottom: -150px; left: -200px;
-  background: radial-gradient(circle, rgba(255,130,0,0.08) 0%, rgba(255,80,0,0.02) 40%, transparent 70%);
+  width: 100vw; height: 100vh;
+  bottom: -20vh; left: -20vw;
+  background: radial-gradient(circle, rgba(255,130,0,0.10) 0%, transparent 65%);
   filter: blur(60px);
   animation: orb-bl 16s ease-in-out infinite alternate;
 }
 .bg-orb-center {
-  width: 500px; height: 500px;
-  top: 45%; left: 45%;
+  width: 80vw; height: 80vh;
+  top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  background: radial-gradient(circle, rgba(255,100,0,0.05) 0%, transparent 60%);
-  filter: blur(50px);
-}
-@media (min-width: 768px) {
-  .bg-orb-tr {
-    width: 1400px; height: 1400px;
-    top: -350px; right: -500px;
-    background: radial-gradient(circle, rgba(255,106,0,0.15) 0%, rgba(255,60,0,0.05) 40%, transparent 70%);
-    filter: blur(100px);
-  }
-  .bg-orb-bl {
-    width: 1100px; height: 1100px;
-    bottom: -250px; left: -350px;
-    background: radial-gradient(circle, rgba(255,130,0,0.10) 0%, rgba(255,80,0,0.03) 40%, transparent 70%);
-    filter: blur(80px);
-  }
-  .bg-orb-center {
-    width: 900px; height: 900px;
-    top: 50%; left: 50%;
-    background: radial-gradient(circle, rgba(255,100,0,0.07) 0%, transparent 60%);
-    filter: blur(80px);
-  }
+  background: radial-gradient(circle, rgba(255,100,0,0.07) 0%, transparent 65%);
+  filter: blur(60px);
 }
 
 @keyframes orb-tr {
@@ -327,12 +322,25 @@ html.light body {
 }
 html.light body::before { opacity: 0.012; }
 
+/* Full-page gradient — softer in light mode */
+html.light::before {
+  background:
+    radial-gradient(ellipse 80% 60% at 15% 10%,  rgba(255,106,0,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 85% 5%,   rgba(255,80,0,0.05)  0%, transparent 55%),
+    radial-gradient(ellipse 70% 60% at 50% 50%,  rgba(255,100,0,0.03) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 50% at 10% 90%,  rgba(255,130,0,0.05) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 90% 95%,  rgba(255,80,0,0.04)  0%, transparent 55%);
+}
+
 /* Orbs — softer in light */
 html.light .bg-orb-tr {
-  background: radial-gradient(circle, rgba(255,106,0,0.10) 0%, rgba(255,60,0,0.02) 40%, transparent 70%);
+  background: radial-gradient(circle, rgba(255,106,0,0.07) 0%, transparent 65%);
 }
 html.light .bg-orb-bl {
-  background: radial-gradient(circle, rgba(255,130,0,0.06) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(255,130,0,0.05) 0%, transparent 65%);
+}
+html.light .bg-orb-center {
+  background: radial-gradient(circle, rgba(255,100,0,0.03) 0%, transparent 65%);
 }
 
 /* Glass surfaces */
