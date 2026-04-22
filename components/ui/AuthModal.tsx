@@ -282,7 +282,7 @@ export default function AuthModal() {
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-4 flex-shrink-0">
           <div className="flex items-center gap-2.5">
-            <BrandLogo size={30} />
+            <BrandLogo height={30} />
             <span className="text-[19px] font-black tracking-[-0.8px] font-[family-name:var(--font-display)] header-brand-text">
               block<span className="gradient-text-alt">to</span>
             </span>

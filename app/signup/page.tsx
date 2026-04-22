@@ -35,7 +35,7 @@ export default function SignUpPage() {
         {/* ── Header ── */}
         <div className="flex items-center justify-between py-4">
           <div className="flex items-center gap-2.5">
-            <BrandLogo size={34} />
+            <BrandLogo height={34} />
             <span className="text-[21px] font-black tracking-[-1px] font-[family-name:var(--font-display)] header-brand-text">
               block<span className="gradient-text-alt">to</span>
             </span>

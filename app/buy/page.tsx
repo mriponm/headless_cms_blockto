@@ -385,7 +385,7 @@ export default function BuyPage() {
                   className="w-[28px] h-[28px] rounded-[8px] flex items-center justify-center overflow-hidden"
                   style={{ background: "linear-gradient(135deg,#ff6a00,#ff8a30)", boxShadow: "0 0 14px rgba(255,106,0,0.3)" }}
                 >
-                  <BrandLogo size={20} />
+                  <BrandLogo height={20} />
                 </div>
                 blockto
               </div>
