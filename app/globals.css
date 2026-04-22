@@ -1913,3 +1913,50 @@ html.light .rbc-zone-labels { color: #aaa; }
 }
 .mtr-quad-grid .mtr-card { margin-bottom: 0; }
 .rbc-wrap { margin-bottom: 0; height: 100%; display: flex; flex-direction: column; }
+
+
+/* ── Coin icon fallback ───────────────────────────────────────── */
+.pr-coin-ico-wrap {
+  width: 28px; height: 28px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%; overflow: hidden;
+}
+.pr-coin-ico-wrap img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
+.pr-coin-fallback {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, #ff6a00, #ff9d4d);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 800; color: #fff;
+  font-family: var(--font-display);
+}
+
+/* ── Pagination ───────────────────────────────────────────────── */
+.pr-pagination {
+  display: flex; align-items: center; justify-content: center;
+  gap: 4px; margin-top: 16px; flex-wrap: wrap;
+}
+.pr-pg-btn {
+  min-width: 32px; height: 32px; padding: 0 8px;
+  border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.7); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display);
+}
+.pr-pg-btn:hover:not(:disabled) { background: rgba(255,106,0,0.15); border-color: rgba(255,106,0,0.3); color: #ff6a00; }
+.pr-pg-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+.pr-pg-active {
+  background: linear-gradient(135deg, #ff6a00, #ff9d4d) !important;
+  border-color: transparent !important; color: #fff !important;
+}
+.pr-pg-arrow { font-size: 15px; }
+.pr-pg-ellipsis {
+  min-width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.3); font-size: 13px; pointer-events: none;
+}
+html.light .pr-pg-btn {
+  border-color: rgba(0,0,0,0.1); background: rgba(0,0,0,0.03); color: rgba(0,0,0,0.6);
+}
+html.light .pr-pg-btn:hover:not(:disabled) { background: rgba(255,106,0,0.1); border-color: rgba(255,106,0,0.3); color: #e05a00; }
+html.light .pr-pg-ellipsis { color: rgba(0,0,0,0.3); }
+html.light .pr-coin-fallback { background: linear-gradient(135deg, #ff6a00, #ff9d4d); }

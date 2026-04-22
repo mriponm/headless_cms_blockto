@@ -1,22 +1,37 @@
 "use client";
 import { useState } from "react";
 
-const COINS = [
-  { r: 1,  n: "Bitcoin",   s: "BTC",  p: 84231,     mc: 1.67e12, vol: 32.1e9, c: 2.4,  c7: 5.8,  up: true,  u7: true,  sp: "0,14 6,12 12,16 18,10 24,8 30,11 36,6 44,4" },
-  { r: 2,  n: "Ethereum",  s: "ETH",  p: 1842,      mc: 221e9,   vol: 14.2e9, c: 1.9,  c7: 3.2,  up: true,  u7: true,  sp: "0,12 6,10 12,14 18,8 24,9 30,6 36,7 44,4" },
-  { r: 3,  n: "Solana",    s: "SOL",  p: 134.20,    mc: 61.4e9,  vol: 4.8e9,  c: -0.8, c7: -2.1, up: false, u7: false, sp: "0,6 6,8 12,5 18,10 24,12 30,9 36,14 44,12" },
-  { r: 4,  n: "BNB",       s: "BNB",  p: 587.40,    mc: 85.1e9,  vol: 2.1e9,  c: 0.6,  c7: 1.4,  up: true,  u7: true,  sp: "0,10 6,9 12,11 18,8 24,10 30,7 36,8 44,6" },
-  { r: 5,  n: "XRP",       s: "XRP",  p: 1.33,      mc: 76.2e9,  vol: 5.4e9,  c: -4.1, c7: -6.8, up: false, u7: false, sp: "0,4 6,6 12,5 18,8 24,12 30,14 36,16 44,15" },
-  { r: 6,  n: "Dogecoin",  s: "DOGE", p: 0.081,     mc: 11.8e9,  vol: 1.2e9,  c: -1.2, c7: 0.4,  up: false, u7: true,  sp: "0,8 6,10 12,7 18,12 24,11 30,13 36,12 44,14" },
-  { r: 7,  n: "Cardano",   s: "ADA",  p: 0.42,      mc: 14.8e9,  vol: 0.9e9,  c: 3.1,  c7: 7.4,  up: true,  u7: true,  sp: "0,16 6,14 12,12 18,10 24,8 30,9 36,6 44,4" },
-  { r: 8,  n: "Chainlink", s: "LINK", p: 14.80,     mc: 9.1e9,   vol: 0.6e9,  c: 2.8,  c7: 4.2,  up: true,  u7: true,  sp: "0,14 6,12 12,10 18,11 24,8 30,6 36,5 44,4" },
-  { r: 9,  n: "Avalanche", s: "AVAX", p: 28.40,     mc: 11.6e9,  vol: 0.8e9,  c: 4.7,  c7: 8.1,  up: true,  u7: true,  sp: "0,18 6,14 12,12 18,10 24,8 30,7 36,5 44,2" },
-  { r: 10, n: "Polkadot",  s: "DOT",  p: 5.12,      mc: 7.3e9,   vol: 0.4e9,  c: -0.4, c7: -1.8, up: false, u7: false, sp: "0,8 6,10 12,9 18,11 24,10 30,12 36,11 44,12" },
-  { r: 11, n: "Shiba Inu", s: "SHIB", p: 0.0000124, mc: 7.3e9,   vol: 1.1e9,  c: 5.2,  c7: 12.3, up: true,  u7: true,  sp: "0,16 6,14 12,10 18,8 24,6 30,8 36,4 44,2" },
-  { r: 12, n: "Litecoin",  s: "LTC",  p: 84.60,     mc: 6.3e9,   vol: 0.5e9,  c: 1.4,  c7: 3.6,  up: true,  u7: true,  sp: "0,12 6,11 12,13 18,10 24,9 30,8 36,7 44,6" },
-  { r: 13, n: "Uniswap",   s: "UNI",  p: 6.78,      mc: 4.1e9,   vol: 0.3e9,  c: -2.1, c7: -4.5, up: false, u7: false, sp: "0,6 6,8 12,7 18,10 24,12 30,11 36,14 44,13" },
-  { r: 14, n: "Stellar",   s: "XLM",  p: 0.108,     mc: 3.2e9,   vol: 0.2e9,  c: 1.7,  c7: 2.9,  up: true,  u7: true,  sp: "0,14 6,12 12,14 18,10 24,8 30,10 36,6 44,5" },
-  { r: 15, n: "Cosmos",    s: "ATOM", p: 7.24,       mc: 2.8e9,   vol: 0.2e9,  c: -0.9, c7: -3.1, up: false, u7: false, sp: "0,8 6,9 12,7 18,10 24,12 30,10 36,13 44,12" },
+const ALL_COINS = [
+  { r: 1,  n: "Bitcoin",          s: "BTC",  p: 84231,     mc: 1.67e12, vol: 32.1e9,  c: 2.4,   c7: 5.8,   up: true,  u7: true,  sp: "0,14 6,12 12,16 18,10 24,8 30,11 36,6 44,4",   ico: "btc"  },
+  { r: 2,  n: "Ethereum",         s: "ETH",  p: 1842,      mc: 221e9,   vol: 14.2e9,  c: 1.9,   c7: 3.2,   up: true,  u7: true,  sp: "0,12 6,10 12,14 18,8 24,9 30,6 36,7 44,4",    ico: "eth"  },
+  { r: 3,  n: "Tether",           s: "USDT", p: 1.00,      mc: 121.3e9, vol: 88.4e9,  c: 0.01,  c7: 0.02,  up: true,  u7: true,  sp: "0,10 6,10 12,10 18,10 24,10 30,10 36,10 44,10", ico: "usdt" },
+  { r: 4,  n: "BNB",              s: "BNB",  p: 587.40,    mc: 85.1e9,  vol: 2.1e9,   c: 0.6,   c7: 1.4,   up: true,  u7: true,  sp: "0,10 6,9 12,11 18,8 24,10 30,7 36,8 44,6",    ico: "bnb"  },
+  { r: 5,  n: "Solana",           s: "SOL",  p: 134.20,    mc: 61.4e9,  vol: 4.8e9,   c: -0.8,  c7: -2.1,  up: false, u7: false, sp: "0,6 6,8 12,5 18,10 24,12 30,9 36,14 44,12",   ico: "sol"  },
+  { r: 6,  n: "USD Coin",         s: "USDC", p: 1.00,      mc: 39.2e9,  vol: 12.8e9,  c: 0.01,  c7: 0.01,  up: true,  u7: true,  sp: "0,10 6,10 12,10 18,10 24,10 30,10 36,10 44,10", ico: "usdc" },
+  { r: 7,  n: "XRP",              s: "XRP",  p: 1.33,      mc: 76.2e9,  vol: 5.4e9,   c: -4.1,  c7: -6.8,  up: false, u7: false, sp: "0,4 6,6 12,5 18,8 24,12 30,14 36,16 44,15",   ico: "xrp"  },
+  { r: 8,  n: "Dogecoin",         s: "DOGE", p: 0.081,     mc: 11.8e9,  vol: 1.2e9,   c: -1.2,  c7: 0.4,   up: false, u7: true,  sp: "0,8 6,10 12,7 18,12 24,11 30,13 36,12 44,14",  ico: "doge" },
+  { r: 9,  n: "Tron",             s: "TRX",  p: 0.244,     mc: 21.0e9,  vol: 0.9e9,   c: 1.2,   c7: 2.8,   up: true,  u7: true,  sp: "0,12 6,11 12,13 18,10 24,9 30,11 36,8 44,7",   ico: "trx"  },
+  { r: 10, n: "Cardano",          s: "ADA",  p: 0.42,      mc: 14.8e9,  vol: 0.9e9,   c: 3.1,   c7: 7.4,   up: true,  u7: true,  sp: "0,16 6,14 12,12 18,10 24,8 30,9 36,6 44,4",    ico: "ada"  },
+  { r: 11, n: "Avalanche",        s: "AVAX", p: 28.40,     mc: 11.6e9,  vol: 0.8e9,   c: 4.7,   c7: 8.1,   up: true,  u7: true,  sp: "0,18 6,14 12,12 18,10 24,8 30,7 36,5 44,2",    ico: "avax" },
+  { r: 12, n: "Shiba Inu",        s: "SHIB", p: 0.0000124, mc: 7.3e9,   vol: 1.1e9,   c: 5.2,   c7: 12.3,  up: true,  u7: true,  sp: "0,16 6,14 12,10 18,8 24,6 30,8 36,4 44,2",     ico: "shib" },
+  { r: 13, n: "Polkadot",         s: "DOT",  p: 5.12,      mc: 7.3e9,   vol: 0.4e9,   c: -0.4,  c7: -1.8,  up: false, u7: false, sp: "0,8 6,10 12,9 18,11 24,10 30,12 36,11 44,12",  ico: "dot"  },
+  { r: 14, n: "Chainlink",        s: "LINK", p: 14.80,     mc: 9.1e9,   vol: 0.6e9,   c: 2.8,   c7: 4.2,   up: true,  u7: true,  sp: "0,14 6,12 12,10 18,11 24,8 30,6 36,5 44,4",    ico: "link" },
+  { r: 15, n: "Litecoin",         s: "LTC",  p: 84.60,     mc: 6.3e9,   vol: 0.5e9,   c: 1.4,   c7: 3.6,   up: true,  u7: true,  sp: "0,12 6,11 12,13 18,10 24,9 30,8 36,7 44,6",    ico: "ltc"  },
+  { r: 16, n: "NEAR Protocol",    s: "NEAR", p: 4.82,      mc: 5.8e9,   vol: 0.4e9,   c: 3.4,   c7: 6.2,   up: true,  u7: true,  sp: "0,15 6,13 12,11 18,9 24,7 30,8 36,5 44,3",     ico: "near" },
+  { r: 17, n: "Uniswap",          s: "UNI",  p: 6.78,      mc: 4.1e9,   vol: 0.3e9,   c: -2.1,  c7: -4.5,  up: false, u7: false, sp: "0,6 6,8 12,7 18,10 24,12 30,11 36,14 44,13",   ico: "uni"  },
+  { r: 18, n: "Polygon",          s: "MATIC",p: 0.62,      mc: 5.8e9,   vol: 0.5e9,   c: -1.4,  c7: -3.2,  up: false, u7: false, sp: "0,8 6,9 12,11 18,13 24,12 30,14 36,13 44,14",  ico: "matic"},
+  { r: 19, n: "Cosmos",           s: "ATOM", p: 7.24,      mc: 2.8e9,   vol: 0.2e9,   c: -0.9,  c7: -3.1,  up: false, u7: false, sp: "0,8 6,9 12,7 18,10 24,12 30,10 36,13 44,12",   ico: "atom" },
+  { r: 20, n: "Ethereum Classic", s: "ETC",  p: 26.40,     mc: 3.8e9,   vol: 0.3e9,   c: 1.8,   c7: 4.1,   up: true,  u7: true,  sp: "0,13 6,11 12,14 18,10 24,8 30,10 36,7 44,5",   ico: "etc"  },
+  { r: 21, n: "Stellar",          s: "XLM",  p: 0.108,     mc: 3.2e9,   vol: 0.2e9,   c: 1.7,   c7: 2.9,   up: true,  u7: true,  sp: "0,14 6,12 12,14 18,10 24,8 30,10 36,6 44,5",   ico: "xlm"  },
+  { r: 22, n: "Monero",           s: "XMR",  p: 218.50,    mc: 4.0e9,   vol: 0.2e9,   c: 0.8,   c7: 2.1,   up: true,  u7: true,  sp: "0,11 6,10 12,12 18,9 24,8 30,10 36,7 44,6",    ico: "xmr"  },
+  { r: 23, n: "Hedera",           s: "HBAR", p: 0.214,     mc: 8.5e9,   vol: 0.7e9,   c: 5.6,   c7: 11.2,  up: true,  u7: true,  sp: "0,17 6,14 12,12 18,9 24,7 30,8 36,5 44,2",     ico: "hbar" },
+  { r: 24, n: "Optimism",         s: "OP",   p: 1.54,      mc: 1.6e9,   vol: 0.2e9,   c: -3.9,  c7: -5.8,  up: false, u7: false, sp: "0,5 6,7 12,6 18,9 24,11 30,13 36,15 44,16",    ico: "op"   },
+  { r: 25, n: "Filecoin",         s: "FIL",  p: 4.12,      mc: 2.4e9,   vol: 0.2e9,   c: -4.5,  c7: -7.2,  up: false, u7: false, sp: "0,4 6,6 12,8 18,10 24,12 30,14 36,15 44,16",   ico: "fil"  },
+  { r: 26, n: "Arbitrum",         s: "ARB",  p: 0.58,      mc: 2.3e9,   vol: 0.3e9,   c: -2.4,  c7: -4.8,  up: false, u7: false, sp: "0,6 6,8 12,10 18,12 24,11 30,13 36,14 44,15",  ico: "arb"  },
+  { r: 27, n: "Aptos",            s: "APT",  p: 8.24,      mc: 4.2e9,   vol: 0.4e9,   c: -7.2,  c7: -9.1,  up: false, u7: false, sp: "0,3 6,5 12,7 18,10 24,13 30,15 36,16 44,17",   ico: "apt"  },
+  { r: 28, n: "VeChain",          s: "VET",  p: 0.038,     mc: 2.8e9,   vol: 0.2e9,   c: 2.1,   c7: 4.6,   up: true,  u7: true,  sp: "0,14 6,12 12,10 18,8 24,9 30,7 36,5 44,4",     ico: "vet"  },
+  { r: 29, n: "Injective",        s: "INJ",  p: 24.18,     mc: 2.3e9,   vol: 0.5e9,   c: 9.7,   c7: 14.2,  up: true,  u7: true,  sp: "0,18 6,15 12,12 18,9 24,6 30,7 36,4 44,2",     ico: "inj"  },
+  { r: 30, n: "Render",           s: "RNDR", p: 7.42,      mc: 3.1e9,   vol: 0.4e9,   c: 12.1,  c7: 18.4,  up: true,  u7: true,  sp: "0,19 6,16 12,13 18,10 24,7 30,8 36,4 44,1",    ico: "rndr" },
 ];
 
 const HERO_STATS = [
@@ -28,6 +43,8 @@ const HERO_STATS = [
 ];
 
 const RATE = 0.92;
+const PER_PAGE = 25;
+const ICON_BASE = "https://cdn.jsdelivr.net/gh/nicehash/crypto-icons/svg/color/";
 
 function fmt(v: number, eur: boolean) {
   const sym = eur ? "€" : "$";
@@ -41,22 +58,62 @@ function fmt(v: number, eur: boolean) {
   return sym + val.toFixed(7);
 }
 
-const ICON_BASE = "https://cdn.jsdelivr.net/gh/nicehash/crypto-icons/svg/color/";
+function CoinIcon({ ico, sym }: { ico: string; sym: string }) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={`${ICON_BASE}${ico}.svg`}
+      alt={sym}
+      width={32}
+      height={32}
+      className="pr-coin-ico"
+      onError={(e) => {
+        const img = e.target as HTMLImageElement;
+        img.style.display = "none";
+        const fb = img.nextElementSibling as HTMLElement | null;
+        if (fb) fb.style.display = "flex";
+      }}
+    />
+  );
+}
 
 export default function PricesView() {
-  const [query, setQuery] = useState("");
-  const [eur, setEur]     = useState(false);
+  const [query, setQuery]   = useState("");
+  const [eur, setEur]       = useState(false);
+  const [page, setPage]     = useState(1);
 
-  const filtered = COINS.filter(
+  const filtered = ALL_COINS.filter(
     (c) =>
       c.n.toLowerCase().includes(query.toLowerCase()) ||
       c.s.toLowerCase().includes(query.toLowerCase())
   );
 
+  const totalPages = Math.ceil(filtered.length / PER_PAGE);
+  const paged      = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+
+  function changePage(p: number) {
+    if (p < 1 || p > totalPages) return;
+    setPage(p);
+  }
+
+  // Reset to page 1 on search
+  function handleSearch(v: string) {
+    setQuery(v);
+    setPage(1);
+  }
+
+  // Build page number list
+  function pageNums() {
+    if (totalPages <= 5) return Array.from({ length: totalPages }, (_, i) => i + 1);
+    if (page <= 3) return [1, 2, 3, 4, null, totalPages];
+    if (page >= totalPages - 2) return [1, null, totalPages - 3, totalPages - 2, totalPages - 1, totalPages];
+    return [1, null, page - 1, page, page + 1, null, totalPages];
+  }
+
   return (
     <div className="pr-root">
 
-      {/* ── Row 1: 5 hero stats ──────────────────────────────── */}
+      {/* ── 5 hero stats ──────────────────────────────── */}
       <div className="pr-5grid">
         {HERO_STATS.map((s) => (
           <div key={s.label} className="glass pr-hero-cell">
@@ -69,7 +126,7 @@ export default function PricesView() {
         ))}
       </div>
 
-      {/* ── Row 2: Toolbar full-width ─────────────────────────── */}
+      {/* ── Toolbar ───────────────────────────────────── */}
       <div className="pr-toolbar">
         <div className="pr-search-wrap">
           <svg className="pr-search-icon" viewBox="0 0 20 20" fill="none">
@@ -80,34 +137,30 @@ export default function PricesView() {
             className="pr-search"
             placeholder="Search coins…"
             value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            onChange={(e) => handleSearch(e.target.value)}
           />
           <span className="pr-search-hint">/</span>
         </div>
         <div className="pr-cur-toggle">
-          <button className={`pr-cur-btn${!eur ? " pr-cur-active" : ""}`} onClick={() => setEur(false)}>
-            🇺🇸 USD
-          </button>
-          <button className={`pr-cur-btn${eur ? " pr-cur-active" : ""}`} onClick={() => setEur(true)}>
-            🇪🇺 EUR
-          </button>
+          <button className={`pr-cur-btn${!eur ? " pr-cur-active" : ""}`} onClick={() => setEur(false)}>🇺🇸 USD</button>
+          <button className={`pr-cur-btn${eur  ? " pr-cur-active" : ""}`} onClick={() => setEur(true)}>🇪🇺 EUR</button>
         </div>
       </div>
 
-      {/* ── Row 3: Main 2-col layout ──────────────────────────── */}
+      {/* ── Main 2-col layout ─────────────────────────── */}
       <div className="pr-main-grid">
 
         {/* LEFT: Coin table */}
         <div className="glass-strong pr-card">
           <div className="pr-card-head">
             <span className="pr-card-title">All <span className="gradient-text-alt">cryptocurrencies</span></span>
-            <span className="pr-card-sub">12,847 coins</span>
+            <span className="pr-card-sub">{filtered.length} coins</span>
           </div>
           <div className="pr-card-body">
-            {/* Desktop head (more cols) */}
+
+            {/* Desktop head */}
             <div className="pr-table-head-full">
-              <span>#</span>
-              <span>Name</span>
+              <span>#</span><span>Name</span>
               <span className="text-right">Price</span>
               <span className="text-right">24h</span>
               <span className="text-right">7d</span>
@@ -117,40 +170,44 @@ export default function PricesView() {
             </div>
             {/* Mobile head */}
             <div className="pr-table-head-mobile">
-              <span>#</span>
-              <span>Name</span>
+              <span>#</span><span>Name</span>
               <span className="text-right">Price</span>
               <span className="text-right">24h</span>
             </div>
 
-            {filtered.length === 0 && <div className="pr-no-results">No coins found</div>}
+            {paged.length === 0 && <div className="pr-no-results">No coins found</div>}
 
-            {filtered.map((c) => (
+            {paged.map((c) => (
               <div key={c.s} className="pr-coin-row-full">
                 <span className="pr-rank">{c.r}</span>
+
                 <div className="pr-coin-info">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={`${ICON_BASE}${c.s.toLowerCase()}.svg`}
-                    alt={c.s}
-                    width={32} height={32}
-                    className="pr-coin-ico"
-                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                  />
+                  <div className="pr-coin-ico-wrap">
+                    <CoinIcon ico={c.ico} sym={c.s} />
+                    {/* Fallback letter avatar */}
+                    <span className="pr-coin-fallback" style={{ display: "none" }}>
+                      {c.s[0]}
+                    </span>
+                  </div>
                   <div>
                     <div className="pr-coin-name">{c.n}</div>
                     <div className="pr-coin-sym">{c.s}</div>
                   </div>
                 </div>
+
                 <div className="pr-coin-price">{fmt(c.p, eur)}</div>
+
                 <div className={`pr-chg${c.up ? " pr-chg-up" : " pr-chg-dn"}`}>
                   {c.c > 0 ? "+" : ""}{c.c}%
                 </div>
+
                 <div className={`pr-chg-7d${c.u7 ? " text-positive" : " text-negative"}`}>
                   {c.c7 > 0 ? "+" : ""}{c.c7}%
                 </div>
+
                 <div className="pr-coin-mc">{fmt(c.mc, eur)}</div>
                 <div className="pr-coin-vol">{fmt(c.vol, eur)}</div>
+
                 <svg className="pr-spark" viewBox="0 0 44 20">
                   <polyline
                     points={c.sp}
@@ -162,13 +219,49 @@ export default function PricesView() {
                 </svg>
               </div>
             ))}
+
+            {/* ── Pagination ─────────────────────── */}
+            {totalPages > 1 && (
+              <div className="pr-pagination">
+                <button
+                  className="pr-pg-btn pr-pg-arrow"
+                  onClick={() => changePage(page - 1)}
+                  disabled={page === 1}
+                >
+                  ←
+                </button>
+
+                {pageNums().map((p, i) =>
+                  p === null ? (
+                    <span key={`ellipsis-${i}`} className="pr-pg-ellipsis">…</span>
+                  ) : (
+                    <button
+                      key={p}
+                      className={`pr-pg-btn${page === p ? " pr-pg-active" : ""}`}
+                      onClick={() => changePage(p)}
+                    >
+                      {p}
+                    </button>
+                  )
+                )}
+
+                <button
+                  className="pr-pg-btn pr-pg-arrow"
+                  onClick={() => changePage(page + 1)}
+                  disabled={page === totalPages}
+                >
+                  →
+                </button>
+              </div>
+            )}
+
           </div>
         </div>
 
         {/* RIGHT: Sidebar */}
         <div className="pr-sidebar">
 
-          {/* BTC Price hero */}
+          {/* BTC hero */}
           <div className="glass-strong pr-card pr-btc-hero">
             <div className="pr-card-body">
               <div className="pr-btc-logo-row">
@@ -182,7 +275,6 @@ export default function PricesView() {
               </div>
               <div className="pr-btc-price">{fmt(84231, eur)}</div>
               <div className="pr-btc-sub text-positive">▲ +{fmt(1972, eur)} today</div>
-              {/* Mini sparkline */}
               <div className="pr-btc-spark-wrap">
                 <svg viewBox="0 0 180 48" preserveAspectRatio="none" style={{ width: "100%", height: 48 }}>
                   <defs>
@@ -191,14 +283,10 @@ export default function PricesView() {
                       <stop offset="100%" stopColor="#ff6a00" stopOpacity="0" />
                     </linearGradient>
                   </defs>
-                  <polyline
-                    points="0,38 20,32 40,36 60,28 80,22 100,30 120,18 140,12 160,8 180,4"
-                    fill="none" stroke="#ff6a00" strokeWidth="2" strokeLinecap="round"
-                  />
-                  <polygon
-                    points="0,38 20,32 40,36 60,28 80,22 100,30 120,18 140,12 160,8 180,4 180,48 0,48"
-                    fill="url(#btcgrad)"
-                  />
+                  <polyline points="0,38 20,32 40,36 60,28 80,22 100,30 120,18 140,12 160,8 180,4"
+                    fill="none" stroke="#ff6a00" strokeWidth="2" strokeLinecap="round" />
+                  <polygon points="0,38 20,32 40,36 60,28 80,22 100,30 120,18 140,12 160,8 180,4 180,48 0,48"
+                    fill="url(#btcgrad)" />
                 </svg>
               </div>
             </div>
@@ -213,14 +301,14 @@ export default function PricesView() {
             <div className="pr-card-body">
               <div className="pr-detail-grid">
                 {[
-                  { k: "Market cap",   v: fmt(1.67e12, eur) },
-                  { k: "24h volume",   v: fmt(32.1e9, eur) },
-                  { k: "Circulating",  v: "19.84M" },
-                  { k: "Max supply",   v: "21M" },
-                  { k: "ATH",          v: fmt(109114, eur), pos: true },
-                  { k: "ATL",          v: fmt(67.81, eur),  neg: true },
-                  { k: "FDV",          v: fmt(1.77e12, eur) },
-                  { k: "Vol / Mcap",   v: "1.92%" },
+                  { k: "Market cap",  v: fmt(1.67e12, eur) },
+                  { k: "24h volume",  v: fmt(32.1e9, eur)  },
+                  { k: "Circulating", v: "19.84M"           },
+                  { k: "Max supply",  v: "21M"              },
+                  { k: "ATH",         v: fmt(109114, eur), pos: true },
+                  { k: "ATL",         v: fmt(67.81, eur),  neg: true },
+                  { k: "FDV",         v: fmt(1.77e12, eur) },
+                  { k: "Vol / Mcap",  v: "1.92%"           },
                 ].map((d) => (
                   <div key={d.k} className="pr-det-cell">
                     <div className="pr-det-key">{d.k}</div>
@@ -238,24 +326,21 @@ export default function PricesView() {
             </div>
             <div className="pr-card-body">
               {[
-                { k: "1 hour",   v: "+0.3%",  pos: true },
-                { k: "24 hours", v: "+2.4%",  pos: true },
-                { k: "7 days",   v: "+5.8%",  pos: true },
+                { k: "1 hour",   v: "+0.3%",  pos: true  },
+                { k: "24 hours", v: "+2.4%",  pos: true  },
+                { k: "7 days",   v: "+5.8%",  pos: true  },
                 { k: "30 days",  v: "-8.2%",  pos: false },
                 { k: "90 days",  v: "-14.1%", pos: false },
-                { k: "1 year",   v: "+31.6%", pos: true },
+                { k: "1 year",   v: "+31.6%", pos: true  },
               ].map((d) => (
                 <div key={d.k} className="pr-perf-row">
                   <span className="pr-perf-key">{d.k}</span>
                   <div className="pr-perf-bar-wrap">
-                    <div
-                      className="pr-perf-bar-fill"
-                      style={{
-                        width: `${Math.min(Math.abs(parseFloat(d.v)) * 3, 100)}%`,
-                        background: d.pos ? "#00d47b" : "#ff3b4f",
-                        marginLeft: d.pos ? "50%" : `${50 - Math.min(Math.abs(parseFloat(d.v)) * 3, 50)}%`,
-                      }}
-                    />
+                    <div className="pr-perf-bar-fill" style={{
+                      width: `${Math.min(Math.abs(parseFloat(d.v)) * 3, 100)}%`,
+                      background: d.pos ? "#00d47b" : "#ff3b4f",
+                      marginLeft: d.pos ? "50%" : `${50 - Math.min(Math.abs(parseFloat(d.v)) * 3, 50)}%`,
+                    }} />
                     <div className="pr-perf-center" />
                   </div>
                   <span className={`pr-perf-val${d.pos ? " text-positive" : " text-negative"}`}>{d.v}</span>
