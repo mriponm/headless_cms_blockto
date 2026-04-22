@@ -74,11 +74,8 @@ export default function Header() {
       {/* ── Desktop topbar ─────────────────────────────────── */}
       <div className="glass-nav topbar-shimmer relative hidden md:flex items-center gap-6 px-10 py-3">
         {/* Brand */}
-        <Link href="/" className="flex items-center gap-2.5 flex-shrink-0 nav-brand-link">
-          <BrandLogo size={36} />
-          <span className="text-[22px] font-black tracking-[-1px] font-[family-name:var(--font-display)] header-brand-text">
-            block<span className="gradient-text-alt">to</span>
-          </span>
+        <Link href="/" className="flex-shrink-0 nav-brand-link">
+          <BrandLogo height={36} />
         </Link>
 
         {/* Nav links */}
@@ -169,11 +166,8 @@ export default function Header() {
 
       {/* ── Mobile topbar ──────────────────────────────────── */}
       <div className="glass-nav flex md:hidden items-center gap-3 px-3 py-3">
-        <Link href="/" className="flex items-center gap-2">
-          <BrandLogo size={32} />
-          <span className="text-[20px] font-black tracking-[-1px] font-[family-name:var(--font-display)] header-brand-text">
-            block<span className="gradient-text-alt">to</span>
-          </span>
+        <Link href="/">
+          <BrandLogo height={32} />
         </Link>
         <div className="ml-auto flex items-center gap-2">
           <ThemeToggle size="sm" />

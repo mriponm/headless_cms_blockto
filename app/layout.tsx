@@ -37,8 +37,9 @@ export const metadata: Metadata = {
   },
   description: "Real-time crypto market analytics, news, prices, and trading data.",
   icons: {
-    icon: "/logo-icon.svg",
-    apple: "/logo-icon.svg",
+    icon: "/favicon.jpeg",
+    apple: "/favicon.jpeg",
+    shortcut: "/favicon.jpeg",
   },
 };
 

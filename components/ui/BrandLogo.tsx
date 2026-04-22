@@ -1,30 +1,29 @@
 import Image from "next/image";
 
 interface Props {
-  size?: number;
+  height?: number;
   className?: string;
 }
 
-export default function BrandLogo({ size = 36, className = "" }: Props) {
+export default function BrandLogo({ height = 36, className = "" }: Props) {
+  const width = Math.round(height * 4);
   return (
     <>
       <Image
-        src="/logo-icon.svg"
+        src="/logo-dark.jpeg"
         alt="Blockto"
-        width={size}
-        height={size}
+        width={width}
+        height={height}
         priority
-        className={`rounded-[10px] logo-themed logo-dark ${className}`}
-        style={{ filter: "drop-shadow(0 0 10px rgba(255,106,0,0.35))" }}
+        className={`logo-themed logo-dark rounded-[8px] ${className}`}
       />
       <Image
-        src="/logo-icon-light.svg"
+        src="/logo-light.png"
         alt="Blockto"
-        width={size}
-        height={size}
+        width={width}
+        height={height}
         priority
-        className={`rounded-[10px] logo-themed logo-light ${className}`}
-        style={{ boxShadow: "0 2px 12px rgba(0,0,0,0.10)" }}
+        className={`logo-themed logo-light rounded-[8px] ${className}`}
       />
     </>
   );

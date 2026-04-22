@@ -288,10 +288,7 @@ export default function MobileDrawer({ open, onClose }: Props) {
 
         {/* Header */}
         <div className={`flex items-center gap-3 px-5 py-[18px] flex-shrink-0 ${isDark ? "border-b border-[rgba(255,255,255,0.05)]" : "border-b border-[rgba(0,0,0,0.07)]"}`}>
-          <BrandLogo size={36} />
-          <span className="text-[20px] font-black tracking-[-1px] font-[family-name:var(--font-display)] drawer-brand">
-            block<span className="gradient-text-alt">to</span>
-          </span>
+          <BrandLogo height={36} />
           <button
             onClick={onClose}
             className="ml-auto w-8 h-8 rounded-[10px] flex items-center justify-center cursor-pointer transition-all duration-200 drawer-close-btn"

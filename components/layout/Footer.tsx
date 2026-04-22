@@ -107,11 +107,8 @@ export default function Footer() {
 
           {/* Brand + newsletter */}
           <div>
-            <Link href="/" className="flex items-center gap-2.5 mb-3 w-fit group">
-              <BrandLogo size={34} />
-              <span className="text-[20px] font-extrabold tracking-[-0.5px] font-[family-name:var(--font-display)] header-brand-text transition-colors group-hover:text-[#ff6a00]">
-                block<span className="gradient-text-alt">to</span>
-              </span>
+            <Link href="/" className="inline-block mb-3">
+              <BrandLogo height={34} />
             </Link>
 
             <p className="text-[13px] leading-[1.6] mb-6 font-[family-name:var(--font-display)] max-w-[230px] footer-muted">
