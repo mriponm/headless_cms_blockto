@@ -1538,3 +1538,83 @@ html.light .pr-pair-sym { color: #888; }
   .mtr-stat-val-hero { font-size: 22px; }
   .pr-cur-btn   { padding: 8px 10px; font-size: 11px; }
 }
+
+/* ── Metrics layout grids ─────────────────────────────────────── */
+.mtr-4grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+@media (min-width: 768px) {
+  .mtr-4grid { grid-template-columns: repeat(4, 1fr); }
+}
+
+.mtr-triple-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-bottom: 0;
+}
+@media (min-width: 768px) {
+  .mtr-triple-grid { grid-template-columns: repeat(3, 1fr); align-items: stretch; }
+}
+
+.mtr-duo-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+@media (min-width: 768px) {
+  .mtr-duo-grid { grid-template-columns: 1fr 1fr; align-items: start; }
+}
+
+/* Cards inside grids need no extra margin */
+.mtr-triple-grid .mtr-card,
+.mtr-duo-grid .mtr-card { margin-bottom: 0; }
+
+.mtr-card-fill { height: 100%; }
+
+/* Fear stacked (gauge top, rows below) */
+.mtr-fg-stacked { display: flex; flex-direction: column; }
+
+/* Halving stacked */
+.mtr-hlv-stacked { display: flex; flex-direction: column; align-items: center; }
+
+/* Altseason big score */
+.mtr-alt-score {
+  font-size: 56px;
+  font-weight: 900;
+  font-family: var(--font-data);
+  letter-spacing: -2px;
+  line-height: 1;
+  background: linear-gradient(135deg,#fff,#ff6a00);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 12px;
+}
+html.light .mtr-alt-score {
+  background: linear-gradient(135deg,#1a1a1a,#ff6a00);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.mtr-alt-badge {
+  display: inline-block;
+  margin-top: 12px;
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #ff6a00;
+  background: rgba(255,106,0,0.08);
+  border: 0.5px solid rgba(255,106,0,0.2);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-family: var(--font-display);
+}
+
+/* Hero stat standalone */
+.mtr-stat-hero-standalone {
+  grid-column: 1 / -1;
+}
