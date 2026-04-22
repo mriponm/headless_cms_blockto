@@ -2,21 +2,29 @@
 import { useState } from "react";
 
 const COINS = [
-  { r: 1,  n: "Bitcoin",   s: "BTC",  p: 84231,      c: 2.4,  c7: 5.8,  up: true,  u7: true,  sp: "0,14 6,12 12,16 18,10 24,8 30,11 36,6 44,4" },
-  { r: 2,  n: "Ethereum",  s: "ETH",  p: 1842,       c: 1.9,  c7: 3.2,  up: true,  u7: true,  sp: "0,12 6,10 12,14 18,8 24,9 30,6 36,7 44,4" },
-  { r: 3,  n: "Solana",    s: "SOL",  p: 134.20,     c: -0.8, c7: -2.1, up: false, u7: false, sp: "0,6 6,8 12,5 18,10 24,12 30,9 36,14 44,12" },
-  { r: 4,  n: "BNB",       s: "BNB",  p: 587.40,     c: 0.6,  c7: 1.4,  up: true,  u7: true,  sp: "0,10 6,9 12,11 18,8 24,10 30,7 36,8 44,6" },
-  { r: 5,  n: "XRP",       s: "XRP",  p: 1.33,       c: -4.1, c7: -6.8, up: false, u7: false, sp: "0,4 6,6 12,5 18,8 24,12 30,14 36,16 44,15" },
-  { r: 6,  n: "Dogecoin",  s: "DOGE", p: 0.081,      c: -1.2, c7: 0.4,  up: false, u7: true,  sp: "0,8 6,10 12,7 18,12 24,11 30,13 36,12 44,14" },
-  { r: 7,  n: "Cardano",   s: "ADA",  p: 0.42,       c: 3.1,  c7: 7.4,  up: true,  u7: true,  sp: "0,16 6,14 12,12 18,10 24,8 30,9 36,6 44,4" },
-  { r: 8,  n: "Chainlink", s: "LINK", p: 14.80,      c: 2.8,  c7: 4.2,  up: true,  u7: true,  sp: "0,14 6,12 12,10 18,11 24,8 30,6 36,5 44,4" },
-  { r: 9,  n: "Avalanche", s: "AVAX", p: 28.40,      c: 4.7,  c7: 8.1,  up: true,  u7: true,  sp: "0,18 6,14 12,12 18,10 24,8 30,7 36,5 44,2" },
-  { r: 10, n: "Polkadot",  s: "DOT",  p: 5.12,       c: -0.4, c7: -1.8, up: false, u7: false, sp: "0,8 6,10 12,9 18,11 24,10 30,12 36,11 44,12" },
-  { r: 11, n: "Shiba Inu", s: "SHIB", p: 0.0000124,  c: 5.2,  c7: 12.3, up: true,  u7: true,  sp: "0,16 6,14 12,10 18,8 24,6 30,8 36,4 44,2" },
-  { r: 12, n: "Litecoin",  s: "LTC",  p: 84.60,      c: 1.4,  c7: 3.6,  up: true,  u7: true,  sp: "0,12 6,11 12,13 18,10 24,9 30,8 36,7 44,6" },
-  { r: 13, n: "Uniswap",   s: "UNI",  p: 6.78,       c: -2.1, c7: -4.5, up: false, u7: false, sp: "0,6 6,8 12,7 18,10 24,12 30,11 36,14 44,13" },
-  { r: 14, n: "Stellar",   s: "XLM",  p: 0.108,      c: 1.7,  c7: 2.9,  up: true,  u7: true,  sp: "0,14 6,12 12,14 18,10 24,8 30,10 36,6 44,5" },
-  { r: 15, n: "Cosmos",    s: "ATOM", p: 7.24,       c: -0.9, c7: -3.1, up: false, u7: false, sp: "0,8 6,9 12,7 18,10 24,12 30,10 36,13 44,12" },
+  { r: 1,  n: "Bitcoin",   s: "BTC",  p: 84231,     mc: 1.67e12, vol: 32.1e9, c: 2.4,  c7: 5.8,  up: true,  u7: true,  sp: "0,14 6,12 12,16 18,10 24,8 30,11 36,6 44,4" },
+  { r: 2,  n: "Ethereum",  s: "ETH",  p: 1842,      mc: 221e9,   vol: 14.2e9, c: 1.9,  c7: 3.2,  up: true,  u7: true,  sp: "0,12 6,10 12,14 18,8 24,9 30,6 36,7 44,4" },
+  { r: 3,  n: "Solana",    s: "SOL",  p: 134.20,    mc: 61.4e9,  vol: 4.8e9,  c: -0.8, c7: -2.1, up: false, u7: false, sp: "0,6 6,8 12,5 18,10 24,12 30,9 36,14 44,12" },
+  { r: 4,  n: "BNB",       s: "BNB",  p: 587.40,    mc: 85.1e9,  vol: 2.1e9,  c: 0.6,  c7: 1.4,  up: true,  u7: true,  sp: "0,10 6,9 12,11 18,8 24,10 30,7 36,8 44,6" },
+  { r: 5,  n: "XRP",       s: "XRP",  p: 1.33,      mc: 76.2e9,  vol: 5.4e9,  c: -4.1, c7: -6.8, up: false, u7: false, sp: "0,4 6,6 12,5 18,8 24,12 30,14 36,16 44,15" },
+  { r: 6,  n: "Dogecoin",  s: "DOGE", p: 0.081,     mc: 11.8e9,  vol: 1.2e9,  c: -1.2, c7: 0.4,  up: false, u7: true,  sp: "0,8 6,10 12,7 18,12 24,11 30,13 36,12 44,14" },
+  { r: 7,  n: "Cardano",   s: "ADA",  p: 0.42,      mc: 14.8e9,  vol: 0.9e9,  c: 3.1,  c7: 7.4,  up: true,  u7: true,  sp: "0,16 6,14 12,12 18,10 24,8 30,9 36,6 44,4" },
+  { r: 8,  n: "Chainlink", s: "LINK", p: 14.80,     mc: 9.1e9,   vol: 0.6e9,  c: 2.8,  c7: 4.2,  up: true,  u7: true,  sp: "0,14 6,12 12,10 18,11 24,8 30,6 36,5 44,4" },
+  { r: 9,  n: "Avalanche", s: "AVAX", p: 28.40,     mc: 11.6e9,  vol: 0.8e9,  c: 4.7,  c7: 8.1,  up: true,  u7: true,  sp: "0,18 6,14 12,12 18,10 24,8 30,7 36,5 44,2" },
+  { r: 10, n: "Polkadot",  s: "DOT",  p: 5.12,      mc: 7.3e9,   vol: 0.4e9,  c: -0.4, c7: -1.8, up: false, u7: false, sp: "0,8 6,10 12,9 18,11 24,10 30,12 36,11 44,12" },
+  { r: 11, n: "Shiba Inu", s: "SHIB", p: 0.0000124, mc: 7.3e9,   vol: 1.1e9,  c: 5.2,  c7: 12.3, up: true,  u7: true,  sp: "0,16 6,14 12,10 18,8 24,6 30,8 36,4 44,2" },
+  { r: 12, n: "Litecoin",  s: "LTC",  p: 84.60,     mc: 6.3e9,   vol: 0.5e9,  c: 1.4,  c7: 3.6,  up: true,  u7: true,  sp: "0,12 6,11 12,13 18,10 24,9 30,8 36,7 44,6" },
+  { r: 13, n: "Uniswap",   s: "UNI",  p: 6.78,      mc: 4.1e9,   vol: 0.3e9,  c: -2.1, c7: -4.5, up: false, u7: false, sp: "0,6 6,8 12,7 18,10 24,12 30,11 36,14 44,13" },
+  { r: 14, n: "Stellar",   s: "XLM",  p: 0.108,     mc: 3.2e9,   vol: 0.2e9,  c: 1.7,  c7: 2.9,  up: true,  u7: true,  sp: "0,14 6,12 12,14 18,10 24,8 30,10 36,6 44,5" },
+  { r: 15, n: "Cosmos",    s: "ATOM", p: 7.24,       mc: 2.8e9,   vol: 0.2e9,  c: -0.9, c7: -3.1, up: false, u7: false, sp: "0,8 6,9 12,7 18,10 24,12 30,10 36,13 44,12" },
+];
+
+const HERO_STATS = [
+  { label: "Market cap",    val: (e: boolean) => fmt(2.87e12, e), sub: "+1.8%",  up: true  },
+  { label: "24h volume",    val: (e: boolean) => fmt(94.2e9,  e), sub: "-3.1%",  up: false },
+  { label: "BTC dominance", val: (_: boolean) => "52.4%",         sub: "+0.3%",  up: true  },
+  { label: "ETH price",     val: (e: boolean) => fmt(1842,    e), sub: "+1.9%",  up: true  },
+  { label: "Coins tracked", val: (_: boolean) => "12,847",        sub: "live",   neutral: true },
 ];
 
 const RATE = 0.92;
@@ -37,7 +45,7 @@ const ICON_BASE = "https://cdn.jsdelivr.net/gh/nicehash/crypto-icons/svg/color/"
 
 export default function PricesView() {
   const [query, setQuery] = useState("");
-  const [eur, setEur] = useState(false);
+  const [eur, setEur]     = useState(false);
 
   const filtered = COINS.filter(
     (c) =>
@@ -48,26 +56,20 @@ export default function PricesView() {
   return (
     <div className="pr-root">
 
-      {/* ── Hero stats ───────────────────────── */}
-      <div className="pr-hero-grid">
-        <div className="glass pr-hero-cell">
-          <div className="pr-hero-label">Market cap</div>
-          <div className="pr-hero-val">{fmt(2.87e12, eur)}</div>
-          <div className="pr-hero-sub text-positive">▲ 1.8%</div>
-        </div>
-        <div className="glass pr-hero-cell">
-          <div className="pr-hero-label">24h volume</div>
-          <div className="pr-hero-val">{fmt(94.2e9, eur)}</div>
-          <div className="pr-hero-sub text-negative">▼ 3.1%</div>
-        </div>
-        <div className="glass pr-hero-cell">
-          <div className="pr-hero-label">BTC dom.</div>
-          <div className="pr-hero-val">52.4%</div>
-          <div className="pr-hero-sub text-positive">▲ 0.3%</div>
-        </div>
+      {/* ── Row 1: 5 hero stats ──────────────────────────────── */}
+      <div className="pr-5grid">
+        {HERO_STATS.map((s) => (
+          <div key={s.label} className="glass pr-hero-cell">
+            <div className="pr-hero-label">{s.label}</div>
+            <div className="pr-hero-val">{s.val(eur)}</div>
+            <div className={`pr-hero-sub${s.up ? " text-positive" : s.neutral ? " pr-hero-neutral" : " text-negative"}`}>
+              {!s.neutral && (s.up ? "▲" : "▼")} {s.sub}
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* ── Toolbar ──────────────────────────── */}
+      {/* ── Row 2: Toolbar full-width ─────────────────────────── */}
       <div className="pr-toolbar">
         <div className="pr-search-wrap">
           <svg className="pr-search-icon" viewBox="0 0 20 20" fill="none">
@@ -83,165 +85,229 @@ export default function PricesView() {
           <span className="pr-search-hint">/</span>
         </div>
         <div className="pr-cur-toggle">
-          <button
-            className={`pr-cur-btn${!eur ? " pr-cur-active" : ""}`}
-            onClick={() => setEur(false)}
-          >
+          <button className={`pr-cur-btn${!eur ? " pr-cur-active" : ""}`} onClick={() => setEur(false)}>
             🇺🇸 USD
           </button>
-          <button
-            className={`pr-cur-btn${eur ? " pr-cur-active" : ""}`}
-            onClick={() => setEur(true)}
-          >
+          <button className={`pr-cur-btn${eur ? " pr-cur-active" : ""}`} onClick={() => setEur(true)}>
             🇪🇺 EUR
           </button>
         </div>
       </div>
 
-      {/* ── Coin list ────────────────────────── */}
-      <div className="glass-strong pr-card">
-        <div className="pr-card-head">
-          <span className="pr-card-title">All <span className="gradient-text-alt">cryptocurrencies</span></span>
-          <span className="pr-card-sub">12,847 coins</span>
-        </div>
-        <div className="pr-card-body">
-          <div className="pr-table-head">
-            <span>#</span>
-            <span>Name</span>
-            <span className="text-right">Price</span>
-            <span className="text-right">24h</span>
-            <span className="text-right hidden sm:block">7d</span>
+      {/* ── Row 3: Main 2-col layout ──────────────────────────── */}
+      <div className="pr-main-grid">
+
+        {/* LEFT: Coin table */}
+        <div className="glass-strong pr-card">
+          <div className="pr-card-head">
+            <span className="pr-card-title">All <span className="gradient-text-alt">cryptocurrencies</span></span>
+            <span className="pr-card-sub">12,847 coins</span>
           </div>
-          {filtered.length === 0 && (
-            <div className="pr-no-results">No coins found</div>
-          )}
-          {filtered.map((c) => (
-            <div key={c.s} className="pr-coin-row">
-              <span className="pr-rank">{c.r}</span>
-              <div className="pr-coin-info">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`${ICON_BASE}${c.s.toLowerCase()}.svg`}
-                  alt={c.s}
-                  width={32}
-                  height={32}
-                  className="pr-coin-ico"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = "none";
-                  }}
-                />
-                <div>
-                  <div className="pr-coin-name">{c.n}</div>
-                  <div className="pr-coin-sym">{c.s}</div>
+          <div className="pr-card-body">
+            {/* Desktop head (more cols) */}
+            <div className="pr-table-head-full">
+              <span>#</span>
+              <span>Name</span>
+              <span className="text-right">Price</span>
+              <span className="text-right">24h</span>
+              <span className="text-right">7d</span>
+              <span className="text-right">Market Cap</span>
+              <span className="text-right">Volume</span>
+              <span className="text-right">Chart</span>
+            </div>
+            {/* Mobile head */}
+            <div className="pr-table-head-mobile">
+              <span>#</span>
+              <span>Name</span>
+              <span className="text-right">Price</span>
+              <span className="text-right">24h</span>
+            </div>
+
+            {filtered.length === 0 && <div className="pr-no-results">No coins found</div>}
+
+            {filtered.map((c) => (
+              <div key={c.s} className="pr-coin-row-full">
+                <span className="pr-rank">{c.r}</span>
+                <div className="pr-coin-info">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={`${ICON_BASE}${c.s.toLowerCase()}.svg`}
+                    alt={c.s}
+                    width={32} height={32}
+                    className="pr-coin-ico"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                  />
+                  <div>
+                    <div className="pr-coin-name">{c.n}</div>
+                    <div className="pr-coin-sym">{c.s}</div>
+                  </div>
                 </div>
-              </div>
-              <div className="pr-coin-price">{fmt(c.p, eur)}</div>
-              <div className={`pr-chg${c.up ? " pr-chg-up" : " pr-chg-dn"}`}>
-                {c.c > 0 ? "+" : ""}{c.c}%
-              </div>
-              <svg className="pr-spark hidden sm:block" viewBox="0 0 44 20">
-                <polyline
-                  points={c.sp}
-                  fill="none"
-                  stroke={c.u7 ? "#00d47b" : "#ff3b4f"}
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Bitcoin detail ───────────────────── */}
-      <div className="pr-sec">Bitcoin detail</div>
-      <div className="glass-strong pr-card">
-        <div className="pr-card-head">
-          <span className="pr-card-title">BTC / <span className="gradient-text-alt">{eur ? "EUR" : "USD"}</span></span>
-          <span className="pr-card-sub">Bitcoin</span>
-        </div>
-        <div className="pr-card-body">
-          <div className="pr-detail-grid">
-            {[
-              { k: "Market cap", v: fmt(1.67e12, eur) },
-              { k: "24h volume", v: fmt(32.1e9, eur) },
-              { k: "Circulating", v: "19.84M" },
-              { k: "Max supply", v: "21M" },
-              { k: "All-time high", v: fmt(109114, eur), pos: true },
-              { k: "All-time low",  v: fmt(67.81, eur), neg: true },
-              { k: "FDV", v: fmt(1.77e12, eur) },
-              { k: "Vol / Mcap", v: "1.92%" },
-            ].map((d) => (
-              <div key={d.k} className="pr-det-cell">
-                <div className="pr-det-key">{d.k}</div>
-                <div className={`pr-det-val${d.pos ? " text-positive" : d.neg ? " text-negative" : ""}`}>{d.v}</div>
+                <div className="pr-coin-price">{fmt(c.p, eur)}</div>
+                <div className={`pr-chg${c.up ? " pr-chg-up" : " pr-chg-dn"}`}>
+                  {c.c > 0 ? "+" : ""}{c.c}%
+                </div>
+                <div className={`pr-chg-7d${c.u7 ? " text-positive" : " text-negative"}`}>
+                  {c.c7 > 0 ? "+" : ""}{c.c7}%
+                </div>
+                <div className="pr-coin-mc">{fmt(c.mc, eur)}</div>
+                <div className="pr-coin-vol">{fmt(c.vol, eur)}</div>
+                <svg className="pr-spark" viewBox="0 0 44 20">
+                  <polyline
+                    points={c.sp}
+                    fill="none"
+                    stroke={c.u7 ? "#00d47b" : "#ff3b4f"}
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                  />
+                </svg>
               </div>
             ))}
           </div>
         </div>
-      </div>
 
-      {/* ── Performance ──────────────────────── */}
-      <div className="pr-sec">Performance</div>
-      <div className="glass-strong pr-card">
-        <div className="pr-card-head">
-          <span className="pr-card-title">BTC <span className="gradient-text-alt">returns</span></span>
-        </div>
-        <div className="pr-card-body">
-          <div className="pr-detail-grid">
-            {[
-              { k: "1 hour",   v: "+0.3%",  pos: true },
-              { k: "24 hours", v: "+2.4%",  pos: true },
-              { k: "7 days",   v: "+5.8%",  pos: true },
-              { k: "30 days",  v: "-8.2%",  neg: true },
-              { k: "90 days",  v: "-14.1%", neg: true },
-              { k: "1 year",   v: "+31.6%", pos: true },
-            ].map((d) => (
-              <div key={d.k} className="pr-det-cell">
-                <div className="pr-det-key">{d.k}</div>
-                <div className={`pr-det-val${d.pos ? " text-positive" : " text-negative"}`}>{d.v}</div>
+        {/* RIGHT: Sidebar */}
+        <div className="pr-sidebar">
+
+          {/* BTC Price hero */}
+          <div className="glass-strong pr-card pr-btc-hero">
+            <div className="pr-card-body">
+              <div className="pr-btc-logo-row">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={`${ICON_BASE}btc.svg`} alt="BTC" width={40} height={40} className="pr-btc-logo" />
+                <div>
+                  <div className="pr-btc-name">Bitcoin</div>
+                  <div className="pr-btc-sym">BTC</div>
+                </div>
+                <div className="pr-chg pr-chg-up pr-btc-badge">+2.4%</div>
               </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* ── Exchanges ────────────────────────── */}
-      <div className="pr-sec">Exchanges</div>
-      <div className="glass-strong pr-card">
-        <div className="pr-card-head">
-          <span className="pr-card-title">Top <span className="gradient-text-alt">trading pairs</span></span>
-          <span className="pr-card-sub">BTC volume</span>
-        </div>
-        <div className="pr-card-body">
-          {[
-            { ex: "Binance",  pair: "BTC/USDT", vol: fmt(8.4e9, eur) },
-            { ex: "Coinbase", pair: "BTC/USD",  vol: fmt(3.2e9, eur) },
-            { ex: "Bybit",    pair: "BTC/USDT", vol: fmt(2.8e9, eur) },
-            { ex: "OKX",      pair: "BTC/USDT", vol: fmt(2.1e9, eur) },
-            { ex: "Kraken",   pair: "BTC/EUR",  vol: fmt(1.4e9, eur) },
-          ].map((p) => (
-            <div key={p.ex} className="pr-pair-row">
-              <span className="pr-pair-name">{p.ex}</span>
-              <span className="pr-pair-sym">{p.pair}</span>
-              <span className="pr-pair-vol">{p.vol}</span>
+              <div className="pr-btc-price">{fmt(84231, eur)}</div>
+              <div className="pr-btc-sub text-positive">▲ +{fmt(1972, eur)} today</div>
+              {/* Mini sparkline */}
+              <div className="pr-btc-spark-wrap">
+                <svg viewBox="0 0 180 48" preserveAspectRatio="none" style={{ width: "100%", height: 48 }}>
+                  <defs>
+                    <linearGradient id="btcgrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#ff6a00" stopOpacity="0.25" />
+                      <stop offset="100%" stopColor="#ff6a00" stopOpacity="0" />
+                    </linearGradient>
+                  </defs>
+                  <polyline
+                    points="0,38 20,32 40,36 60,28 80,22 100,30 120,18 140,12 160,8 180,4"
+                    fill="none" stroke="#ff6a00" strokeWidth="2" strokeLinecap="round"
+                  />
+                  <polygon
+                    points="0,38 20,32 40,36 60,28 80,22 100,30 120,18 140,12 160,8 180,4 180,48 0,48"
+                    fill="url(#btcgrad)"
+                  />
+                </svg>
+              </div>
             </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Converter ────────────────────────── */}
-      <div className="pr-sec">Converter</div>
-      <div className="glass-strong pr-card">
-        <div className="pr-card-head">
-          <span className="pr-card-title">Crypto <span className="gradient-text-alt">converter</span></span>
-        </div>
-        <div className="pr-card-body">
-          <div className="mtr-conv-row">
-            <div className="mtr-conv-input">1 BTC</div>
-            <span className="mtr-conv-eq">=</span>
-            <div className="mtr-conv-result">{fmt(84231, eur)}</div>
           </div>
+
+          {/* BTC Detail */}
+          <div className="glass-strong pr-card">
+            <div className="pr-card-head">
+              <span className="pr-card-title">BTC / <span className="gradient-text-alt">{eur ? "EUR" : "USD"}</span></span>
+              <span className="pr-card-sub">Detail</span>
+            </div>
+            <div className="pr-card-body">
+              <div className="pr-detail-grid">
+                {[
+                  { k: "Market cap",   v: fmt(1.67e12, eur) },
+                  { k: "24h volume",   v: fmt(32.1e9, eur) },
+                  { k: "Circulating",  v: "19.84M" },
+                  { k: "Max supply",   v: "21M" },
+                  { k: "ATH",          v: fmt(109114, eur), pos: true },
+                  { k: "ATL",          v: fmt(67.81, eur),  neg: true },
+                  { k: "FDV",          v: fmt(1.77e12, eur) },
+                  { k: "Vol / Mcap",   v: "1.92%" },
+                ].map((d) => (
+                  <div key={d.k} className="pr-det-cell">
+                    <div className="pr-det-key">{d.k}</div>
+                    <div className={`pr-det-val${d.pos ? " text-positive" : d.neg ? " text-negative" : ""}`}>{d.v}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Performance */}
+          <div className="glass-strong pr-card">
+            <div className="pr-card-head">
+              <span className="pr-card-title">BTC <span className="gradient-text-alt">returns</span></span>
+            </div>
+            <div className="pr-card-body">
+              {[
+                { k: "1 hour",   v: "+0.3%",  pos: true },
+                { k: "24 hours", v: "+2.4%",  pos: true },
+                { k: "7 days",   v: "+5.8%",  pos: true },
+                { k: "30 days",  v: "-8.2%",  pos: false },
+                { k: "90 days",  v: "-14.1%", pos: false },
+                { k: "1 year",   v: "+31.6%", pos: true },
+              ].map((d) => (
+                <div key={d.k} className="pr-perf-row">
+                  <span className="pr-perf-key">{d.k}</span>
+                  <div className="pr-perf-bar-wrap">
+                    <div
+                      className="pr-perf-bar-fill"
+                      style={{
+                        width: `${Math.min(Math.abs(parseFloat(d.v)) * 3, 100)}%`,
+                        background: d.pos ? "#00d47b" : "#ff3b4f",
+                        marginLeft: d.pos ? "50%" : `${50 - Math.min(Math.abs(parseFloat(d.v)) * 3, 50)}%`,
+                      }}
+                    />
+                    <div className="pr-perf-center" />
+                  </div>
+                  <span className={`pr-perf-val${d.pos ? " text-positive" : " text-negative"}`}>{d.v}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Exchanges */}
+          <div className="glass-strong pr-card">
+            <div className="pr-card-head">
+              <span className="pr-card-title">Top <span className="gradient-text-alt">trading pairs</span></span>
+              <span className="pr-card-sub">BTC vol</span>
+            </div>
+            <div className="pr-card-body">
+              {[
+                { ex: "Binance",  pair: "BTC/USDT", vol: fmt(8.4e9, eur), pct: 100 },
+                { ex: "Coinbase", pair: "BTC/USD",  vol: fmt(3.2e9, eur), pct: 38  },
+                { ex: "Bybit",    pair: "BTC/USDT", vol: fmt(2.8e9, eur), pct: 33  },
+                { ex: "OKX",      pair: "BTC/USDT", vol: fmt(2.1e9, eur), pct: 25  },
+                { ex: "Kraken",   pair: "BTC/EUR",  vol: fmt(1.4e9, eur), pct: 17  },
+              ].map((p) => (
+                <div key={p.ex} className="pr-exch-row">
+                  <div className="pr-exch-left">
+                    <span className="pr-pair-name">{p.ex}</span>
+                    <span className="pr-pair-sym">{p.pair}</span>
+                  </div>
+                  <div className="pr-exch-right">
+                    <div className="pr-exch-bar-wrap">
+                      <div className="pr-exch-bar-fill" style={{ width: `${p.pct}%` }} />
+                    </div>
+                    <span className="pr-pair-vol">{p.vol}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Converter */}
+          <div className="glass-strong pr-card">
+            <div className="pr-card-head">
+              <span className="pr-card-title">Crypto <span className="gradient-text-alt">converter</span></span>
+            </div>
+            <div className="pr-card-body">
+              <div className="mtr-conv-row">
+                <div className="mtr-conv-input">1 BTC</div>
+                <span className="mtr-conv-eq">=</span>
+                <div className="mtr-conv-result">{fmt(84231, eur)}</div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
 
