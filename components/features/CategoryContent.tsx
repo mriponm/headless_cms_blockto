@@ -87,8 +87,7 @@ function FeaturedCard({ post }: { post: WPPost }) {
   const cat = primaryCategory(post);
   return (
     <Link href={`/news/${post.slug}`}
-      className="block rounded-[20px] overflow-hidden cursor-pointer card-hover border border-[rgba(255,255,255,0.06)] relative group"
-      style={{ background: "rgba(255,255,255,0.025)" }}>
+      className="hp-card block rounded-[20px] overflow-hidden cursor-pointer card-hover relative group">
       <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/8 to-transparent pointer-events-none z-10" />
       <div className="h-[200px] md:h-[240px] relative overflow-hidden bg-[#0a0e1a]">
         {post.featuredImage ? (
@@ -134,8 +133,7 @@ function ListCard({ post }: { post: WPPost }) {
   const cat = primaryCategory(post);
   return (
     <Link href={`/news/${post.slug}`}
-      className="flex gap-3.5 p-3.5 rounded-[16px] cursor-pointer card-hover border border-[rgba(255,255,255,0.06)] relative group block"
-      style={{ background: "rgba(255,255,255,0.025)" }}>
+      className="hp-card flex gap-3.5 p-3.5 rounded-[16px] cursor-pointer card-hover relative group block">
       <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none" />
       <div className="w-[90px] h-[90px] md:w-[110px] md:h-[110px] rounded-[12px] overflow-hidden flex-shrink-0 border border-[rgba(255,255,255,0.06)] relative bg-[#0a0e1a]">
         {post.featuredImage ? (
@@ -310,8 +308,7 @@ export default function CategoryContent({
 
         {/* Sidebar */}
         <motion.div {...fadeUp(0.15)} className="hidden lg:flex flex-col gap-5">
-          <div className="rounded-[18px] p-5 relative overflow-hidden"
-            style={{ background: "rgba(255,255,255,0.025)", border: "0.5px solid rgba(255,255,255,0.07)" }}>
+          <div className="hp-card rounded-[18px] p-5 relative overflow-hidden">
             <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/8 to-transparent pointer-events-none" />
             <p className="text-[10px] font-extrabold uppercase tracking-[1.8px] art-heading mb-4 font-[family-name:var(--font-display)]">
               Browse categories
@@ -373,8 +370,7 @@ export default function CategoryContent({
             const CatIcon = m.Icon;
             return (
               <Link href={`/category/${cat.appSlug}`} key={cat.appSlug}
-                className="flex flex-col items-center gap-2 py-4 px-2 rounded-[14px] cursor-pointer transition-all duration-150"
-                style={{ background: "rgba(255,255,255,0.025)", border: "0.5px solid rgba(255,255,255,0.06)" }}>
+                className="hp-card flex flex-col items-center gap-2 py-4 px-2 rounded-[14px] cursor-pointer transition-all duration-150">
                 <span className="w-10 h-10 rounded-[11px] flex items-center justify-center"
                   style={{ background: BRAND_BG, border: `0.5px solid ${BRAND_BORDER}` }}>
                   <CatIcon size={18} style={{ color: BRAND }} />

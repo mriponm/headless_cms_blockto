@@ -18,8 +18,7 @@ function ListCard({ post }: { post: WPPost }) {
   const cat = primaryCategory(post);
   return (
     <Link href={`/news/${post.slug}`}
-      className="grid grid-cols-[auto_1fr] gap-3.5 p-3 rounded-[16px] mb-2.5 cursor-pointer relative overflow-hidden border border-[rgba(255,255,255,0.06)] block"
-      style={{ background: "rgba(255,255,255,0.03)" }}>
+      className="hp-card grid grid-cols-[auto_1fr] gap-3.5 p-3 rounded-[16px] mb-2.5 cursor-pointer relative overflow-hidden block">
       <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
       <div className="w-[90px] h-[90px] rounded-[12px] flex-shrink-0 border border-[rgba(255,255,255,0.06)] relative overflow-hidden bg-[#0a0e1a]">
         {post.featuredImage ? (
@@ -57,8 +56,7 @@ function HScrollCard({ post, index, accentColor, accentBg, accentBorder }: {
   const cat = primaryCategory(post);
   return (
     <Link href={`/news/${post.slug}`}
-      className="flex-shrink-0 w-[160px] p-3 rounded-[14px] cursor-pointer relative overflow-hidden border border-[rgba(255,255,255,0.06)] flex flex-col gap-2 block"
-      style={{ background: "rgba(255,255,255,0.03)" }}>
+      className="hp-card flex-shrink-0 w-[160px] p-3 rounded-[14px] cursor-pointer relative overflow-hidden flex flex-col gap-2 block">
       <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
       <span className="text-[24px] font-black font-[family-name:var(--font-data)] leading-none gradient-text-alt">
         {String(index + 1).padStart(2, "0")}

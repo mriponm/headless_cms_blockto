@@ -339,6 +339,53 @@ html.light .gradient-text-alt {
   background-clip: text;
 }
 
+/* Homepage post cards — dark default */
+.news-grid-card,
+.hp-card {
+  background: rgba(255,255,255,0.025);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+/* Light mode overrides */
+html.light .news-grid-card,
+html.light .hp-card {
+  background: #ffffff;
+  border: 1px solid rgba(0,0,0,0.09);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+/* Hero section image cards — border fix in light */
+html.light .hero-card {
+  border-color: rgba(0,0,0,0.09);
+}
+
+/* Quick nav pills */
+html.light .qn-pill {
+  background: #ffffff !important;
+  border-color: rgba(0,0,0,0.09) !important;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* Buy page exchange cards — inline style override */
+html.light .buy-ex-card:not(.buy-ex-card--featured) {
+  background: #ffffff !important;
+  border-color: rgba(0,0,0,0.09) !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+html.light .buy-ex-card--featured {
+  border-color: rgba(255,106,0,0.2) !important;
+}
+
+/* Events cards — inline style override */
+html.light .ev-card-wrap {
+  background: #ffffff !important;
+  border-color: rgba(0,0,0,0.09) !important;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05) !important;
+}
+html.light .ev-card-important-wrap {
+  background: linear-gradient(135deg,rgba(255,106,0,0.05),rgba(255,255,255,0)) !important;
+  border-color: rgba(255,106,0,0.2) !important;
+}
+
 /* Card hover in light */
 html.light .card-hover:hover {
   box-shadow: 0 8px 24px rgba(0,0,0,0.08);
@@ -406,7 +453,8 @@ html.light .ex-card-regular {
   background: rgba(255,255,255,0.82);
   border-color: rgba(0,0,0,0.07);
 }
-html.light .buy-quick-stat { background: rgba(0,0,0,0.03); }
+html.light .buy-stats-grid { background: rgba(0,0,0,0.06); }
+html.light .buy-quick-stat { background: #ffffff; }
 html.light .buy-grid-bg    { background: rgba(0,0,0,0.04); }
 html.light .buy-disclosure { background: rgba(255,106,0,0.04); border-color: rgba(255,106,0,0.12); }
 html.light .buy-ex-desc    { color: #555; }
@@ -456,8 +504,9 @@ html.light .trading-check-card {
   border-color: rgba(255,106,0,0.12);
 }
 html.light .trading-sig-card {
-  background: rgba(255,255,255,0.85);
-  border-color: rgba(0,0,0,0.08);
+  background: #ffffff;
+  border-color: rgba(0,0,0,0.09);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
 html.light .trading-sig-msg {
   background: rgba(0,0,0,0.04);
@@ -796,7 +845,7 @@ html.light .auth-heading { color: #0a0a0a; }
 html.light .auth-sub-text { color: #666; }
 html.light .auth-label { color: #777; }
 html.light .auth-text { color: #1a1a1a; }
-html.light .auth-stat-card { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.08); }
+html.light .auth-stat-card { background: #ffffff; border-color: rgba(0,0,0,0.09); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 html.light .auth-form-card { background: rgba(255,255,255,0.85); border-color: rgba(0,0,0,0.09); }
 html.light .auth-social-btn { background: rgba(0,0,0,0.04); border-color: rgba(0,0,0,0.09); color: #1a1a1a; }
 html.light .auth-social-btn:hover { background: rgba(0,0,0,0.07); }
@@ -921,8 +970,8 @@ html.light .art-top-bar-btn svg { stroke: #666; }
 html.light .art-body-text { color: #333; }
 html.light .art-lead-text { color: #111; }
 html.light .art-h2 { color: #0a0a0a; }
-html.light .art-stat-card { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.08); }
-html.light .art-market-card { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.08); }
+html.light .art-stat-card { background: #ffffff; border-color: rgba(0,0,0,0.09); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+html.light .art-market-card { background: #ffffff; border-color: rgba(0,0,0,0.09); box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
 html.light .art-market-cell { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.06); }
 html.light .art-market-label { color: #aaa; }
 html.light .art-blockquote { background: rgba(255,106,0,0.04); color: #222; }
@@ -1109,8 +1158,13 @@ html.light .mkt-levels-label { color: #999; }
   transform: translateY(-1px);
   box-shadow: 0 6px 20px rgba(255,106,0,0.06);
 }
+html.light .mkt-ana-card {
+  background: #ffffff;
+  border-color: rgba(0,0,0,0.09);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
 html.light .mkt-ana-card:hover {
-  box-shadow: 0 6px 20px rgba(0,0,0,0.07);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.09);
 }
 
 .mkt-ana-thumb {
@@ -1162,8 +1216,9 @@ html.light .mkt-viewall-btn {
   border: 0.5px solid rgba(255,255,255,0.05);
 }
 html.light .mkt-sidebar-panel {
-  background: rgba(255,255,255,0.7);
-  border-color: rgba(0,0,0,0.07);
+  background: #ffffff;
+  border-color: rgba(0,0,0,0.09);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
 
 /* Compact sidebar card */
@@ -1171,6 +1226,11 @@ html.light .mkt-sidebar-panel {
   transition: border-color 0.2s ease;
 }
 .mkt-sidebar-card:hover { border-color: rgba(255,106,0,0.2); }
+html.light .mkt-sidebar-card {
+  background: #ffffff;
+  border-color: rgba(0,0,0,0.09);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
 
 .mkt-sidebar-title { color: #f0f0f0; }
 html.light .mkt-sidebar-title { color: #111; }

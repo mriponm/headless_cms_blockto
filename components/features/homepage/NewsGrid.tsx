@@ -28,8 +28,7 @@ export default function NewsGrid({ posts, title = "General news", viewAllHref = 
           const style = CAT_STYLE[cat.slug] ?? DEFAULT_STYLE;
           return (
             <Link key={post.id} href={`/news/${post.slug}`}
-              className="rounded-[18px] overflow-hidden cursor-pointer border border-[rgba(255,255,255,0.08)] card-hover block"
-              style={{ background: "rgba(255,255,255,0.025)" }}>
+              className="news-grid-card rounded-[18px] overflow-hidden cursor-pointer card-hover block">
               <div className="h-[170px] relative overflow-hidden bg-[#0a0e1a]">
                 {post.featuredImage ? (
                   <Image

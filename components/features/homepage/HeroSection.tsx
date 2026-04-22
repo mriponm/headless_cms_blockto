@@ -25,7 +25,7 @@ export default function HeroSection({ posts }: { posts: WPPost[] }) {
         {/* ── Hero card ── */}
         {hero && (
           <Link href={`/news/${hero.slug}`}
-            className="relative rounded-[22px] overflow-hidden cursor-pointer border border-[rgba(255,255,255,0.08)] group block">
+            className="hero-card relative rounded-[22px] overflow-hidden cursor-pointer border border-[rgba(255,255,255,0.08)] group block">
             <div className="h-[480px] relative bg-gradient-to-br from-[#1e3a5f] to-[#0a1929] overflow-hidden">
               {hero.featuredImage ? (
                 <Image
@@ -79,7 +79,7 @@ export default function HeroSection({ posts }: { posts: WPPost[] }) {
             const color = catColor(post!);
             return (
               <Link key={post!.id} href={`/news/${post!.slug}`}
-                className="relative rounded-[18px] overflow-hidden cursor-pointer border border-[rgba(255,255,255,0.08)] group block">
+                className="hero-card relative rounded-[18px] overflow-hidden cursor-pointer border border-[rgba(255,255,255,0.08)] group block">
                 <div className="h-full relative overflow-hidden" style={{ background: "#0a0e1a", minHeight: "200px" }}>
                   {post!.featuredImage ? (
                     <Image

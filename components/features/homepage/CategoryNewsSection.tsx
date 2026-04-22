@@ -21,8 +21,7 @@ function FeaturedCard({ post, accentColor, accentBg, accentBorder, accentGrad }:
   const cat = primaryCategory(post);
   return (
     <Link href={`/news/${post.slug}`}
-      className="block rounded-[20px] overflow-hidden cursor-pointer card-hover border border-[rgba(255,255,255,0.08)] relative group"
-      style={{ background: "rgba(255,255,255,0.025)" }}>
+      className="hp-card block rounded-[20px] overflow-hidden cursor-pointer card-hover relative group">
       <div className="h-[200px] relative overflow-hidden bg-[#0a0e1a]">
         {post.featuredImage ? (
           <Image src={post.featuredImage.node.sourceUrl} alt={post.title} fill
@@ -63,8 +62,7 @@ function ListCard({ post, accentColor, accentBg, accentBorder, accentGrad }: {
   const cat = primaryCategory(post);
   return (
     <Link href={`/news/${post.slug}`}
-      className="flex gap-3 p-3 rounded-[14px] cursor-pointer card-hover border border-[rgba(255,255,255,0.08)] relative group block"
-      style={{ background: "rgba(255,255,255,0.025)" }}>
+      className="hp-card flex gap-3 p-3 rounded-[14px] cursor-pointer card-hover relative group block">
       <div className="w-[80px] h-[80px] rounded-[10px] overflow-hidden flex-shrink-0 relative bg-[#0a0e1a]">
         {post.featuredImage ? (
           <Image src={post.featuredImage.node.sourceUrl} alt={post.title} fill className="object-cover" sizes="80px" />

@@ -187,7 +187,7 @@ function ExchangeCard({ ex }: { ex: Exchange }) {
 
   return (
     <article
-      className="relative rounded-[20px] overflow-hidden card-hover"
+      className={`buy-ex-card relative rounded-[20px] overflow-hidden card-hover${ex.featured ? " buy-ex-card--featured" : ""}`}
       style={
         ex.featured
           ? {
@@ -262,8 +262,7 @@ function ExchangeCard({ ex }: { ex: Exchange }) {
           <div>
             {/* quick stats */}
             <div
-              className="grid grid-cols-3 gap-px rounded-[10px] overflow-hidden mb-[14px]"
-              style={{ background: "rgba(255,255,255,0.03)" }}
+              className="buy-stats-grid grid grid-cols-3 gap-px rounded-[10px] overflow-hidden mb-[14px]"
             >
               {[
                 { label: "Maker", value: ex.maker, color: "#00d47b" },
