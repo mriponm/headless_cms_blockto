@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { COIN_ICONS } from "./coinIcons";
 
 const ALL_COINS = [
   { r: 1,  n: "Bitcoin",          s: "BTC",  p: 84231,     mc: 1.67e12, vol: 32.1e9,  c: 2.4,   c7: 5.8,   up: true,  u7: true,  sp: "0,14 6,12 12,16 18,10 24,8 30,11 36,6 44,4",   ico: "btc"  },
@@ -44,7 +45,6 @@ const HERO_STATS = [
 
 const RATE = 0.92;
 const PER_PAGE = 25;
-const ICON_BASE = "https://cdn.jsdelivr.net/gh/nicehash/crypto-icons/svg/color/";
 
 function fmt(v: number, eur: boolean) {
   const sym = eur ? "€" : "$";
@@ -58,14 +58,16 @@ function fmt(v: number, eur: boolean) {
   return sym + val.toFixed(7);
 }
 
-function CoinIcon({ ico, sym }: { ico: string; sym: string }) {
+function CoinIcon({ sym }: { sym: string }) {
+  const url = COIN_ICONS[sym];
+  if (!url) return null;
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={`${ICON_BASE}${ico}.svg`}
+      src={url}
       alt={sym}
-      width={32}
-      height={32}
+      width={28}
+      height={28}
       className="pr-coin-ico"
       onError={(e) => {
         const img = e.target as HTMLImageElement;
@@ -183,7 +185,7 @@ export default function PricesView() {
 
                 <div className="pr-coin-info">
                   <div className="pr-coin-ico-wrap">
-                    <CoinIcon ico={c.ico} sym={c.s} />
+                    <CoinIcon sym={c.s} />
                     {/* Fallback letter avatar */}
                     <span className="pr-coin-fallback" style={{ display: "none" }}>
                       {c.s[0]}
@@ -266,7 +268,7 @@ export default function PricesView() {
             <div className="pr-card-body">
               <div className="pr-btc-logo-row">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={`${ICON_BASE}btc.svg`} alt="BTC" width={40} height={40} className="pr-btc-logo" />
+                <img src={COIN_ICONS["BTC"]} alt="BTC" width={40} height={40} className="pr-btc-logo" />
                 <div>
                   <div className="pr-btc-name">Bitcoin</div>
                   <div className="pr-btc-sym">BTC</div>

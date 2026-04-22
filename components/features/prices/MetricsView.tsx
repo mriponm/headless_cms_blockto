@@ -1,5 +1,6 @@
 "use client";
 import RainbowChart from "./RainbowChart";
+import { COIN_ICONS } from "./coinIcons";
 
 const SUB_STATS = [
   { label: "Market cap",    value: "$2.87T",  sub: "+1.8%",  up: true  },
@@ -49,7 +50,20 @@ function CoinTable({ rows, type }: { rows: typeof GAINERS; type: "up" | "dn" }) 
       {rows.map((r) => (
         <div key={r.sym} className="mtr-coin-row">
           <div className="flex items-center gap-2.5">
-            <span className="mtr-ico" style={{ background: r.bg, color: r.color }}>{r.ico}</span>
+            <div className="mtr-ico-wrap">
+              {COIN_ICONS[r.sym]
+                ? // eslint-disable-next-line @next/next/no-img-element
+                  <img src={COIN_ICONS[r.sym]} alt={r.sym} width={28} height={28} className="mtr-ico-img"
+                    onError={(e) => {
+                      const img = e.target as HTMLImageElement;
+                      img.style.display = "none";
+                      const fb = img.nextElementSibling as HTMLElement | null;
+                      if (fb) fb.style.display = "flex";
+                    }}
+                  />
+                : null}
+              <span className="mtr-ico" style={{ background: r.bg, color: r.color, display: COIN_ICONS[r.sym] ? "none" : "flex" }}>{r.ico}</span>
+            </div>
             <div><div className="mtr-nm">{r.name}</div><div className="mtr-sy">{r.sym}</div></div>
           </div>
           <div className="mtr-pr">{r.price}</div>

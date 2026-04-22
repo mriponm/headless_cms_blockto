@@ -1960,3 +1960,7 @@ html.light .pr-pg-btn {
 html.light .pr-pg-btn:hover:not(:disabled) { background: rgba(255,106,0,0.1); border-color: rgba(255,106,0,0.3); color: #e05a00; }
 html.light .pr-pg-ellipsis { color: rgba(0,0,0,0.3); }
 html.light .pr-coin-fallback { background: linear-gradient(135deg, #ff6a00, #ff9d4d); }
+
+/* ── Metrics coin icon ────────────────────────────────────────── */
+.mtr-ico-wrap { position: relative; width: 28px; height: 28px; flex-shrink: 0; }
+.mtr-ico-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; display: block; }
