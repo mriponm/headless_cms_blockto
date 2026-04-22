@@ -1,4 +1,5 @@
 "use client";
+import RainbowChart from "./RainbowChart";
 
 const SUB_STATS = [
   { label: "Market cap",    value: "$2.87T",  sub: "+1.8%",  up: true  },
@@ -83,8 +84,12 @@ export default function MetricsView() {
         ))}
       </div>
 
-      {/* ── Row 3: Fear / Halving / Altseason ─────── */}
+      {/* ── Rainbow chart ───────────────────────── */}
       <div className="mtr-sec">Charts &amp; indicators</div>
+      <RainbowChart />
+
+      {/* ── Row 3: Fear / Halving / Altseason ─────── */}
+      <div className="mtr-sec" style={{ marginTop: 4 }}>Sentiment &amp; cycle</div>
       <div className="mtr-triple-grid">
 
         {/* Fear & Greed */}
