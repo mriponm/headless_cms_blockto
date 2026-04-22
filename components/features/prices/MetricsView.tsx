@@ -84,13 +84,14 @@ export default function MetricsView() {
         ))}
       </div>
 
-      {/* ── Rainbow chart ───────────────────────── */}
+      {/* ── Row 3: Rainbow / Fear / Halving / Altseason ─── */}
       <div className="mtr-sec">Charts &amp; indicators</div>
-      <RainbowChart />
+      <div className="mtr-quad-grid">
 
-      {/* ── Row 3: Fear / Halving / Altseason ─────── */}
-      <div className="mtr-sec" style={{ marginTop: 4 }}>Sentiment &amp; cycle</div>
-      <div className="mtr-triple-grid">
+        {/* Rainbow Chart */}
+        <div className="glass-strong mtr-card mtr-card-fill" style={{ padding: 0 }}>
+          <RainbowChart />
+        </div>
 
         {/* Fear & Greed */}
         <div className="glass-strong mtr-card mtr-card-fill">

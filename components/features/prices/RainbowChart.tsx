@@ -76,7 +76,7 @@ export default function RainbowChart() {
   const [tf, setTf] = useState<"1M" | "3M" | "1Y" | "All">("1Y");
 
   return (
-    <div className="rbc-wrap glass-strong mtr-card">
+    <div className="rbc-wrap">
       {/* Header */}
       <div className="mtr-card-head" style={{ paddingBottom: 14 }}>
         <span className="mtr-card-title">
