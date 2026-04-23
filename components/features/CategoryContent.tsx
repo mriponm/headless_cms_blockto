@@ -219,7 +219,7 @@ export default function CategoryContent({
   });
 
   return (
-    <div className="relative z-[2] max-w-[1440px] mx-auto px-3 md:px-10 pb-16 pt-4">
+    <div className="relative z-[2] max-w-[1440px] mx-auto px-3 md:px-10 pt-4">
 
       {/* Category hero header */}
       <motion.div {...fadeUp(0)} className="relative rounded-[20px] md:rounded-[28px] overflow-hidden mb-8"

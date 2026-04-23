@@ -22,7 +22,7 @@ export default async function HomePage() {
   const breakingPost = latestPosts[0] ?? null;
 
   return (
-    <div className="relative z-[2] max-w-[1440px] mx-auto px-3 md:px-10 pb-10 pt-4">
+    <div className="relative z-[2] max-w-[1440px] mx-auto px-3 md:px-10 pt-4">
       {/* Mobile only */}
       <FadeIn delay={0.05}><BreakingBanner post={breakingPost} /></FadeIn>
       <FadeIn delay={0.1}><QuickNav /></FadeIn>

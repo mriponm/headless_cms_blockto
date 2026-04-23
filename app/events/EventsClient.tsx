@@ -544,7 +544,7 @@ export default function EventsClient() {
   const totalCrypto    = DAYS[TODAY_IDX].events.filter((e) => e.kind === "crypto").length;
 
   return (
-    <div className="relative z-[2] max-w-[1440px] mx-auto px-3 md:px-10 pb-20 pt-4">
+    <div className="relative z-[2] max-w-[1440px] mx-auto px-3 md:px-10 pt-4">
 
       {/* ── Hero ─────────────────────────────────────────────── */}
       <FadeIn delay={0}>

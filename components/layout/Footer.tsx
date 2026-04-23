@@ -123,7 +123,7 @@ function LanguagePicker() {
 
 export default function Footer() {
   return (
-    <footer className="relative z-[2] mt-16 footer-border-top">
+    <footer className="relative z-[2] mt-4 footer-border-top">
       <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(255,106,0,0.3)] to-transparent" />
 
       <div className="max-w-[1440px] mx-auto px-3 md:px-10 pt-12 pb-6">

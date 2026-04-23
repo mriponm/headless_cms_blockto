@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function PricesPage() {
   return (
-    <div className="relative z-[2] max-w-[1440px] mx-auto px-3 md:px-10 pb-10 pt-4">
+    <div className="relative z-[2] max-w-[1440px] mx-auto px-3 md:px-10 pt-4">
       <PricesView />
     </div>
   );

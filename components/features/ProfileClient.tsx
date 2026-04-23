@@ -200,7 +200,7 @@ export default function ProfileClient({ initialUser }: { initialUser: Me }) {
   const recentOnly = recent.filter(r => !articles.some(a => a.article_slug === r.slug));
 
   return (
-    <div className="relative z-[2] max-w-[1440px] mx-auto px-3 md:px-10 pb-16 pt-6">
+    <div className="relative z-[2] max-w-[1440px] mx-auto px-3 md:px-10 pt-6">
       <div className="max-w-[900px] mx-auto">
 
         {/* ── Hero card ─────────────────────────────── */}
