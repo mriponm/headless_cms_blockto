@@ -7,10 +7,34 @@ import { useI18n } from "@/components/providers/I18nProvider";
 import BrandLogo from "@/components/ui/BrandLogo";
 
 const NAV_COLS = [
-  { title: "Platform",  links: ["News", "Live Prices", "Fear & Greed", "Bitcoin Halving", "Crypto Calendar"] },
-  { title: "Company",   links: ["About Blockto", "Our Mission", "Team", "Careers", "Press Kit"] },
-  { title: "Resources", links: ["Crypto Glossary", "Learn Centre", "API Docs", "Newsletter", "Sitemap"] },
-  { title: "Legal",     links: ["Privacy Policy", "Cookie Policy", "Terms of Use", "Disclaimer", "GDPR"] },
+  { title: "Platform", links: [
+    { label: "News",             href: "/" },
+    { label: "Live Prices",      href: "/prices" },
+    { label: "Fear & Greed",     href: "/fear-greed" },
+    { label: "Bitcoin Halving",  href: "/bitcoin-halving" },
+    { label: "Crypto Calendar",  href: "/events" },
+  ]},
+  { title: "Company", links: [
+    { label: "About Blockto", href: "/about" },
+    { label: "Our Mission",   href: "/mission" },
+    { label: "Team",          href: "/team" },
+    { label: "Careers",       href: "/careers" },
+    { label: "Press Kit",     href: "/press" },
+  ]},
+  { title: "Resources", links: [
+    { label: "Crypto Glossary", href: "/glossary" },
+    { label: "Learn Centre",    href: "/learn" },
+    { label: "API Docs",        href: "/api-docs" },
+    { label: "Newsletter",      href: "/#newsletter" },
+    { label: "Sitemap",         href: "/sitemap-page" },
+  ]},
+  { title: "Legal", links: [
+    { label: "Privacy Policy", href: "/privacy" },
+    { label: "Cookie Policy",  href: "/cookies" },
+    { label: "Terms of Use",   href: "/terms" },
+    { label: "Disclaimer",     href: "/disclaimer" },
+    { label: "GDPR",           href: "/gdpr" },
+  ]},
 ];
 
 const SOCIALS = [
@@ -148,10 +172,10 @@ export default function Footer() {
                 </p>
                 <ul className="space-y-2">
                   {col.links.map((link) => (
-                    <li key={link}>
-                      <a href="#" className="link-hover text-[13px] font-medium font-[family-name:var(--font-display)] footer-muted transition-colors duration-150 hover:text-[#ff6a00]">
-                        {link}
-                      </a>
+                    <li key={link.label}>
+                      <Link href={link.href} className="link-hover text-[13px] font-medium font-[family-name:var(--font-display)] footer-muted transition-colors duration-150 hover:text-[#ff6a00]">
+                        {link.label}
+                      </Link>
                     </li>
                   ))}
                 </ul>
@@ -201,10 +225,15 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-4">
           <div className="flex flex-wrap items-center gap-3">
-            {["Privacy Policy", "Cookie Policy", "Terms of Use", "Disclaimer"].map((item) => (
-              <a key={item} href="#" className="link-hover text-[11px] font-[family-name:var(--font-display)] footer-dimmed transition-colors hover:text-[#ff6a00]">
-                {item}
-              </a>
+            {[
+              { label: "Privacy Policy", href: "/privacy" },
+              { label: "Cookie Policy",  href: "/cookies" },
+              { label: "Terms of Use",   href: "/terms" },
+              { label: "Disclaimer",     href: "/disclaimer" },
+            ].map((item) => (
+              <Link key={item.label} href={item.href} className="link-hover text-[11px] font-[family-name:var(--font-display)] footer-dimmed transition-colors hover:text-[#ff6a00]">
+                {item.label}
+              </Link>
             ))}
           </div>
           <div className="flex items-center gap-3 flex-wrap">
