@@ -1495,12 +1495,15 @@ html.light .mtr-conv-hint { color: #aaa; }
 /* ═══ PRICES VIEW ════════════════════════════════════════════════ */
 
 .pr-hero-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 14px; }
-.pr-hero-cell { padding: 14px; position: relative; overflow: hidden; border-radius: 16px; }
+.pr-hero-cell { padding: 10px; position: relative; overflow: hidden; border-radius: 12px; }
+@media (min-width: 768px) { .pr-hero-cell { padding: 14px; border-radius: 16px; } }
 .pr-hero-cell::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent); }
 html.light .pr-hero-cell::before { background: linear-gradient(90deg,transparent,rgba(0,0,0,0.05),transparent); }
-.pr-hero-label { font-size: 9px; color: #555; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; margin-bottom: 5px; font-family: var(--font-display); }
+.pr-hero-label { font-size: 8px; color: #555; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; margin-bottom: 3px; font-family: var(--font-display); }
+@media (min-width: 768px) { .pr-hero-label { font-size: 9px; margin-bottom: 5px; } }
 html.light .pr-hero-label { color: #888; }
-.pr-hero-val { font-size: 16px; font-weight: 800; font-family: var(--font-data); letter-spacing: -0.5px; }
+.pr-hero-val { font-size: 14px; font-weight: 800; font-family: var(--font-data); letter-spacing: -0.5px; }
+@media (min-width: 768px) { .pr-hero-val { font-size: 16px; } }
 .pr-hero-sub { font-size: 9px; font-weight: 600; margin-top: 4px; font-family: var(--font-display); }
 
 .pr-toolbar { display: flex; gap: 10px; align-items: stretch; margin-bottom: 16px; }
@@ -1653,9 +1656,10 @@ html.light .mtr-alt-score {
 .pr-5grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 14px;
+  gap: 6px;
+  margin-bottom: 12px;
 }
+@media (min-width: 768px) { .pr-5grid { gap: 8px; margin-bottom: 14px; } }
 @media (min-width: 768px) {
   .pr-5grid { grid-template-columns: repeat(5, 1fr); }
 }

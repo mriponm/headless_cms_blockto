@@ -25,17 +25,17 @@ export default function PulseRow() {
   ] : STATIC_METRICS;
 
   return (
-    <div className="grid grid-cols-3 md:grid-cols-6 gap-3 mb-6">
+    <div className="grid grid-cols-3 md:grid-cols-6 gap-2 md:gap-3 mb-6">
       {metrics.map((m) => (
-        <div key={m.label} className="glass relative overflow-hidden p-4 rounded-[14px]">
+        <div key={m.label} className="glass relative overflow-hidden p-3 md:p-4 rounded-[12px] md:rounded-[14px]">
           {/* top shimmer */}
           <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
-          <p className="text-[9px] text-[#666] uppercase tracking-[0.8px] font-bold mb-1.5 font-[family-name:var(--font-display)]">
+          <p className="text-[8px] md:text-[9px] text-[#666] uppercase tracking-[0.8px] font-bold mb-1 md:mb-1.5 font-[family-name:var(--font-display)]">
             {m.label}
           </p>
           <p
             className={clsx(
-              "text-xl md:text-[22px] font-extrabold font-[family-name:var(--font-data)] tracking-[-0.5px] leading-none",
+              "text-[15px] md:text-[22px] font-extrabold font-[family-name:var(--font-data)] tracking-[-0.5px] leading-none",
               (m as any).special === "gradient" && "gradient-text-alt",
               (m as any).special === "brand" && "text-[var(--color-brand)]",
             )}
@@ -44,7 +44,7 @@ export default function PulseRow() {
           </p>
           <p
             className={clsx(
-              "text-[10px] font-bold mt-1.5 font-[family-name:var(--font-data)]",
+              "text-[9px] md:text-[10px] font-bold mt-1 md:mt-1.5 font-[family-name:var(--font-data)]",
               (m as any).special === "brand" ? "text-[var(--color-brand)]" :
               (m as any).special === "neutral" ? "text-[#999]" :
               (m as any).special === "gradient" ? "text-[#999]" :
