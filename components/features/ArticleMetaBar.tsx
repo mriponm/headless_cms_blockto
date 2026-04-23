@@ -1,7 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
 import { Clock } from "lucide-react";
-import { useAuthModal } from "@/components/providers/AuthModalProvider";
 import { useI18n } from "@/components/providers/I18nProvider";
 
 export default function ArticleMetaBar({
@@ -10,43 +8,7 @@ export default function ArticleMetaBar({
   authorName: string;
   dateStr: string;
 }) {
-  const [followed, setFollowed]   = useState(false);
-  const [following, setFollowing] = useState(false);
-
-  const { openModal }             = useAuthModal();
-  const { t }                     = useI18n();
-  const authorSlug                = authorName.toLowerCase().replace(/\s+/g, "-");
-
-  useEffect(() => {
-    fetch("/api/following")
-      .then(r => r.ok ? r.json() : [])
-      .then((list: { author_slug: string }[]) => {
-        if (Array.isArray(list)) setFollowed(list.some(f => f.author_slug === authorSlug));
-      })
-      .catch(() => {});
-  }, [authorSlug]);
-
-  async function toggleFollow() {
-    if (following) return;
-    setFollowing(true);
-    try {
-      if (followed) {
-        const res = await fetch(`/api/following?slug=${encodeURIComponent(authorSlug)}`, { method: "DELETE" });
-        if (res.status === 401) { openModal("signin"); setFollowing(false); return; }
-        if (res.ok) setFollowed(false);
-      } else {
-        const res = await fetch("/api/following", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ author_name: authorName, author_slug: authorSlug }),
-        });
-        if (res.status === 401) { openModal("signin"); setFollowing(false); return; }
-        if (res.ok) setFollowed(true);
-      }
-    } catch { /* noop */ }
-    setFollowing(false);
-  }
-
+  const { t } = useI18n();
 
   return (
     <div>
@@ -68,20 +30,9 @@ export default function ArticleMetaBar({
 
         {/* Author info */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <span className="text-[13px] font-bold art-heading font-[family-name:var(--font-display)]">
-              {t("article.by")} <span data-no-translate>{authorName}</span>
-            </span>
-            <button
-              onClick={toggleFollow}
-              disabled={following}
-              className="text-[10px] font-extrabold px-[8px] py-[3px] rounded-[6px] cursor-pointer transition-all duration-200 font-[family-name:var(--font-display)] disabled:opacity-60"
-              style={followed
-                ? { color: "#aaa", background: "rgba(255,255,255,0.06)", border: "0.5px solid rgba(255,255,255,0.1)" }
-                : { color: "#ff6a00", background: "rgba(255,106,0,0.07)", border: "0.5px solid rgba(255,106,0,0.18)" }}>
-              {followed ? t("footer.following") : t("footer.follow")}
-            </button>
-          </div>
+          <span className="text-[13px] font-bold art-heading font-[family-name:var(--font-display)]">
+            {t("article.by")} <span data-no-translate>{authorName}</span>
+          </span>
           <p className="text-[10px] art-author-role font-medium mt-0.5 font-[family-name:var(--font-display)]">
             {t("article.seniorAnalyst")} · {dateStr}
           </p>

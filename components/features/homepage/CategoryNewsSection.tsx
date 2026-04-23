@@ -64,7 +64,7 @@ function ListCard({ post, accentColor, accentBg, accentBorder, accentGrad }: {
   return (
     <Link href={`/news/${post.slug}`}
       className="hp-card flex gap-3 p-3 rounded-[14px] cursor-pointer card-hover relative group block">
-      <div className="w-[80px] h-[80px] rounded-[10px] overflow-hidden flex-shrink-0 relative bg-[#0a0e1a]">
+      <div className="w-[80px] h-[80px] rounded-[10px] overflow-hidden flex-shrink-0 img-thumb-bg relative">
         {post.featuredImage ? (
           <Image src={post.featuredImage.node.sourceUrl} alt={post.title} fill className="object-cover" sizes="80px" />
         ) : (

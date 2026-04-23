@@ -10,18 +10,20 @@ export default function BrandLogo({ height = 36, className = "" }: Props) {
   return (
     <>
       <Image
-        src="/white_logo.svg"
+        src="/PNG NEW NO GRADIENT.PNG"
         alt="Blockto"
         width={width}
         height={height}
+        quality={100}
         priority
         className={`logo-themed logo-dark ${className}`}
       />
       <Image
-        src="/dark_logo.svg"
+        src="/PNG NEW NO GRADIENT LIGHT.PNG"
         alt="Blockto"
         width={width}
         height={height}
+        quality={100}
         priority
         className={`logo-themed logo-light ${className}`}
       />

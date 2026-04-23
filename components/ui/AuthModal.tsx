@@ -222,10 +222,10 @@ function SignUpPanel({ onSwitch, onAuthComplete }: { onSwitch: (email?: string) 
   }
 
   const VALUE_PROPS = [
-    { icon: "📈", text: "Track unlimited crypto prices" },
-    { icon: "⭐", text: "Follow top crypto KOLs" },
-    { icon: "🤖", text: "Daily AI market briefs" },
-    { icon: "🔔", text: "Custom price alerts" },
+    { icon: "🗞️", text: "Follow the latest news" },
+    { icon: "🏅", text: "Use the best indicators" },
+    { icon: "👀", text: "See all the upcoming events" },
+    { icon: "🔍", text: "The best market insights" },
   ];
 
   return (

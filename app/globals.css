@@ -386,6 +386,19 @@ html.light .hero-card {
   border-color: rgba(0,0,0,0.09);
 }
 
+/* Secondary hero card titles — white in dark, dark in light */
+.hero-sec-title { color: #ffffff; }
+html.light .hero-sec-title { color: #0a0a0a; }
+
+/* Hero secondary card content divider */
+.hero-sec-divider { border-top: 0.5px solid rgba(255,255,255,0.06); }
+html.light .hero-sec-divider { border-top-color: rgba(0,0,0,0.07); }
+
+/* Thumbnail image — no border, adaptive bg */
+.img-thumb-border { border: none; }
+.img-thumb-bg { background: #0a0e1a; }
+html.light .img-thumb-bg { background: #e8e8e6; }
+
 /* Quick nav pills */
 html.light .qn-pill {
   background: #ffffff !important;
@@ -988,7 +1001,7 @@ html.light .auth-bottom-border { border-top-color: rgba(0,0,0,0.06); }
   background: rgba(255,255,255,0.025);
   border: 0.5px solid rgba(255,255,255,0.06);
 }
-.art-related-thumb { background: #0a0a0a; border: 0.5px solid rgba(255,255,255,0.06); }
+.art-related-thumb { background: #0a0e1a; }
 .art-progress-bg { background: rgba(255,255,255,0.05); }
 .art-caption { color: #666; }
 .art-author-role { color: #666; }
@@ -1028,7 +1041,7 @@ html.light .art-share-btn { background: rgba(0,0,0,0.04); border-color: rgba(0,0
 html.light .art-share-btn svg { fill: #666; }
 html.light .art-bio-card { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.07); }
 html.light .art-related-card { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.07); }
-html.light .art-related-thumb { background: rgba(0,0,0,0.05); border-color: rgba(0,0,0,0.08); }
+html.light .art-related-thumb { background: #e8e8e6; }
 html.light .art-progress-bg { background: rgba(0,0,0,0.08); }
 html.light .art-caption { color: #999; }
 html.light .art-author-role { color: #999; }

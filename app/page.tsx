@@ -37,7 +37,7 @@ export default async function HomePage() {
             <FadeIn delay={0.2}><HeroSection posts={heroPosts} /></FadeIn>
 
             <FadeIn delay={0.26}>
-              <NewsGrid posts={generalPosts} title="General news" viewAllHref="/category/general-news" />
+              <NewsGrid posts={generalPosts} title="General news" />
             </FadeIn>
 
             <FadeIn delay={0.3}>
@@ -87,7 +87,6 @@ export default async function HomePage() {
               <MobileNewsCards
                 posts={generalPosts}
                 title="General news"
-                viewAllHref="/category/general-news"
                 variant="list"
                 paginate
               />

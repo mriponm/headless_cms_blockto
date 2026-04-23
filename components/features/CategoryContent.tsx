@@ -136,7 +136,7 @@ function ListCard({ post }: { post: WPPost }) {
     <Link href={`/news/${post.slug}`}
       className="hp-card flex gap-3.5 p-3.5 rounded-[16px] cursor-pointer card-hover relative group block">
       <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none" />
-      <div className="w-[90px] h-[90px] md:w-[110px] md:h-[110px] rounded-[12px] overflow-hidden flex-shrink-0 border border-[rgba(255,255,255,0.06)] relative bg-[#0a0e1a]">
+      <div className="w-[90px] h-[90px] md:w-[110px] md:h-[110px] rounded-[12px] overflow-hidden flex-shrink-0 img-thumb-border img-thumb-bg relative">
         {post.featuredImage ? (
           <Image src={post.featuredImage.node.sourceUrl} alt={post.title} fill className="object-cover" sizes="110px" />
         ) : (

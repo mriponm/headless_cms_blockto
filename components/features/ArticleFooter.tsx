@@ -1,8 +1,7 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Check, ExternalLink } from "lucide-react";
 import { useI18n } from "@/components/providers/I18nProvider";
-import { useAuthModal } from "@/components/providers/AuthModalProvider";
 
 function XIcon() {
   return (
@@ -43,42 +42,8 @@ interface Props {
 }
 
 export default function ArticleFooter({ tags, postTitle, postUrl, authorName }: Props) {
-  const [followed, setFollowed]   = useState(false);
-  const [copied, setCopied]       = useState(false);
-  const [following, setFollowing] = useState(false);
-  const { t }          = useI18n();
-  const { openModal }  = useAuthModal();
-  const authorSlug     = authorName.toLowerCase().replace(/\s+/g, "-");
-
-  useEffect(() => {
-    fetch("/api/following")
-      .then(r => r.ok ? r.json() : [])
-      .then((list: { author_slug: string }[]) => {
-        if (Array.isArray(list)) setFollowed(list.some(f => f.author_slug === authorSlug));
-      })
-      .catch(() => {});
-  }, [authorSlug]);
-
-  async function toggleFollow() {
-    if (following) return;
-    setFollowing(true);
-    try {
-      if (followed) {
-        const res = await fetch(`/api/following?slug=${encodeURIComponent(authorSlug)}`, { method: "DELETE" });
-        if (res.status === 401) { openModal("signin"); setFollowing(false); return; }
-        if (res.ok) setFollowed(false);
-      } else {
-        const res = await fetch("/api/following", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ author_name: authorName, author_slug: authorSlug }),
-        });
-        if (res.status === 401) { openModal("signin"); setFollowing(false); return; }
-        if (res.ok) setFollowed(true);
-      }
-    } catch { /* noop */ }
-    setFollowing(false);
-  }
+  const [copied, setCopied] = useState(false);
+  const { t } = useI18n();
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(postUrl);
@@ -199,31 +164,11 @@ export default function ArticleFooter({ tags, postTitle, postUrl, authorName }: 
                 <path d="M9.5 16.5l-3-3 1.4-1.4 1.6 1.6 5.1-5.1 1.4 1.4z" fill="#fff"/>
               </svg>
             </div>
-            <p className="text-[10px] font-extrabold uppercase tracking-[1px] text-[var(--color-brand)] font-[family-name:var(--font-data)]">
-              {t("footer.seniorMarketAnalyst")}
-            </p>
           </div>
-          <button
-            onClick={toggleFollow}
-            disabled={following}
-            className="flex-shrink-0 px-4 py-2 rounded-[10px] text-[11px] font-extrabold cursor-pointer transition-all duration-200 font-[family-name:var(--font-display)] disabled:opacity-60"
-            style={followed
-              ? { color: "#ff6a00", background: "rgba(255,106,0,0.08)", border: "0.5px solid rgba(255,106,0,0.2)" }
-              : { color: "#000", background: "linear-gradient(135deg,#ff6a00,#ff8a30)", boxShadow: "0 0 12px rgba(255,106,0,0.2),inset 0 1px 0 rgba(255,255,255,0.2)" }}>
-            {followed ? t("footer.following") : t("footer.follow")}
-          </button>
         </div>
-        <p className="text-[12px] text-[#999] leading-[1.55] font-medium mb-3 relative z-10 font-[family-name:var(--font-display)]">
+        <p className="text-[12px] text-[#999] leading-[1.55] font-medium relative z-10 font-[family-name:var(--font-display)]">
           {t("footer.authorBio")}
         </p>
-        <div className="flex items-center gap-[14px] pt-3 border-t border-[rgba(255,255,255,0.04)] relative z-10">
-          {[["142", t("footer.articles")], ["4.2K", t("footer.followers")], ["186K", t("footer.reads")]].map(([val, label]) => (
-            <div key={label} className="flex flex-col gap-0.5">
-              <span className="text-[14px] font-extrabold art-heading font-[family-name:var(--font-data)] leading-none">{val}</span>
-              <span className="text-[9px] font-extrabold text-[#666] uppercase tracking-[0.8px] font-[family-name:var(--font-display)]">{label}</span>
-            </div>
-          ))}
-        </div>
       </div>
 
     </div>

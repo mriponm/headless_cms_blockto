@@ -21,7 +21,7 @@ export default function HeroSection({ posts }: { posts: WPPost[] }) {
 
   return (
     <>
-      <SectionLabel title="Latest news" live viewAllHref="/news" />
+      <SectionLabel title="Latest news" live />
       <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-3 lg:gap-[18px] mb-6">
 
         {/* ── Hero card ── */}
@@ -101,13 +101,13 @@ export default function HeroSection({ posts }: { posts: WPPost[] }) {
                 </div>
 
                 {/* Content section */}
-                <div className="flex-1 p-3 lg:p-4 hp-card" style={{ borderTop: "0.5px solid rgba(255,255,255,0.06)", borderRadius: 0 }}>
+                <div className="flex-1 p-3 lg:p-4 hp-card hero-sec-divider" style={{ borderRadius: 0 }}>
                   {/* Small category badge */}
                   <span className="inline-block text-[8px] font-extrabold px-2 py-[3px] rounded-[5px] tracking-[0.8px] font-[family-name:var(--font-data)] mb-2"
                     style={{ color, background: `${color}18`, border: `0.5px solid ${color}44` }}>
                     {cat.name.toUpperCase()}
                   </span>
-                  <p className="text-white text-[12px] lg:text-[15px] font-bold tracking-[-0.2px] leading-[1.35] mb-2 font-[family-name:var(--font-display)] line-clamp-2">
+                  <p className="hero-sec-title text-[12px] lg:text-[15px] font-bold tracking-[-0.2px] leading-[1.35] mb-2 font-[family-name:var(--font-display)] line-clamp-2">
                     <TranslatedText text={post!.title} />
                   </p>
                   <p className="text-[10px] text-[#777] font-medium font-[family-name:var(--font-display)] flex items-center gap-1.5">

@@ -10,7 +10,7 @@ import { relativeDate, primaryCategory } from "@/lib/wordpress/queries";
 interface Props {
   posts: WPPost[];
   title: string;
-  viewAllHref: string;
+  viewAllHref?: string;
   accentColor?: string;
   accentBg?: string;
   accentBorder?: string;
@@ -26,7 +26,7 @@ function ListCard({ post }: { post: WPPost }) {
     <Link href={`/news/${post.slug}`}
       className="hp-card grid grid-cols-[auto_1fr] gap-3.5 p-3 rounded-[16px] mb-2.5 cursor-pointer relative overflow-hidden block">
       <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.04] to-transparent" />
-      <div className="w-[90px] h-[90px] rounded-[12px] flex-shrink-0 border border-[rgba(255,255,255,0.06)] relative overflow-hidden bg-[#0a0e1a]">
+      <div className="w-[90px] h-[90px] rounded-[12px] flex-shrink-0 img-thumb-border img-thumb-bg relative overflow-hidden">
         {post.featuredImage ? (
           <Image src={post.featuredImage.node.sourceUrl} alt={post.title} fill
             className="object-cover" sizes="90px" />

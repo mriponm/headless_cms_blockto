@@ -18,7 +18,7 @@ const CAT_STYLE: Record<string, { color: string; bg: string; border: string }> =
 const DEFAULT_STYLE = CAT_STYLE.news;
 const PER_PAGE = 9;
 
-export default function NewsGrid({ posts, title = "General news", viewAllHref = "/category/general-news" }: {
+export default function NewsGrid({ posts, title = "General news", viewAllHref }: {
   posts: WPPost[];
   title?: string;
   viewAllHref?: string;

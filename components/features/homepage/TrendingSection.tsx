@@ -19,7 +19,7 @@ export default function TrendingSection({ posts }: { posts: WPPost[] }) {
                 style={{ background: i === 0 ? "linear-gradient(135deg,#ff6a00,#ffaa44)" : "linear-gradient(135deg,#333,#555)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
                 {String(i + 1).padStart(2, "0")}
               </span>
-              <div className="w-[64px] h-[64px] rounded-[10px] overflow-hidden flex-shrink-0 relative bg-[#0a0e1a]">
+              <div className="w-[64px] h-[64px] rounded-[10px] overflow-hidden flex-shrink-0 img-thumb-bg relative">
                 {post.featuredImage ? (
                   <Image src={post.featuredImage.node.sourceUrl} alt={post.title} fill className="object-cover" sizes="64px" />
                 ) : (

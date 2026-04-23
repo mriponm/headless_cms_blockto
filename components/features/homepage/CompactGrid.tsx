@@ -25,7 +25,7 @@ export default function CompactGrid({ posts }: { posts: WPPost[] }) {
           return (
             <Link key={post.id} href={`/news/${post.slug}`}
               className="hp-card grid grid-cols-[110px_1fr] gap-3.5 p-3.5 rounded-[16px] card-hover block">
-              <div className="w-[110px] h-[110px] rounded-[14px] overflow-hidden flex-shrink-0 border border-[rgba(255,255,255,0.06)] relative bg-[#0a0e1a]">
+              <div className="w-[110px] h-[110px] rounded-[14px] overflow-hidden flex-shrink-0 img-thumb-border img-thumb-bg relative">
                 {post.featuredImage ? (
                   <Image
                     src={post.featuredImage.node.sourceUrl}
