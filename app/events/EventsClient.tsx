@@ -103,12 +103,6 @@ function ExpandedDetail({ ev, isOpen }: { ev: AnyEvent; isOpen: boolean }) {
       <div style={{ overflow: "hidden" }}>
         <div style={{ height: 0.5, background: "rgba(255,255,255,0.06)", margin: "0 0 14px" }} />
 
-        {ev.description && (
-          <p className="ev-detail-desc" style={{ fontSize: 12, lineHeight: 1.6, fontWeight: 500, marginBottom: 14 }}>
-            {ev.description}
-          </p>
-        )}
-
         {ev.kind === "macro" && ev.affected && ev.affected.length > 0 && (
           <div style={{ marginBottom: 14 }}>
             <div style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 6 }} className="ev-cell-label">
