@@ -134,11 +134,6 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
               <ArticleMetaBar
                 authorName={post.author.node.name}
                 dateStr={dateStr}
-                slug={slug}
-                title={post.title}
-                excerpt={stripExcerpt(post.excerpt)}
-                category={cat?.name ?? ""}
-                image={post.featuredImage?.node.sourceUrl ?? ""}
               />
             }
           />

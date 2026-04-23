@@ -1,7 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Check, ExternalLink } from "lucide-react";
 import { useI18n } from "@/components/providers/I18nProvider";
+import { useAuthModal } from "@/components/providers/AuthModalProvider";
 
 function XIcon() {
   return (
@@ -42,11 +43,42 @@ interface Props {
 }
 
 export default function ArticleFooter({ tags, postTitle, postUrl, authorName }: Props) {
-  const [followed, setFollowed] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const { t } = useI18n();
+  const [followed, setFollowed]   = useState(false);
+  const [copied, setCopied]       = useState(false);
+  const [following, setFollowing] = useState(false);
+  const { t }          = useI18n();
+  const { openModal }  = useAuthModal();
+  const authorSlug     = authorName.toLowerCase().replace(/\s+/g, "-");
 
-  const initials = authorName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+  useEffect(() => {
+    fetch("/api/following")
+      .then(r => r.ok ? r.json() : [])
+      .then((list: { author_slug: string }[]) => {
+        if (Array.isArray(list)) setFollowed(list.some(f => f.author_slug === authorSlug));
+      })
+      .catch(() => {});
+  }, [authorSlug]);
+
+  async function toggleFollow() {
+    if (following) return;
+    setFollowing(true);
+    try {
+      if (followed) {
+        const res = await fetch(`/api/following?slug=${encodeURIComponent(authorSlug)}`, { method: "DELETE" });
+        if (res.status === 401) { openModal("signin"); setFollowing(false); return; }
+        if (res.ok) setFollowed(false);
+      } else {
+        const res = await fetch("/api/following", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ author_name: authorName, author_slug: authorSlug }),
+        });
+        if (res.status === 401) { openModal("signin"); setFollowing(false); return; }
+        if (res.ok) setFollowed(true);
+      }
+    } catch { /* noop */ }
+    setFollowing(false);
+  }
 
   const handleCopy = async () => {
     await navigator.clipboard.writeText(postUrl);
@@ -154,22 +186,27 @@ export default function ArticleFooter({ tags, postTitle, postUrl, authorName }: 
           {t("footer.aboutAuthor")}
         </p>
         <div className="flex items-center gap-3 mb-3 relative z-10">
-          <div className="w-[56px] h-[56px] rounded-full flex items-center justify-center text-[19px] font-extrabold text-black flex-shrink-0"
-            style={{ background: "linear-gradient(135deg,#ff6a00,#ff8a30)", boxShadow: "0 0 16px rgba(255,106,0,0.3)" }}>
-            {initials}
+          <div className="w-[56px] h-[56px] rounded-full overflow-hidden flex-shrink-0"
+            style={{ boxShadow: "0 0 16px rgba(255,106,0,0.3)" }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/Tristan.jpeg" alt={authorName} className="w-full h-full object-cover" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 mb-0.5">
               <span className="text-[15px] font-extrabold art-heading font-[family-name:var(--font-display)]">{authorName}</span>
-              <span className="text-[#4a9eff] text-[13px]">✓</span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
+                <circle cx="12" cy="12" r="12" fill="#1d9bf0"/>
+                <path d="M9.5 16.5l-3-3 1.4-1.4 1.6 1.6 5.1-5.1 1.4 1.4z" fill="#fff"/>
+              </svg>
             </div>
             <p className="text-[10px] font-extrabold uppercase tracking-[1px] text-[var(--color-brand)] font-[family-name:var(--font-data)]">
               {t("footer.seniorMarketAnalyst")}
             </p>
           </div>
           <button
-            onClick={() => setFollowed(v => !v)}
-            className="flex-shrink-0 px-4 py-2 rounded-[10px] text-[11px] font-extrabold cursor-pointer transition-all duration-200 font-[family-name:var(--font-display)]"
+            onClick={toggleFollow}
+            disabled={following}
+            className="flex-shrink-0 px-4 py-2 rounded-[10px] text-[11px] font-extrabold cursor-pointer transition-all duration-200 font-[family-name:var(--font-display)] disabled:opacity-60"
             style={followed
               ? { color: "#ff6a00", background: "rgba(255,106,0,0.08)", border: "0.5px solid rgba(255,106,0,0.2)" }
               : { color: "#000", background: "linear-gradient(135deg,#ff6a00,#ff8a30)", boxShadow: "0 0 12px rgba(255,106,0,0.2),inset 0 1px 0 rgba(255,255,255,0.2)" }}>

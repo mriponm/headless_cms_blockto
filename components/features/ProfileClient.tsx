@@ -94,11 +94,13 @@ function ArticleCard({ art, onRemove }: { art: SavedArticle; onRemove: (slug: st
 
 export default function ProfileClient({ initialUser }: { initialUser: Me }) {
   const [user]                = useState<Me>(initialUser);
-  const [tab, setTab]         = useState<"saved" | "watchlist" | "settings">("saved");
+  const [tab, setTab]         = useState<"saved" | "watchlist" | "following" | "settings">("saved");
   const [filter, setFilter]   = useState("All");
   const [search, setSearch]   = useState("");
   const [articles, setArticles]       = useState<SavedArticle[]>([]);
   const [watchlist, setWatchlist]     = useState<WatchCoin[]>([]);
+  const [following, setFollowing]     = useState<{ id: string; author_name: string; author_slug: string }[]>([]);
+  const [followPosts, setFollowPosts] = useState<Record<string, { slug: string; title: string; date: string; image?: string }[]>>({});
   const [recent, setRecent]           = useState<RecentArticle[]>([]);
   const [loadingData, setLoadingData] = useState(true);
   const [newSym, setNewSym]           = useState("");
@@ -117,14 +119,35 @@ export default function ProfileClient({ initialUser }: { initialUser: Me }) {
       if (raw) setRecent(JSON.parse(raw));
     } catch {}
 
-    // Load saved articles + watchlist
+    // Load saved articles + watchlist + following
     setLoadingData(true);
     Promise.all([
       fetch("/api/saved-articles").then(r => r.ok ? r.json() : []),
       fetch("/api/watchlist").then(r => r.ok ? r.json() : []),
-    ]).then(([arts, wl]) => {
+      fetch("/api/following").then(r => r.ok ? r.json() : []),
+    ]).then(([arts, wl, fl]) => {
       setArticles(Array.isArray(arts) ? arts : []);
       setWatchlist(Array.isArray(wl) ? wl : []);
+      const flList = Array.isArray(fl) ? fl : [];
+      setFollowing(flList);
+      if (flList.length > 0) {
+        const names = flList.map((f: { author_name: string }) => f.author_name).join(",");
+        fetch(`/api/following/posts?authors=${encodeURIComponent(names)}`)
+          .then(r => r.ok ? r.json() : [])
+          .then((posts: { slug: string; title: string; date: string; author: { node: { name: string } }; featuredImage?: { node: { sourceUrl: string } } }[]) => {
+            const byAuthor: Record<string, typeof posts> = {};
+            posts.forEach(p => {
+              const key = p.author.node.name;
+              if (!byAuthor[key]) byAuthor[key] = [];
+              byAuthor[key].push(p);
+            });
+            const mapped: Record<string, { slug: string; title: string; date: string; image?: string }[]> = {};
+            Object.entries(byAuthor).forEach(([name, ps]) => {
+              mapped[name] = ps.slice(0, 4).map(p => ({ slug: p.slug, title: p.title, date: p.date, image: p.featuredImage?.node.sourceUrl }));
+            });
+            setFollowPosts(mapped);
+          });
+      }
     }).finally(() => setLoadingData(false));
   }, []);
 
@@ -299,12 +322,12 @@ export default function ProfileClient({ initialUser }: { initialUser: Me }) {
         )}
 
         {/* ── Tabs ──────────────────────────────────── */}
-        <div className="flex gap-1 mb-6 border-b border-[rgba(255,255,255,0.05)]">
-          {(["saved", "watchlist", "settings"] as const).map(t => (
+        <div className="flex gap-1 mb-6 border-b border-[rgba(255,255,255,0.05)] overflow-x-auto">
+          {(["saved", "watchlist", "following", "settings"] as const).map(t => (
             <button key={t} onClick={() => setTab(t)}
-              className={`px-4 py-2.5 text-[12px] font-bold capitalize transition-all border-b-2 cursor-pointer ${tab === t ? "border-[var(--color-brand)]" : "border-transparent"}`}
+              className={`px-4 py-2.5 text-[12px] font-bold capitalize transition-all border-b-2 cursor-pointer whitespace-nowrap ${tab === t ? "border-[var(--color-brand)]" : "border-transparent"}`}
               style={{ color: tab === t ? "var(--color-brand)" : "var(--color-muted)" }}>
-              {t === "saved" ? `Saved Articles${articles.length > 0 ? ` (${articles.length})` : ""}` : t === "watchlist" ? "Watchlist" : "Settings"}
+              {t === "saved" ? `Saved${articles.length > 0 ? ` (${articles.length})` : ""}` : t === "watchlist" ? "Watchlist" : t === "following" ? `Following${following.length > 0 ? ` (${following.length})` : ""}` : "Settings"}
             </button>
           ))}
         </div>
@@ -438,6 +461,78 @@ export default function ProfileClient({ initialUser }: { initialUser: Me }) {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ── Following ─────────────────────────────── */}
+        {tab === "following" && (
+          <div>
+            {loadingData ? (
+              <div className="flex justify-center py-16"><Loader2 size={22} className="animate-spin text-[var(--color-brand)]" /></div>
+            ) : following.length === 0 ? (
+              <div className="text-center py-20" style={{ color: "var(--color-muted)" }}>
+                <Star size={40} className="mx-auto mb-4 opacity-20" />
+                <p className="text-[14px] font-semibold">Not following anyone yet</p>
+                <p className="text-[12px] mt-1 opacity-60">Follow authors from any article page</p>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-5">
+                {following.map(f => {
+                  const posts = followPosts[f.author_name] ?? [];
+                  return (
+                    <div key={f.id} className="profile-card rounded-[18px] p-5">
+                      {/* Author card */}
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-[48px] h-[48px] rounded-full overflow-hidden flex-shrink-0"
+                          style={{ boxShadow: "0 0 12px rgba(255,106,0,0.2)" }}>
+                          <img src="/Tristan.jpeg" alt={f.author_name} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5 mb-0.5">
+                            <span className="text-[14px] font-extrabold" style={{ color: "var(--color-text)" }}>{f.author_name}</span>
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
+                              <circle cx="12" cy="12" r="12" fill="#1d9bf0"/>
+                              <path d="M9.5 16.5l-3-3 1.4-1.4 1.6 1.6 5.1-5.1 1.4 1.4z" fill="#fff"/>
+                            </svg>
+                          </div>
+                          <p className="text-[10px] font-bold uppercase tracking-[1px]" style={{ color: "var(--color-brand)" }}>Senior Market Analyst</p>
+                        </div>
+                        <button
+                          onClick={async () => {
+                            await fetch(`/api/following?slug=${encodeURIComponent(f.author_slug)}`, { method: "DELETE" });
+                            setFollowing(prev => prev.filter(x => x.id !== f.id));
+                          }}
+                          className="text-[10px] font-bold px-3 py-1.5 rounded-[8px] cursor-pointer transition-all"
+                          style={{ color: "var(--color-muted)", border: "0.5px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.03)" }}>
+                          Unfollow
+                        </button>
+                      </div>
+                      {/* Author posts */}
+                      {posts.length > 0 ? (
+                        <div className="flex flex-col gap-2 pt-3 border-t border-[rgba(255,255,255,0.05)]">
+                          <p className="text-[9px] font-extrabold uppercase tracking-[1.5px] mb-1" style={{ color: "var(--color-muted)" }}>Recent articles</p>
+                          {posts.map(p => (
+                            <Link key={p.slug} href={`/news/${p.slug}`}
+                              className="flex gap-3 items-center group hover:bg-[rgba(255,106,0,0.04)] rounded-[10px] p-2 transition-all">
+                              {p.image && (
+                                <div className="w-[52px] h-[38px] rounded-[7px] overflow-hidden flex-shrink-0">
+                                  <img src={p.image} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                                </div>
+                              )}
+                              <p className="flex-1 text-[12px] font-semibold leading-snug line-clamp-2 group-hover:text-[var(--color-brand)] transition-colors" style={{ color: "var(--color-text)" }}>
+                                {p.title}
+                              </p>
+                            </Link>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-[11px] pt-3 border-t border-[rgba(255,255,255,0.05)]" style={{ color: "var(--color-muted)" }}>No recent articles found</p>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

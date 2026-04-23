@@ -85,7 +85,7 @@ export default function Header() {
                 <button
                   onClick={() => setNewsDropdown((v) => !v)}
                   className={`flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-sm font-semibold transition-all duration-150 cursor-pointer font-[family-name:var(--font-display)] ${
-                    n.active
+                    pathname === n.href
                       ? "text-[var(--color-brand)] bg-[rgba(255,106,0,0.08)] border border-[rgba(255,106,0,0.2)]"
                       : "nav-link"
                   }`}
@@ -117,7 +117,9 @@ export default function Header() {
                 key={n.label}
                 href={n.href}
                 className={`flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-sm font-semibold transition-all duration-150 cursor-pointer font-[family-name:var(--font-display)] ${
-                  n.active ? "nav-link" : "nav-link"
+                  pathname === n.href
+                    ? "text-[var(--color-brand)] bg-[rgba(255,106,0,0.08)] border border-[rgba(255,106,0,0.2)]"
+                    : "nav-link"
                 }`}
               >
                 {n.label}
@@ -162,13 +164,6 @@ export default function Header() {
         <div className="ml-auto flex items-center gap-2">
           <ThemeToggle size="sm" />
           <button
-            onClick={() => setSearchOpen(true)}
-            className="w-9 h-9 rounded-[10px] flex items-center justify-center theme-btn transition-all duration-200 hover:bg-[rgba(255,106,0,0.12)] hover:border-[rgba(255,106,0,0.3)]"
-            aria-label="Search"
-          >
-            <Search size={15} className="text-[#888]" />
-          </button>
-          <button
             onClick={() => setDrawerOpen(true)}
             className="w-9 h-9 rounded-[10px] flex items-center justify-center theme-btn transition-all duration-200 hover:bg-[rgba(255,106,0,0.12)] hover:border-[rgba(255,106,0,0.3)]"
             aria-label="Menu"
@@ -179,7 +174,7 @@ export default function Header() {
       </div>
 
       {/* ── Price ticker ── */}
-      {!pathname.startsWith("/news/") && <PriceTicker />}
+      {(pathname === "/prices" || pathname === "/metrics") && <PriceTicker />}
 
       <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
       <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />

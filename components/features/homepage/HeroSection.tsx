@@ -29,7 +29,7 @@ export default function HeroSection({ posts }: { posts: WPPost[] }) {
           <Link href={`/news/${hero.slug}`}
             className="hero-card relative rounded-[20px] overflow-hidden cursor-pointer border border-[rgba(255,255,255,0.07)] group block">
             {/* Full-bleed image */}
-            <div className="h-[260px] lg:h-[340px] relative overflow-hidden"
+            <div className="h-[220px] lg:h-[290px] relative overflow-hidden"
               style={{ background: "linear-gradient(135deg, rgba(255,106,0,0.18) 0%, rgba(255,80,0,0.08) 50%, rgba(0,0,0,0.95) 100%)" }}>
               {hero.featuredImage && (
                 <Image
@@ -61,7 +61,7 @@ export default function HeroSection({ posts }: { posts: WPPost[] }) {
 
             {/* Title + author overlaid at bottom */}
             <div className="absolute bottom-0 left-0 right-0 px-5 pt-4 pb-6 lg:px-7 lg:pt-5 lg:pb-8 z-10">
-              <h1 className="text-white text-[19px] lg:text-[27px] font-extrabold tracking-[-0.5px] leading-[1.2] mb-3 font-[family-name:var(--font-display)] line-clamp-3">
+              <h1 className="text-white text-[16px] lg:text-[22px] font-extrabold tracking-[-0.5px] leading-[1.2] mb-3 font-[family-name:var(--font-display)] line-clamp-3">
                 <TranslatedText text={hero.title} />
               </h1>
               <div className="flex items-center gap-2 text-[12px] text-[#ccc] font-medium">

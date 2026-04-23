@@ -2,7 +2,7 @@
 import { Star, Flame, Clock, Plus, X, Check, Search } from "lucide-react";
 import TranslatedText from "@/components/ui/TranslatedText";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCryptoData } from "@/lib/hooks/useCryptoData";
 import { formatPrice, formatPercent } from "@/lib/utils/formatters";
 import { primaryCategory } from "@/lib/wordpress/queries";
@@ -184,18 +184,57 @@ function SbTitle({ label, Icon, action }: {
 
 /* ─── Sidebar ────────────────────────────────────────────────── */
 export default function Sidebar({ trendingPosts }: { trendingPosts: WPPost[] }) {
-  const { data }    = useCryptoData();
+  const { data }      = useCryptoData();
   const { openModal } = useAuthModal();
-  const [addOpen, setAddOpen]         = useState(false);
+  const [addOpen, setAddOpen]             = useState(false);
   const [watchlistSyms, setWatchlistSyms] = useState<string[]>(DEFAULT_SYMS);
+  const [isAuthed, setIsAuthed]           = useState(false);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then(r => r.ok ? r.json() : null)
+      .then(me => {
+        if (!me) return;
+        setIsAuthed(true);
+        return fetch("/api/watchlist").then(r => r.ok ? r.json() : []);
+      })
+      .then(wl => {
+        if (!Array.isArray(wl) || wl.length === 0) return;
+        setWatchlistSyms(wl.map((c: { coin_symbol: string }) => c.coin_symbol));
+      })
+      .catch(() => {});
+  }, []);
 
   async function handleAddClick() {
-    const res = await fetch("/api/auth/me").catch(() => null);
-    if (res?.ok) {
+    if (isAuthed) {
       setAddOpen(true);
     } else {
       openModal("signin", () => setAddOpen(true));
     }
+  }
+
+  async function handleSave(newSyms: string[]) {
+    const prevSet = new Set(watchlistSyms);
+    const newSet  = new Set(newSyms);
+    setWatchlistSyms(newSyms);
+    if (!isAuthed) return;
+
+    const toAdd    = newSyms.filter(s => !prevSet.has(s));
+    const toRemove = watchlistSyms.filter(s => !newSet.has(s));
+
+    await Promise.all([
+      ...toAdd.map(sym => {
+        const coin = data?.coins.find(c => c.symbol.toUpperCase() === sym);
+        return fetch("/api/watchlist", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ coin_symbol: sym, coin_name: coin?.name ?? sym }),
+        });
+      }),
+      ...toRemove.map(sym =>
+        fetch(`/api/watchlist?symbol=${encodeURIComponent(sym)}`, { method: "DELETE" })
+      ),
+    ]);
   }
 
   // Build display rows from live API data
@@ -212,7 +251,7 @@ export default function Sidebar({ trendingPosts }: { trendingPosts: WPPost[] }) 
         <WatchlistAddModal
           coins={data.coins}
           current={watchlistSyms}
-          onSave={setWatchlistSyms}
+          onSave={handleSave}
           onClose={() => setAddOpen(false)}
         />
       )}
