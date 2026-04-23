@@ -408,11 +408,11 @@ export default function EventsClient({ days, todayIdx }: { days: DayData[]; toda
             const active = activeFilter === key;
             return (
               <button key={key} onClick={() => handleFilterChange(key)}
-                className="flex items-center gap-1.5 font-bold cursor-pointer transition-all duration-150 font-[family-name:var(--font-display)]"
-                style={{ padding: "9px 14px", borderRadius: 12, fontSize: 12, background: active ? "linear-gradient(135deg,rgba(255,106,0,0.12),rgba(255,106,0,0.04))" : "rgba(255,255,255,0.04)", border: active ? "0.5px solid rgba(255,106,0,0.28)" : "0.5px solid rgba(255,255,255,0.08)", color: active ? "#ff6a00" : "#aaa" }}>
-                <Icon size={12} strokeWidth={2} style={{ stroke: active ? "#ff6a00" : "#666" }} />
+                className="flex items-center gap-1 md:gap-1.5 font-bold cursor-pointer transition-all duration-150 font-[family-name:var(--font-display)] text-[13px] md:text-[13px]"
+                style={{ padding: "7px 10px", borderRadius: 12, background: active ? "linear-gradient(135deg,rgba(255,106,0,0.12),rgba(255,106,0,0.04))" : "rgba(255,255,255,0.04)", border: active ? "0.5px solid rgba(255,106,0,0.28)" : "0.5px solid rgba(255,255,255,0.08)", color: active ? "#ff6a00" : "#aaa" }}>
+                <Icon size={10} strokeWidth={2} className="md:w-3 md:h-3" style={{ stroke: active ? "#ff6a00" : "#666" }} />
                 {label}
-                <span style={{ fontSize: 10, fontFamily: "var(--font-jetbrains-mono,monospace)", fontWeight: 700, marginLeft: 2, color: active ? "#ff6a00" : "#555", ...(active ? { background: "rgba(255,106,0,0.1)", padding: "1px 5px", borderRadius: 4 } : {}) }}>
+                <span style={{ fontSize: 9, fontFamily: "var(--font-jetbrains-mono,monospace)", fontWeight: 700, marginLeft: 2, color: active ? "#ff6a00" : "#555", ...(active ? { background: "rgba(255,106,0,0.1)", padding: "1px 5px", borderRadius: 4 } : {}) }}>
                   {counts[key]}
                 </span>
               </button>
