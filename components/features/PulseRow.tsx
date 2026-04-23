@@ -1,60 +1,91 @@
 "use client";
+import Link from "next/link";
 import { useCryptoData } from "@/lib/hooks/useCryptoData";
 import { formatDollarCompact, formatPercent } from "@/lib/utils/formatters";
 import clsx from "clsx";
 
-const STATIC_METRICS = [
-  { label: "Market cap",    value: "$2.87T", change: "+1.8%", up: true },
-  { label: "24h volume",   value: "$94.2B", change: "-3.1%", up: false },
-  { label: "BTC dominance",value: "52.4%",  change: "+0.3%", up: true },
-  { label: "Fear & greed", value: "45",     change: "Fear",  special: "brand" },
-  { label: "ETH gas",      value: "8",      change: "gwei",  special: "neutral" },
-  { label: "BTC halving",  value: "696d",   change: "Mar 2028", special: "gradient" },
-];
-
 export default function PulseRow() {
   const { data } = useCryptoData();
 
-  const metrics = data ? [
-    { label: "Market cap",    value: formatDollarCompact(data.global.total_market_cap.usd ?? 0), change: formatPercent(data.global.market_cap_change_percentage_24h_usd), up: data.global.market_cap_change_percentage_24h_usd >= 0 },
-    { label: "24h volume",   value: formatDollarCompact(data.global.total_volume.usd ?? 0), change: "", up: true },
-    { label: "BTC dominance",value: `${(data.global.market_cap_percentage.btc ?? 0).toFixed(1)}%`, change: "", up: true },
-    { label: "Fear & greed", value: "45",     change: "Fear",  special: "brand" as const },
-    { label: "ETH gas",      value: "8",      change: "gwei",  special: "neutral" as const },
-    { label: "BTC halving",  value: "696d",   change: "Mar 2028", special: "gradient" as const },
-  ] : STATIC_METRICS;
+  const btc = data?.coins.find((c) => c.id === "bitcoin");
+  const eth = data?.coins.find((c) => c.id === "ethereum");
+
+  const metrics = [
+    {
+      label: "BTC",
+      value: btc ? formatDollarCompact(btc.current_price) : "$94.2K",
+      change: btc ? formatPercent(btc.price_change_percentage_24h) : "+1.8%",
+      up: (btc?.price_change_percentage_24h ?? 1) >= 0,
+      href: "/prices",
+    },
+    {
+      label: "ETH",
+      value: eth ? formatDollarCompact(eth.current_price) : "$1,790",
+      change: eth ? formatPercent(eth.price_change_percentage_24h) : "-0.5%",
+      up: (eth?.price_change_percentage_24h ?? -0.5) >= 0,
+      href: "/prices",
+    },
+    {
+      label: "Fear & greed",
+      value: "45",
+      change: "Fear",
+      special: "brand" as const,
+      href: "/fear-greed",
+    },
+    {
+      label: "Market cap",
+      value: data ? formatDollarCompact(data.global.total_market_cap.usd ?? 0) : "$2.87T",
+      change: data ? formatPercent(data.global.market_cap_change_percentage_24h_usd) : "+1.8%",
+      up: (data?.global.market_cap_change_percentage_24h_usd ?? 1) >= 0,
+      href: "/metrics",
+    },
+    {
+      label: "24h volume",
+      value: data ? formatDollarCompact(data.global.total_volume.usd ?? 0) : "$94.2B",
+      change: "24h",
+      up: true,
+      href: "/metrics",
+    },
+    {
+      label: "BTC dominance",
+      value: data ? `${(data.global.market_cap_percentage.btc ?? 0).toFixed(1)}%` : "58.1%",
+      change: "dominance",
+      up: true,
+      href: "/metrics",
+    },
+  ];
 
   return (
-    <div className="grid grid-cols-3 md:grid-cols-6 gap-2 md:gap-3 mb-6">
-      {metrics.map((m, i) => (
-        <div key={m.label} className={`glass relative overflow-hidden p-3 md:p-4 rounded-[12px] md:rounded-[14px]${i >= 3 ? " hidden md:block" : ""}`}>
-          {/* top shimmer */}
-          <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
-          <p className="text-[8px] md:text-[9px] text-[#666] uppercase tracking-[0.8px] font-bold mb-1 md:mb-1.5 font-[family-name:var(--font-display)]">
-            {m.label}
-          </p>
-          <p
-            className={clsx(
-              "text-[15px] md:text-[22px] font-extrabold font-[family-name:var(--font-data)] tracking-[-0.5px] leading-none",
-              (m as any).special === "gradient" && "gradient-text-alt",
-              (m as any).special === "brand" && "text-[var(--color-brand)]",
-            )}
-          >
-            {m.value}
-          </p>
-          <p
-            className={clsx(
-              "text-[9px] md:text-[10px] font-bold mt-1 md:mt-1.5 font-[family-name:var(--font-data)]",
-              (m as any).special === "brand" ? "text-[var(--color-brand)]" :
-              (m as any).special === "neutral" ? "text-[#999]" :
-              (m as any).special === "gradient" ? "text-[#999]" :
-              (m as any).up ? "text-positive" : "text-negative"
-            )}
-          >
-            {(m as any).up && !(m as any).special ? "▲ " : ""}{!(m as any).up && !(m as any).special ? "▼ " : ""}{m.change}
-          </p>
-        </div>
+    <div className="relative mb-6">
+    <div className="flex md:grid md:grid-cols-6 gap-2 md:gap-3 overflow-x-auto scrollbar-hide pb-1 md:pb-0">
+      {metrics.map((m) => (
+        <Link key={m.label} href={m.href} className="block flex-shrink-0 w-[calc((100vw-40px)/3.4)] md:w-auto">
+          <div className="glass relative overflow-hidden p-3 md:p-4 rounded-[12px] md:rounded-[14px] hover:brightness-110 transition-all duration-150">
+            <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
+            <p className="text-[9px] text-[#666] uppercase tracking-[0.8px] font-bold mb-1.5 font-[family-name:var(--font-display)]">
+              {m.label}
+            </p>
+            <p
+              className={clsx(
+                "text-[18px] font-extrabold font-[family-name:var(--font-data)] tracking-[-0.5px] leading-none",
+                m.special === "brand" && "text-[var(--color-brand)]",
+              )}
+            >
+              {m.value}
+            </p>
+            <p
+              className={clsx(
+                "text-[10px] font-bold mt-1.5 font-[family-name:var(--font-data)] min-h-[14px]",
+                m.special === "brand" ? "text-[var(--color-brand)]" :
+                m.up ? "text-positive" : "text-negative"
+              )}
+            >
+              {!m.special && m.change && (m.up ? "▲ " : "▼ ")}{m.change}
+            </p>
+          </div>
+        </Link>
       ))}
+    </div>
     </div>
   );
 }

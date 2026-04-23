@@ -279,7 +279,7 @@ export default function TradingPage() {
               <span className="w-[5px] h-[5px] rounded-full pulse-anim" style={{ background: "#ff6a00", boxShadow: "0 0 8px #ff6a00" }} />
               Live trading community
             </div>
-            <h1 className="text-[34px] md:text-[46px] font-black tracking-[-1.5px] leading-[1.05] mb-0 font-[family-name:var(--font-display)] header-brand-text">
+            <h1 className="text-[34px] md:text-[46px] font-black tracking-[-1.5px] leading-[1.05] mb-0 font-[family-name:var(--font-league-spartan)] header-brand-text">
               Trade together.<br />
               <span className="gradient-text-alt">Win together.</span>
             </h1>

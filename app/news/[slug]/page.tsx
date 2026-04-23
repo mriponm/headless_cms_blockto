@@ -54,7 +54,7 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
       <div className="w-full max-w-[860px] mx-auto pb-16">
 
         {/* ── Hero image ── */}
-        <div className="relative mt-6 md:mt-8">
+        <div className="relative mt-0">
           <div className="w-full overflow-hidden relative bg-[#0a0a0a]" style={{ borderRadius: "5px" }}>
             {post.featuredImage ? (
               <Image

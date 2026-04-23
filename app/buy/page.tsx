@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import BrandLogo from "@/components/ui/BrandLogo";
 import FadeIn from "@/components/ui/FadeIn";
 import { Check, ExternalLink, ChevronRight, Star, Info } from "lucide-react";
 
@@ -229,16 +228,17 @@ function ExchangeCard({ ex }: { ex: Exchange }) {
         {/* header */}
         <div className="flex items-center gap-[14px] mb-[14px] pr-8">
           <div
-            className="buy-logo-bg w-[60px] h-[60px] rounded-[16px] flex items-center justify-center flex-shrink-0 relative overflow-hidden"
+            className="buy-logo-bg w-[64px] h-[64px] rounded-[16px] flex items-center justify-center flex-shrink-0 relative overflow-hidden"
             style={{
               border: `1.5px solid ${ex.logoColor}55`,
               boxShadow: `0 0 14px ${ex.logoColor}25,inset 0 1px 0 rgba(255,255,255,0.05)`,
             }}
           >
-            <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/[0.03] to-transparent" />
-            <span className="font-black text-[13px] tracking-[-0.5px] font-[family-name:var(--font-display)]" style={{ color: ex.logoColor }}>
-              {ex.name}
-            </span>
+            <span className="absolute inset-x-0 top-0 h-1/2 bg-gradient-to-b from-white/[0.03] to-transparent pointer-events-none" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={`/white_font_${ex.id}.png`} alt={ex.name} className="logo-dark w-full h-full object-cover" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={`/black_font_${ex.id}.png`} alt={ex.name} className="logo-light w-full h-full object-cover absolute" />
           </div>
           <div className="flex-1 min-w-0">
             <h2 className="text-[19px] font-black tracking-[-0.5px] mb-1 header-brand-text font-[family-name:var(--font-display)]">
@@ -369,7 +369,7 @@ export default function BuyPage() {
               Trusted partners
             </div>
 
-            <h1 className="text-[30px] md:text-[40px] font-black tracking-[-1.2px] leading-[1.05] mb-3 font-[family-name:var(--font-display)] header-brand-text">
+            <h1 className="text-[30px] md:text-[40px] font-black tracking-[-1.2px] leading-[1.05] mb-3 font-[family-name:var(--font-league-spartan)] header-brand-text">
               Buy &amp; sell<br />
               <span className="gradient-text-alt">the smart way</span>
             </h1>
@@ -378,25 +378,6 @@ export default function BuyPage() {
               Start trading with exclusive Blockto bonuses.
             </p>
 
-            {/* blockto × Exchanges */}
-            <div className="flex items-center justify-center gap-5 mt-5 mb-1">
-              <div className="flex items-center gap-2 text-[16px] font-extrabold font-[family-name:var(--font-display)] header-brand-text">
-                <div
-                  className="w-[28px] h-[28px] rounded-[8px] flex items-center justify-center overflow-hidden"
-                  style={{ background: "linear-gradient(135deg,#ff6a00,#ff8a30)", boxShadow: "0 0 14px rgba(255,106,0,0.3)" }}
-                >
-                  <BrandLogo height={20} />
-                </div>
-                blockto
-              </div>
-              <span className="text-[18px] font-black" style={{ color: "#555" }}>&times;</span>
-              <div className="flex items-center gap-2 text-[16px] font-extrabold font-[family-name:var(--font-display)] header-brand-text">
-                <div className="w-[28px] h-[28px] rounded-[8px] bg-white flex items-center justify-center text-black text-[12px] font-black">
-                  E
-                </div>
-                Exchanges
-              </div>
-            </div>
           </div>
         </section>
       </FadeIn>
