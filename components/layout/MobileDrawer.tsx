@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   X, Newspaper, TrendingUp, CircleDollarSign, CreditCard,
@@ -323,8 +324,8 @@ export default function MobileDrawer({ open, onClose }: Props) {
           <div className="mx-4 mt-4 mb-1 p-3.5 rounded-[14px] flex items-center gap-3 cursor-pointer relative overflow-hidden drawer-user-card transition-all duration-200"
             onClick={() => { openModal("signin"); onClose(); }}>
             <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(255,106,0,0.3)] to-transparent" />
-            <div className="w-10 h-10 rounded-full flex items-center justify-center text-[14px] font-extrabold text-black flex-shrink-0" style={{ background: "linear-gradient(135deg,#ff6a00,#ff8a30)", boxShadow: "0 0 14px rgba(255,106,0,0.25)" }}>
-              ?
+            <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0" style={{ boxShadow: "0 0 14px rgba(255,106,0,0.25)" }}>
+              <Image src="/signin_icon.jpeg" alt="Sign in" width={40} height={40} className="w-full h-full object-cover" />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[13px] font-bold drawer-item-text">Sign in to Blockto</p>
