@@ -1,21 +1,37 @@
 "use client";
-import { useEffect, useCallback } from "react";
-import { ArrowRight, Shield, X } from "lucide-react";
+import { useEffect, useCallback, useState } from "react";
+import { ArrowRight, Shield, X, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useAuthModal } from "@/components/providers/AuthModalProvider";
 import BrandLogo from "@/components/ui/BrandLogo";
 
-/* ── Auth0 routes (must use <a> not <Link>) ── */
-const LOGIN_URL = "/auth/login";
-const SIGNUP_URL = "/auth/login?screen_hint=signup";
-const GOOGLE_URL = "/auth/login?connection=google-oauth2";
-const TWITTER_URL = "/auth/login?connection=twitter";
+function openGooglePopup(onComplete: () => void) {
+  const w = 480, h = 640;
+  const left = Math.round(window.screenX + (window.outerWidth - w) / 2);
+  const top  = Math.round(window.screenY + (window.outerHeight - h) / 2);
+  const popup = window.open(
+    `/api/auth/social?provider=google&popup=1`,
+    "auth_popup",
+    `width=${w},height=${h},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes`
+  );
+  function onMessage(e: MessageEvent) {
+    if (e.origin !== window.location.origin) return;
+    if (e.data === "auth:complete") { cleanup(); onComplete(); }
+  }
+  const poll = setInterval(() => { if (popup?.closed) cleanup(); }, 500);
+  function cleanup() { clearInterval(poll); window.removeEventListener("message", onMessage); }
+  window.addEventListener("message", onMessage);
+  popup?.focus();
+}
 
-const VALUE_PROPS = [
-  { icon: "📈", text: "Track unlimited crypto prices" },
-  { icon: "⭐", text: "Follow top crypto KOLs" },
-  { icon: "🤖", text: "Daily AI market briefs" },
-  { icon: "🔔", text: "Custom price alerts" },
-];
+const inputCls = [
+  "w-full px-4 py-3 rounded-[11px] text-[13px] font-medium outline-none transition-all duration-150",
+  "bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)]",
+  "text-[var(--color-text)] placeholder-[#555]",
+  "focus:border-[rgba(255,106,0,0.5)] focus:bg-[rgba(255,106,0,0.03)]",
+].join(" ");
+
+const btnCls = "w-full flex items-center justify-center gap-2 py-[14px] px-5 rounded-[13px] text-[14px] font-extrabold text-black font-[family-name:var(--font-display)] transition-all duration-150 hover:-translate-y-0.5 relative overflow-hidden disabled:opacity-60";
+const btnStyle = { background: "linear-gradient(135deg,#ff6a00,#ff8a30)", boxShadow: "0 8px 24px rgba(255,106,0,0.3),0 2px 6px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.3)" };
 
 function GoogleSvg() {
   return (
@@ -28,23 +44,98 @@ function GoogleSvg() {
   );
 }
 
-function XSvg() {
+/* ─── Forgot Password panel ─── */
+function ForgotPanel({ onBack }: { onBack: () => void }) {
+  const [email, setEmail]     = useState("");
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg]         = useState("");
+  const [err, setErr]         = useState("");
+
+  async function handleReset() {
+    if (!email) { setErr("Enter your email"); return; }
+    setLoading(true); setErr("");
+    try {
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setErr(data.error || "Failed to send reset email"); setLoading(false); return; }
+      setMsg("Check your email for a password reset link.");
+      setLoading(false);
+    } catch {
+      setErr("Network error. Please try again.");
+      setLoading(false);
+    }
+  }
+
   return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-    </svg>
+    <div className="flex flex-col gap-0">
+      <p className="text-[13px] auth-sub-text mb-5 leading-[1.5]">
+        Enter your email and we&apos;ll send a reset link.
+      </p>
+      <div className="flex flex-col gap-2.5 mb-3">
+        <input
+          type="email" placeholder="Email address" value={email}
+          onChange={e => { setEmail(e.target.value); setErr(""); }}
+          className={inputCls}
+          onKeyDown={e => e.key === "Enter" && handleReset()}
+          disabled={!!msg}
+        />
+        {err && <p className="text-[11px] text-[#ff3b4f] font-semibold">{err}</p>}
+        {msg && <p className="text-[11px] text-[#22c55e] font-semibold">{msg}</p>}
+      </div>
+      {!msg && (
+        <button onClick={handleReset} disabled={loading} className={btnCls} style={btnStyle}>
+          <span className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent rounded-t-[13px] pointer-events-none" />
+          {loading ? <Loader2 size={16} className="animate-spin" /> : <>Send reset link <ArrowRight size={12} strokeWidth={3} /></>}
+        </button>
+      )}
+      <div className="text-center mt-4 pt-4 auth-bottom-border text-[12px] auth-sub-text font-medium">
+        <button onClick={onBack} className="text-[var(--color-brand)] font-bold cursor-pointer">Back to sign in</button>
+      </div>
+    </div>
   );
 }
 
 /* ─── Sign In panel ─── */
-function SignInPanel({ onSwitch }: { onSwitch: () => void }) {
+function SignInPanel({ onSwitch, onAuthComplete, onForgot, successMessage }: { onSwitch: () => void; onAuthComplete: () => void; onForgot: () => void; successMessage?: string }) {
+  const [email, setEmail]       = useState("");
+  const [password, setPassword] = useState("");
+  const [show, setShow]         = useState(false);
+  const [loading, setLoading]   = useState(false);
+  const [err, setErr]           = useState("");
+
+  async function handleSignIn() {
+    if (!email || !password) { setErr("Email and password are required"); return; }
+    setLoading(true); setErr("");
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setErr(data.error || "Sign in failed"); setLoading(false); return; }
+      onAuthComplete();
+    } catch {
+      setErr("Network error. Please try again.");
+      setLoading(false);
+    }
+  }
+
   return (
     <div className="flex flex-col gap-0">
-      {/* Quick stats */}
+      {successMessage && (
+        <div className="mb-4 px-4 py-3 rounded-[11px] bg-[rgba(34,197,94,0.08)] border border-[rgba(34,197,94,0.2)] text-[12px] text-[#22c55e] font-semibold text-center">
+          {successMessage}
+        </div>
+      )}
       <div className="grid grid-cols-3 gap-1.5 mb-5">
         {[
           { icon: "📈", value: "+4.2%", label: "watchlist 24h" },
-          { icon: "🔖", value: "18",    label: "unread saved" },
+          { icon: "🔖", value: "18",    label: "unread saved"  },
           { icon: "📋", value: "3",     label: "new AI briefs" },
         ].map((s) => (
           <div key={s.label} className="auth-stat-card rounded-[12px] py-3 px-2 text-center relative overflow-hidden">
@@ -56,32 +147,40 @@ function SignInPanel({ onSwitch }: { onSwitch: () => void }) {
         ))}
       </div>
 
-      {/* Social */}
-      <div className="grid grid-cols-2 gap-2 mb-4">
-        <a href={GOOGLE_URL} className="auth-social-btn flex items-center justify-center gap-2 py-3 rounded-[12px] text-[12px] font-bold transition-all duration-150">
-          <GoogleSvg /> Google
-        </a>
-        <a href={TWITTER_URL} className="auth-social-btn flex items-center justify-center gap-2 py-3 rounded-[12px] text-[12px] font-bold transition-all duration-150">
-          <XSvg /> X / Twitter
-        </a>
-      </div>
+      <button onClick={() => openGooglePopup(onAuthComplete)}
+        className="auth-social-btn w-full flex items-center justify-center gap-2 py-3 rounded-[12px] text-[12px] font-bold transition-all duration-150 cursor-pointer mb-4">
+        <GoogleSvg /> Continue with Google
+      </button>
 
-      {/* Divider */}
-      <div className="flex items-center gap-3 my-4">
+      <div className="flex items-center gap-3 my-3">
         <div className="flex-1 h-px auth-divider-line" />
-        <span className="text-[10px] font-bold text-[#555] uppercase tracking-[2px] font-[family-name:var(--font-data)]">or continue with email</span>
+        <span className="text-[10px] font-bold text-[#555] uppercase tracking-[2px] font-[family-name:var(--font-data)]">or email</span>
         <div className="flex-1 h-px auth-divider-line" />
       </div>
 
-      {/* Auth0 Universal Login CTA */}
-      <a
-        href={LOGIN_URL}
-        className="w-full flex items-center justify-center gap-2 py-[15px] px-5 rounded-[13px] text-[14px] font-extrabold text-black font-[family-name:var(--font-display)] transition-all duration-150 hover:-translate-y-0.5 relative overflow-hidden mb-2.5"
-        style={{ background: "linear-gradient(135deg,#ff6a00,#ff8a30)", boxShadow: "0 8px 24px rgba(255,106,0,0.3),0 2px 6px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.3)" }}
-      >
+      <div className="flex flex-col gap-2.5 mb-3">
+        <input type="email" placeholder="Email address" value={email}
+          onChange={e => { setEmail(e.target.value); setErr(""); }}
+          className={inputCls} onKeyDown={e => e.key === "Enter" && handleSignIn()} />
+        <div className="relative">
+          <input type={show ? "text" : "password"} placeholder="Password" value={password}
+            onChange={e => { setPassword(e.target.value); setErr(""); }}
+            className={inputCls + " pr-11"} onKeyDown={e => e.key === "Enter" && handleSignIn()} />
+          <button type="button" onClick={() => setShow(v => !v)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#555] hover:text-[#888] transition-colors">
+            {show ? <EyeOff size={15} /> : <Eye size={15} />}
+          </button>
+        </div>
+        <button onClick={onForgot} className="text-[11px] text-[var(--color-brand)] font-semibold text-right w-full cursor-pointer">
+          Forgot password?
+        </button>
+        {err && <p className="text-[11px] text-[#ff3b4f] font-semibold">{err}</p>}
+      </div>
+
+      <button onClick={handleSignIn} disabled={loading} className={btnCls} style={btnStyle}>
         <span className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent rounded-t-[13px] pointer-events-none" />
-        Sign in to Blockto <ArrowRight size={12} strokeWidth={3} />
-      </a>
+        {loading ? <Loader2 size={16} className="animate-spin" /> : <>Sign in to Blockto <ArrowRight size={12} strokeWidth={3} /></>}
+      </button>
 
       <div className="text-center mt-4 pt-4 auth-bottom-border text-[12px] auth-sub-text font-medium">
         Don&apos;t have an account?
@@ -92,52 +191,91 @@ function SignInPanel({ onSwitch }: { onSwitch: () => void }) {
 }
 
 /* ─── Sign Up panel ─── */
-function SignUpPanel({ onSwitch }: { onSwitch: () => void }) {
+function SignUpPanel({ onSwitch, onAuthComplete }: { onSwitch: (email?: string) => void; onAuthComplete: () => void }) {
+  const [name, setName]         = useState("");
+  const [email, setEmail]       = useState("");
+  const [password, setPassword] = useState("");
+  const [show, setShow]         = useState(false);
+  const [loading, setLoading]   = useState(false);
+  const [err, setErr]           = useState("");
+
+  async function handleSignUp() {
+    setErr("");
+    if (!email || !password) { setErr("Email and password are required"); return; }
+    if (password.length < 8)  { setErr("Password must be at least 8 characters"); return; }
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setErr(data.error || "Registration failed"); setLoading(false); return; }
+      // Switch to sign-in with success message
+      setLoading(false);
+      onSwitch(email);
+    } catch {
+      setErr("Network error. Please try again.");
+      setLoading(false);
+    }
+  }
+
+  const VALUE_PROPS = [
+    { icon: "📈", text: "Track unlimited crypto prices" },
+    { icon: "⭐", text: "Follow top crypto KOLs" },
+    { icon: "🤖", text: "Daily AI market briefs" },
+    { icon: "🔔", text: "Custom price alerts" },
+  ];
+
   return (
     <div className="flex flex-col gap-0">
-      {/* Value props */}
-      <div className="grid grid-cols-2 gap-2 mb-5">
+      <div className="grid grid-cols-2 gap-2 mb-4">
         {VALUE_PROPS.map((p) => (
           <div key={p.text} className="auth-stat-card rounded-[12px] p-3 flex items-center gap-2.5 relative overflow-hidden">
             <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none" />
-            <div className="w-7 h-7 rounded-[8px] bg-gradient-to-br from-[rgba(255,106,0,0.15)] to-[rgba(255,106,0,0.05)] border border-[rgba(255,106,0,0.25)] flex items-center justify-center flex-shrink-0 text-sm">
-              {p.icon}
-            </div>
+            <div className="w-7 h-7 rounded-[8px] bg-gradient-to-br from-[rgba(255,106,0,0.15)] to-[rgba(255,106,0,0.05)] border border-[rgba(255,106,0,0.25)] flex items-center justify-center flex-shrink-0 text-sm">{p.icon}</div>
             <span className="text-[11px] auth-text font-semibold leading-[1.25]">{p.text}</span>
           </div>
         ))}
       </div>
 
-      {/* Social */}
-      <div className="grid grid-cols-2 gap-2 mb-4">
-        <a href={`${GOOGLE_URL}&screen_hint=signup`} className="auth-social-btn flex items-center justify-center gap-2 py-3 rounded-[12px] text-[12px] font-bold transition-all duration-150">
-          <GoogleSvg /> Google
-        </a>
-        <a href={`${TWITTER_URL}&screen_hint=signup`} className="auth-social-btn flex items-center justify-center gap-2 py-3 rounded-[12px] text-[12px] font-bold transition-all duration-150">
-          <XSvg /> X / Twitter
-        </a>
-      </div>
+      <button onClick={() => openGooglePopup(onAuthComplete)}
+        className="auth-social-btn w-full flex items-center justify-center gap-2 py-3 rounded-[12px] text-[12px] font-bold transition-all duration-150 cursor-pointer mb-3" type="button">
+        <GoogleSvg /> Sign up with Google
+      </button>
 
-      {/* Divider */}
-      <div className="flex items-center gap-3 my-4">
+      <div className="flex items-center gap-3 my-3">
         <div className="flex-1 h-px auth-divider-line" />
-        <span className="text-[10px] font-bold text-[#555] uppercase tracking-[2px] font-[family-name:var(--font-data)]">or sign up with email</span>
+        <span className="text-[10px] font-bold text-[#555] uppercase tracking-[2px] font-[family-name:var(--font-data)]">or email</span>
         <div className="flex-1 h-px auth-divider-line" />
       </div>
 
-      {/* Auth0 signup CTA */}
-      <a
-        href={SIGNUP_URL}
-        className="w-full flex items-center justify-center gap-2 py-[15px] px-5 rounded-[13px] text-[14px] font-extrabold text-black font-[family-name:var(--font-display)] transition-all duration-150 hover:-translate-y-0.5 relative overflow-hidden"
-        style={{ background: "linear-gradient(135deg,#ff6a00,#ff8a30)", boxShadow: "0 8px 24px rgba(255,106,0,0.3),0 2px 6px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.3)" }}
-      >
+      <div className="flex flex-col gap-2.5 mb-3">
+        <input type="text" placeholder="Display name (optional)" value={name}
+          onChange={e => setName(e.target.value)} className={inputCls} />
+        <input type="email" placeholder="Email address" value={email}
+          onChange={e => { setEmail(e.target.value); setErr(""); }} className={inputCls} />
+        <div className="relative">
+          <input type={show ? "text" : "password"} placeholder="Password (min 8 chars)" value={password}
+            onChange={e => { setPassword(e.target.value); setErr(""); }}
+            className={inputCls + " pr-11"} onKeyDown={e => e.key === "Enter" && handleSignUp()} />
+          <button type="button" onClick={() => setShow(v => !v)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#555] hover:text-[#888] transition-colors">
+            {show ? <EyeOff size={15} /> : <Eye size={15} />}
+          </button>
+        </div>
+        {err && <p className="text-[11px] text-[#ff3b4f] font-semibold">{err}</p>}
+      </div>
+
+      <button onClick={handleSignUp} disabled={loading} className={btnCls} style={btnStyle}>
         <span className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/20 to-transparent rounded-t-[13px] pointer-events-none" />
-        Create free account <ArrowRight size={12} strokeWidth={3} />
-      </a>
+        {loading ? <Loader2 size={16} className="animate-spin" /> : <>Create free account <ArrowRight size={12} strokeWidth={3} /></>}
+      </button>
 
       <div className="text-center mt-4 pt-4 auth-bottom-border text-[12px] auth-sub-text font-medium">
         Already have an account?
-        <button onClick={onSwitch} className="text-[var(--color-brand)] font-bold ml-1 cursor-pointer">Sign in</button>
+        <button onClick={() => onSwitch()} className="text-[var(--color-brand)] font-bold ml-1 cursor-pointer">Sign in</button>
       </div>
     </div>
   );
@@ -146,6 +284,8 @@ function SignUpPanel({ onSwitch }: { onSwitch: () => void }) {
 /* ─── Main modal ─── */
 export default function AuthModal() {
   const { open, mode, closeModal, setMode } = useAuthModal();
+  const [showForgot, setShowForgot]         = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState<string | undefined>(undefined);
 
   const handleKey = useCallback((e: KeyboardEvent) => {
     if (e.key === "Escape") closeModal();
@@ -155,6 +295,9 @@ export default function AuthModal() {
     if (open) {
       document.addEventListener("keydown", handleKey);
       document.body.style.overflow = "hidden";
+    } else {
+      setShowForgot(false);
+      setRegisteredEmail(undefined);
     }
     return () => {
       document.removeEventListener("keydown", handleKey);
@@ -162,78 +305,82 @@ export default function AuthModal() {
     };
   }, [open, handleKey]);
 
+  function onLoginComplete() {
+    closeModal();
+    window.location.href = "/profile";
+  }
+
+  function onSignUpComplete() {
+    closeModal();
+    window.location.href = "/profile";
+  }
+
+  function switchToSignIn(email?: string) {
+    setRegisteredEmail(email);
+    setMode("signin");
+  }
+
   if (!open) return null;
+
+  const isForgot = showForgot && mode === "signin";
 
   return (
     <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center px-0 sm:px-3 py-0 sm:py-6">
-      {/* Backdrop */}
       <div className="absolute inset-0 auth-modal-backdrop" onClick={closeModal} />
 
-      {/* Panel */}
       <div className="relative w-full max-w-[480px] auth-modal-panel sm:rounded-[24px] rounded-t-[24px] overflow-hidden flex flex-col max-h-[92vh] sm:max-h-[90vh]">
         {/* Header */}
         <div className="flex items-center justify-between px-4 pt-4 pb-3 flex-shrink-0 gap-2">
           <BrandLogo height={28} />
-
-          {/* Tabs */}
-          <div className="flex items-center gap-1 bg-[rgba(255,255,255,0.04)] rounded-[10px] p-1 border border-[rgba(255,255,255,0.06)] flex-shrink-0">
-            <button
-              onClick={() => setMode("signin")}
-              className={`px-3 py-1.5 rounded-[8px] text-[11px] font-bold transition-all duration-150 cursor-pointer whitespace-nowrap ${
-                mode === "signin"
-                  ? "bg-gradient-to-br from-[#ff6a00] to-[#ff8a30] text-black shadow-[0_0_12px_rgba(255,106,0,0.3)]"
-                  : "auth-tab-inactive"
-              }`}
-            >Sign in</button>
-            <button
-              onClick={() => setMode("signup")}
-              className={`px-3 py-1.5 rounded-[8px] text-[11px] font-bold transition-all duration-150 cursor-pointer whitespace-nowrap ${
-                mode === "signup"
-                  ? "bg-gradient-to-br from-[#ff6a00] to-[#ff8a30] text-black shadow-[0_0_12px_rgba(255,106,0,0.3)]"
-                  : "auth-tab-inactive"
-              }`}
-            >Sign up</button>
-          </div>
-
+          {!isForgot && (
+            <div className="flex items-center gap-1 bg-[rgba(255,255,255,0.04)] rounded-[10px] p-1 border border-[rgba(255,255,255,0.06)] flex-shrink-0">
+              <button onClick={() => { setMode("signin"); setShowForgot(false); }}
+                className={`px-3 py-1.5 rounded-[8px] text-[11px] font-bold transition-all duration-150 cursor-pointer whitespace-nowrap ${
+                  mode === "signin" ? "bg-gradient-to-br from-[#ff6a00] to-[#ff8a30] text-black shadow-[0_0_12px_rgba(255,106,0,0.3)]" : "auth-tab-inactive"
+                }`}>Sign in</button>
+              <button onClick={() => { setMode("signup"); setShowForgot(false); }}
+                className={`px-3 py-1.5 rounded-[8px] text-[11px] font-bold transition-all duration-150 cursor-pointer whitespace-nowrap ${
+                  mode === "signup" ? "bg-gradient-to-br from-[#ff6a00] to-[#ff8a30] text-black shadow-[0_0_12px_rgba(255,106,0,0.3)]" : "auth-tab-inactive"
+                }`}>Sign up</button>
+            </div>
+          )}
           <button onClick={closeModal} className="auth-bio-btn w-8 h-8 rounded-[8px] flex items-center justify-center cursor-pointer flex-shrink-0">
             <X size={14} />
           </button>
         </div>
 
-        {/* Orange shimmer line */}
         <span className="flex-shrink-0 h-px mx-5 bg-gradient-to-r from-transparent via-[rgba(255,106,0,0.3)] to-transparent" />
 
-        {/* Welcome headline */}
-        <div className="px-5 pt-5 pb-2 flex-shrink-0">
-          <div className="inline-flex items-center gap-1.5 text-[9px] font-extrabold uppercase tracking-[2px] text-[var(--color-brand)] px-3 py-[5px] rounded-full border border-[rgba(255,106,0,0.3)] bg-[rgba(255,106,0,0.08)] mb-3">
-            <span className="w-[5px] h-[5px] bg-[var(--color-positive)] rounded-full shadow-[0_0_8px_var(--color-positive)] pls-anim" />
-            {mode === "signin" ? "Welcome back" : "Free forever · No card required"}
-          </div>
-          <h2 className="text-[26px] font-black tracking-[-1.1px] leading-[1.05] auth-heading font-[family-name:var(--font-display)]">
-            {mode === "signin"
-              ? <>Sign in to<br /><span className="gradient-text-alt">your account</span></>
-              : <>Your <span className="gradient-text-alt">crypto edge</span><br />starts here</>}
+        <div className="px-5 pt-4 pb-1 flex-shrink-0">
+          <h2 className="text-[22px] font-black tracking-[-0.8px] leading-[1.1] auth-heading font-[family-name:var(--font-display)]">
+            {isForgot
+              ? <>Reset your <span className="gradient-text-alt">password</span></>
+              : mode === "signin"
+                ? <>Sign in to <span className="gradient-text-alt">your account</span></>
+                : <>Your <span className="gradient-text-alt">crypto edge</span> starts here</>}
           </h2>
         </div>
 
-        {/* Scrollable content */}
         <div className="overflow-y-auto flex-1 px-5 pb-5 pt-3">
-          {mode === "signin"
-            ? <SignInPanel onSwitch={() => setMode("signup")} />
-            : <SignUpPanel onSwitch={() => setMode("signin")} />}
+          {isForgot
+            ? <ForgotPanel onBack={() => setShowForgot(false)} />
+            : mode === "signin"
+              ? <SignInPanel onSwitch={() => setMode("signup")} onAuthComplete={onLoginComplete} onForgot={() => setShowForgot(true)} successMessage={registeredEmail ? `Account created! Sign in to continue.` : undefined} />
+              : <SignUpPanel onSwitch={switchToSignIn} onAuthComplete={onSignUpComplete} />}
 
-          {/* Security bar */}
-          <div className="flex items-center justify-center gap-4 flex-wrap pt-4 mt-2">
-            {(mode === "signin"
-              ? ["Encrypted login", "2FA ready", "GDPR compliant"]
-              : ["No credit card", "Bank-level security", "Cancel anytime"]
-            ).map((label) => (
-              <div key={label} className="flex items-center gap-1.5 text-[10px] text-[#666] font-semibold">
-                <Shield size={10} className="text-[#555]" />
-                {label}
-              </div>
-            ))}
-          </div>
+          {!isForgot && (
+            <div className="flex items-center justify-center gap-4 flex-wrap pt-4 mt-2">
+              {(mode === "signin"
+                ? ["Encrypted login", "2FA ready", "GDPR compliant"]
+                : ["No credit card", "Bank-level security", "Cancel anytime"]
+              ).map((label) => (
+                <div key={label} className="flex items-center gap-1.5 text-[10px] text-[#666] font-semibold">
+                  <Shield size={10} className="text-[#555]" />
+                  {label}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -226,6 +226,11 @@ export default function MobileDrawer({ open, onClose }: Props) {
   const { resolved } = useTheme();
   const drawerRef = useRef<HTMLDivElement>(null);
   const { openModal } = useAuthModal();
+  const [me, setMe] = useState<{ name?: string; email?: string; picture?: string } | null>(null);
+
+  useEffect(() => {
+    fetch("/api/auth/me").then(r => r.ok ? r.json() : null).then(setMe).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (open) { document.body.style.overflow = "hidden"; document.body.classList.add("drawer-open"); }
@@ -298,18 +303,36 @@ export default function MobileDrawer({ open, onClose }: Props) {
           </button>
         </div>
 
-        {/* Sign-in card */}
-        <div className="mx-4 mt-4 mb-1 p-3.5 rounded-[14px] flex items-center gap-3 cursor-pointer relative overflow-hidden drawer-user-card transition-all duration-200" onClick={() => { openModal("signin"); onClose(); }}>
-          <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(255,106,0,0.3)] to-transparent" />
-          <div className="w-10 h-10 rounded-full flex items-center justify-center text-[14px] font-extrabold text-black flex-shrink-0" style={{ background: "linear-gradient(135deg,#ff6a00,#ff8a30)", boxShadow: "0 0 14px rgba(255,106,0,0.25)" }}>
-            TL
+        {/* User card */}
+        {me ? (
+          <Link href="/profile" onClick={onClose}
+            className="mx-4 mt-4 mb-1 p-3.5 rounded-[14px] flex items-center gap-3 relative overflow-hidden drawer-user-card transition-all duration-200">
+            <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(255,106,0,0.3)] to-transparent" />
+            {me.picture
+              ? <img src={me.picture} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0 border border-[rgba(255,106,0,0.3)]" />
+              : <div className="w-10 h-10 rounded-full flex items-center justify-center text-[14px] font-extrabold text-black flex-shrink-0" style={{ background: "linear-gradient(135deg,#ff6a00,#ff8a30)" }}>
+                  {(me.name ?? me.email ?? "U").slice(0, 1).toUpperCase()}
+                </div>}
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] font-bold drawer-item-text truncate">{me.name ?? me.email}</p>
+              <p className="text-[11px] drawer-sub-text font-medium mt-0.5 truncate">{me.email}</p>
+            </div>
+            <span className="text-[#ff6a00] text-lg leading-none">&rsaquo;</span>
+          </Link>
+        ) : (
+          <div className="mx-4 mt-4 mb-1 p-3.5 rounded-[14px] flex items-center gap-3 cursor-pointer relative overflow-hidden drawer-user-card transition-all duration-200"
+            onClick={() => { openModal("signin"); onClose(); }}>
+            <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(255,106,0,0.3)] to-transparent" />
+            <div className="w-10 h-10 rounded-full flex items-center justify-center text-[14px] font-extrabold text-black flex-shrink-0" style={{ background: "linear-gradient(135deg,#ff6a00,#ff8a30)", boxShadow: "0 0 14px rgba(255,106,0,0.25)" }}>
+              ?
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] font-bold drawer-item-text">Sign in to Blockto</p>
+              <p className="text-[11px] drawer-sub-text font-medium mt-0.5">Save articles &amp; track coins</p>
+            </div>
+            <span className="text-[#ff6a00] text-lg leading-none">&rsaquo;</span>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-bold drawer-item-text">Sign in to Blockto</p>
-            <p className="text-[11px] drawer-sub-text font-medium mt-0.5">Save articles &amp; track coins</p>
-          </div>
-          <span className="text-[#ff6a00] text-lg leading-none">&rsaquo;</span>
-        </div>
+        )}
 
         {/* Scrollable nav */}
         <div className="flex-1 overflow-y-auto pb-2 drawer-scroll">

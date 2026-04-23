@@ -1,11 +1,14 @@
-import { auth0 } from "./lib/auth0";
+import { NextRequest, NextResponse } from "next/server";
+import { createSupabaseMiddlewareClient } from "@/lib/supabase/ssr";
 
-export async function proxy(request: Request) {
-  return await auth0.middleware(request);
+export async function proxy(req: NextRequest) {
+  const res = NextResponse.next();
+  const supabase = createSupabaseMiddlewareClient(req, res);
+  // Refresh session from cookie — no network call, fast
+  await supabase.auth.getSession();
+  return res;
 }
 
 export const config = {
-  matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)",
-  ],
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)"],
 };

@@ -1,35 +1,33 @@
 import { NextResponse } from "next/server";
-import { auth0 } from "@/lib/auth0";
-import { findWpUserByAuth0Id, createWpUser } from "@/lib/wordpress/users";
+import { createSupabaseServerClient } from "@/lib/supabase/ssr";
+import { supabase } from "@/lib/supabase/server";
 
 export async function POST() {
-  const session = await auth0.getSession();
+  const client = await createSupabaseServerClient();
+  const { data: { user } } = await client.auth.getUser();
 
-  if (!session?.user) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { sub: auth0Id, email, name } = session.user;
+  const { id, email, user_metadata } = user;
+  if (!email) return NextResponse.json({ error: "Incomplete user data" }, { status: 400 });
 
-  if (!auth0Id || !email) {
-    return NextResponse.json({ error: "Incomplete user data" }, { status: 400 });
-  }
+  const name = user_metadata?.name ?? user_metadata?.full_name ?? email.split("@")[0];
+  const picture = user_metadata?.avatar_url ?? user_metadata?.picture ?? null;
 
   try {
-    let wpUser = await findWpUserByAuth0Id(auth0Id);
+    const { data, error } = await supabase
+      .from("profiles")
+      .upsert(
+        { auth0_id: id, email, name, picture, updated_at: new Date().toISOString() },
+        { onConflict: "auth0_id" }
+      )
+      .select("id")
+      .single();
 
-    if (!wpUser) {
-      wpUser = await createWpUser({
-        email,
-        name: name ?? email.split("@")[0],
-        auth0Id,
-      });
-      return NextResponse.json({ synced: true, created: true, wpUserId: wpUser.id });
-    }
-
-    return NextResponse.json({ synced: true, created: false, wpUserId: wpUser.id });
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ synced: true, profileId: data.id });
   } catch (err) {
-    console.error("[sync-user]", err);
-    return NextResponse.json({ error: "Sync failed" }, { status: 500 });
+    const msg = err instanceof Error ? err.message : String(err);
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 }

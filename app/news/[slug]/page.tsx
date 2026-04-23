@@ -75,13 +75,19 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
   return (
     <>
       {/* Reading progress — fixed at very top of viewport */}
-      <ArticleInteractive />
+      <ArticleInteractive
+        slug={slug}
+        title={post.title}
+        image={post.featuredImage?.node.sourceUrl ?? ""}
+        category={cat?.name ?? ""}
+        date={dateStr}
+      />
 
       <div className="w-full max-w-[860px] mx-auto pb-16">
 
         {/* ── Hero image ── */}
         <div className="relative mt-6 md:mt-8">
-          <div className="w-full overflow-hidden relative bg-[#0a0a0a]">
+          <div className="w-full overflow-hidden relative bg-[#0a0a0a]" style={{ borderRadius: "5px" }}>
             {post.featuredImage ? (
               <Image
                 src={post.featuredImage.node.sourceUrl}
@@ -114,7 +120,15 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
             </div>
 
             {/* Save + Share — bottom right */}
-            <ArticleImageActions title={post.title} url={postUrl} />
+            <ArticleImageActions
+              title={post.title}
+              url={postUrl}
+              slug={slug}
+              excerpt={post.excerpt ?? ""}
+              category={cat?.name ?? ""}
+              image={post.featuredImage?.node.sourceUrl ?? ""}
+              date={dateStr}
+            />
           </div>
 
           {/* Caption */}

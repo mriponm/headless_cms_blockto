@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Star } from "lucide-react";
 import { COIN_ICONS } from "./coinIcons";
 
 const ALL_COINS = [
@@ -80,9 +81,39 @@ function CoinIcon({ sym }: { sym: string }) {
 }
 
 export default function PricesView() {
-  const [query, setQuery]   = useState("");
-  const [eur, setEur]       = useState(false);
-  const [page, setPage]     = useState(1);
+  const [query, setQuery]       = useState("");
+  const [eur, setEur]           = useState(false);
+  const [page, setPage]         = useState(1);
+  const [watched, setWatched]   = useState<Set<string>>(new Set());
+  const [toggling, setToggling] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetch("/api/watchlist")
+      .then(r => r.ok ? r.json() : [])
+      .then((list: { coin_symbol: string }[]) => {
+        if (Array.isArray(list)) setWatched(new Set(list.map(c => c.coin_symbol)));
+      })
+      .catch(() => {});
+  }, []);
+
+  async function toggleWatch(sym: string, name: string) {
+    if (toggling) return;
+    setToggling(sym);
+    try {
+      if (watched.has(sym)) {
+        const res = await fetch(`/api/watchlist?symbol=${sym}`, { method: "DELETE" });
+        if (res.ok) setWatched(prev => { const s = new Set(prev); s.delete(sym); return s; });
+      } else {
+        const res = await fetch("/api/watchlist", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ coin_symbol: sym, coin_name: name }),
+        });
+        if (res.ok) setWatched(prev => new Set(prev).add(sym));
+      }
+    } catch { /* noop */ }
+    setToggling(null);
+  }
 
   const filtered = ALL_COINS.filter(
     (c) =>
@@ -169,12 +200,14 @@ export default function PricesView() {
               <span className="text-right">Market Cap</span>
               <span className="text-right">Volume</span>
               <span className="text-right">Chart</span>
+              <span></span>
             </div>
             {/* Mobile head */}
             <div className="pr-table-head-mobile">
               <span>#</span><span>Name</span>
               <span className="text-right">Price</span>
               <span className="text-right">24h</span>
+              <span></span>
             </div>
 
             {paged.length === 0 && <div className="pr-no-results">No coins found</div>}
@@ -219,6 +252,17 @@ export default function PricesView() {
                     strokeLinecap="round"
                   />
                 </svg>
+
+                <button
+                  onClick={() => toggleWatch(c.s, c.n)}
+                  disabled={toggling === c.s}
+                  title={watched.has(c.s) ? "Remove from watchlist" : "Add to watchlist"}
+                  className="w-7 h-7 rounded-[7px] flex items-center justify-center transition-all duration-150 cursor-pointer disabled:opacity-40"
+                  style={watched.has(c.s)
+                    ? { color: "#ff6a00", background: "rgba(255,106,0,0.1)", border: "0.5px solid rgba(255,106,0,0.25)" }
+                    : { color: "#555", background: "transparent", border: "0.5px solid transparent" }}>
+                  <Star size={13} fill={watched.has(c.s) ? "#ff6a00" : "none"} />
+                </button>
               </div>
             ))}
 

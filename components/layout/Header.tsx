@@ -8,8 +8,8 @@ import ThemeToggle from "@/components/ui/ThemeToggle";
 import BrandLogo from "@/components/ui/BrandLogo";
 import MobileDrawer from "@/components/layout/MobileDrawer";
 import SearchOverlay from "@/components/ui/SearchOverlay";
-import { useAuthModal } from "@/components/providers/AuthModalProvider";
 import { useTheme } from "@/components/providers/ThemeProvider";
+import UserButton from "@/components/ui/UserButton";
 
 const NAV = [
   { label: "News",      href: "/",        active: true, hasDropdown: true },
@@ -34,7 +34,6 @@ export default function Header() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [newsDropdown, setNewsDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { openModal } = useAuthModal();
   const { resolved } = useTheme();
   const isLight = resolved === "light";
   const pathname = usePathname();
@@ -154,13 +153,7 @@ export default function Header() {
             <span className="absolute top-2 right-2 w-2 h-2 bg-[var(--color-brand)] rounded-full border-2 border-black shadow-[0_0_6px_var(--color-brand)]" />
           </button>
           <ThemeToggle />
-          <button
-            className="px-[18px] py-2.5 rounded-[10px] text-[13px] font-extrabold text-black cursor-pointer font-[family-name:var(--font-display)] transition-all duration-150 hover:brightness-110 hover:shadow-[0_4px_20px_rgba(255,106,0,0.4)]"
-            style={{ background: "var(--gradient-brand)", boxShadow: "0 4px 14px rgba(255,106,0,0.25), inset 0 1px 0 rgba(255,255,255,0.2)" }}
-            onClick={() => openModal("signin")}
-          >
-            Sign in
-          </button>
+          <UserButton />
         </div>
       </div>
 
