@@ -126,8 +126,8 @@ function WatchlistAddModal({
                   {meta?.sym2 ?? sym.slice(0, 1)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[13px] font-semibold font-[family-name:var(--font-display)]">{c.name}</p>
-                  <p className="text-[10px] text-[#555] font-[family-name:var(--font-data)] font-medium">{sym}</p>
+                  <p className="text-[13px] font-semibold font-[family-name:var(--font-display)]" data-no-translate>{c.name}</p>
+                  <p className="text-[10px] text-[#555] font-[family-name:var(--font-data)] font-medium" data-no-translate>{sym}</p>
                 </div>
                 <div className="text-right mr-2">
                   <p className="text-[12px] font-semibold font-[family-name:var(--font-data)]">{formatPrice(c.current_price)}</p>
@@ -282,8 +282,8 @@ export default function Sidebar({ trendingPosts }: { trendingPosts: WPPost[] }) 
                 {w.meta?.sym2 ?? w.sym.slice(0, 1)}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-semibold font-[family-name:var(--font-display)]">{name}</p>
-                <p className="text-[10px] text-[#666] font-[family-name:var(--font-data)] font-medium">{w.sym}</p>
+                <p className="text-[13px] font-semibold font-[family-name:var(--font-display)]" data-no-translate>{name}</p>
+                <p className="text-[10px] text-[#666] font-[family-name:var(--font-data)] font-medium" data-no-translate>{w.sym}</p>
               </div>
               <div className="text-right">
                 <p className="text-[13px] font-semibold font-[family-name:var(--font-data)]">{price}</p>

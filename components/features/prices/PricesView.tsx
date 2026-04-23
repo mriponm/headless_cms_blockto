@@ -225,8 +225,8 @@ export default function PricesView() {
                     </span>
                   </div>
                   <div>
-                    <div className="pr-coin-name">{c.n}</div>
-                    <div className="pr-coin-sym">{c.s}</div>
+                    <div className="pr-coin-name" data-no-translate>{c.n}</div>
+                    <div className="pr-coin-sym" data-no-translate>{c.s}</div>
                   </div>
                 </div>
 
@@ -314,8 +314,8 @@ export default function PricesView() {
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={COIN_ICONS["BTC"]} alt="BTC" width={40} height={40} className="pr-btc-logo" />
                 <div>
-                  <div className="pr-btc-name">Bitcoin</div>
-                  <div className="pr-btc-sym">BTC</div>
+                  <div className="pr-btc-name" data-no-translate>Bitcoin</div>
+                  <div className="pr-btc-sym" data-no-translate>BTC</div>
                 </div>
                 <div className="pr-chg pr-chg-up pr-btc-badge">+2.4%</div>
               </div>

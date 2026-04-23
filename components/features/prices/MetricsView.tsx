@@ -64,7 +64,7 @@ function CoinTable({ rows, type }: { rows: typeof GAINERS; type: "up" | "dn" }) 
                 : null}
               <span className="mtr-ico" style={{ background: r.bg, color: r.color, display: COIN_ICONS[r.sym] ? "none" : "flex" }}>{r.ico}</span>
             </div>
-            <div><div className="mtr-nm">{r.name}</div><div className="mtr-sy">{r.sym}</div></div>
+            <div><div className="mtr-nm" data-no-translate>{r.name}</div><div className="mtr-sy" data-no-translate>{r.sym}</div></div>
           </div>
           <div className="mtr-pr">{r.price}</div>
           <div className={`mtr-chg ${type}`}>{r.chg}</div>
