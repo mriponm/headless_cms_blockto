@@ -283,7 +283,7 @@ function SignUpPanel({ onSwitch, onAuthComplete }: { onSwitch: (email?: string) 
 
 /* ─── Main modal ─── */
 export default function AuthModal() {
-  const { open, mode, closeModal, setMode } = useAuthModal();
+  const { open, mode, onSuccess, closeModal, setMode } = useAuthModal();
   const [showForgot, setShowForgot]         = useState(false);
   const [registeredEmail, setRegisteredEmail] = useState<string | undefined>(undefined);
 
@@ -306,13 +306,17 @@ export default function AuthModal() {
   }, [open, handleKey]);
 
   function onLoginComplete() {
+    const cb = onSuccess.current;
+    onSuccess.current = null;
     closeModal();
-    window.location.href = "/profile";
+    if (cb) { cb(); } else { window.location.href = "/profile"; }
   }
 
   function onSignUpComplete() {
+    const cb = onSuccess.current;
+    onSuccess.current = null;
     closeModal();
-    window.location.href = "/profile";
+    if (cb) { cb(); } else { window.location.href = "/profile"; }
   }
 
   function switchToSignIn(email?: string) {

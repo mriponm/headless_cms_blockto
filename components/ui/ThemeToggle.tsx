@@ -1,11 +1,10 @@
 "use client";
-import { Moon, Sun, Monitor } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import { useTheme, type Theme } from "@/components/providers/ThemeProvider";
 
 const OPTIONS: { value: Theme; Icon: React.ElementType; label: string }[] = [
-  { value: "system", Icon: Monitor, label: "System" },
-  { value: "light",  Icon: Sun,     label: "Light" },
-  { value: "dark",   Icon: Moon,    label: "Dark" },
+  { value: "light", Icon: Sun,  label: "Light" },
+  { value: "dark",  Icon: Moon, label: "Dark" },
 ];
 
 export default function ThemeToggle({ size = "md" }: { size?: "sm" | "md" }) {

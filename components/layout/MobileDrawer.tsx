@@ -6,7 +6,7 @@ import {
   X, Newspaper, TrendingUp, CircleDollarSign, CreditCard,
   Calendar, BarChart2, Info, Mail, Shield,
   ChevronDown, MessageSquare, Send, PlayCircle, Globe, Check,
-  Monitor, Sun, Moon,
+  Sun, Moon,
 } from "lucide-react";
 import BrandLogo from "@/components/ui/BrandLogo";
 import { useI18n } from "@/components/providers/I18nProvider";
@@ -46,9 +46,8 @@ const SOCIALS = [
 
 
 const THEME_OPTIONS: { value: Theme; Icon: React.ElementType; label: string }[] = [
-  { value: "system", Icon: Monitor, label: "System" },
-  { value: "light",  Icon: Sun,     label: "Light" },
-  { value: "dark",   Icon: Moon,    label: "Dark" },
+  { value: "light", Icon: Sun,  label: "Light" },
+  { value: "dark",  Icon: Moon, label: "Dark" },
 ];
 
 interface Props { open: boolean; onClose: () => void; }

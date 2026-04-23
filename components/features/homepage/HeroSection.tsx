@@ -29,7 +29,7 @@ export default function HeroSection({ posts }: { posts: WPPost[] }) {
           <Link href={`/news/${hero.slug}`}
             className="hero-card relative rounded-[20px] overflow-hidden cursor-pointer border border-[rgba(255,255,255,0.07)] group block">
             {/* Full-bleed image */}
-            <div className="h-[320px] lg:h-[480px] relative overflow-hidden"
+            <div className="h-[260px] lg:h-[340px] relative overflow-hidden"
               style={{ background: "linear-gradient(135deg, rgba(255,106,0,0.18) 0%, rgba(255,80,0,0.08) 50%, rgba(0,0,0,0.95) 100%)" }}>
               {hero.featuredImage && (
                 <Image
