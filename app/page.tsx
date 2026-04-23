@@ -10,11 +10,12 @@ import MobileNewsCards from "@/components/features/homepage/MobileNewsCards";
 import { getPosts } from "@/lib/wordpress/queries";
 
 export default async function HomePage() {
-  const [latestPosts, generalPosts, bitcoinPosts, ethereumPosts] = await Promise.all([
+  const [latestPosts, generalPosts, bitcoinPosts, ethereumPosts, altcoinPosts] = await Promise.all([
     getPosts(6),
     getPosts(9, "general-news"),
     getPosts(9, "bitcoin"),
     getPosts(9, "ethereum"),
+    getPosts(9, "altcoins"),
   ]);
 
   const heroPosts    = latestPosts.slice(0, 3);
@@ -64,6 +65,19 @@ export default async function HomePage() {
                 symbol="Ξ"
               />
             </FadeIn>
+
+            <FadeIn delay={0.38}>
+              <CategoryNewsSection
+                posts={altcoinPosts}
+                title="Altcoin news"
+                viewAllHref="/category/altcoins"
+                accentColor="#ff6a00"
+                accentBg="rgba(255,106,0,0.08)"
+                accentBorder="rgba(255,106,0,0.15)"
+                accentGrad="linear-gradient(135deg,#ff9a40,#ff6a00)"
+                symbol="◎"
+              />
+            </FadeIn>
           </div>
 
           {/* ── Mobile layout ── */}
@@ -99,16 +113,25 @@ export default async function HomePage() {
                 accentBorder="rgba(98,126,234,0.2)"
               />
             </FadeIn>
+            <FadeIn delay={0.34}>
+              <MobileNewsCards
+                posts={altcoinPosts.slice(0, 6)}
+                title="Altcoin news"
+                viewAllHref="/category/altcoins"
+                variant="list"
+                accentColor="#ff6a00"
+                accentBg="rgba(255,106,0,0.08)"
+                accentBorder="rgba(255,106,0,0.15)"
+              />
+            </FadeIn>
           </div>
         </div>
 
         {/* Sidebar — sticky on desktop, full-width below content on mobile */}
         <div className="lg:block">
-          <div className="lg:sticky lg:top-24">
-            <FadeIn delay={0.25}>
-              <Sidebar trendingPosts={trendingPosts} />
-            </FadeIn>
-          </div>
+          <FadeIn delay={0.25}>
+            <Sidebar trendingPosts={trendingPosts} />
+          </FadeIn>
         </div>
       </div>
     </div>

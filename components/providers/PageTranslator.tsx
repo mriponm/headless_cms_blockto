@@ -7,9 +7,20 @@ const SKIP_TAGS = new Set([
   "SCRIPT","STYLE","CODE","PRE","INPUT","TEXTAREA",
   "SELECT","OPTION","KBD","TIME","NOSCRIPT","CANVAS","VIDEO","AUDIO",
 ]);
-const SKIP_CLS  = ["font-data","font-jetbrains","font-mono","no-translate"];
+const SKIP_CLS  = ["font-data","font-jetbrains","font-mono","no-translate","coin-name","coin-symbol","coin-data"];
 // Skip: pure numbers / symbols / prices / time strings
 const NUM_RE    = /^[\d\s$€£¥%+\-.,:/|·•()[\]#@!?'"*^`<>=~_​]+$/;
+// Skip: coin tickers, names, and price/market data strings
+const COIN_SYMS = new Set([
+  "BTC","ETH","SOL","BNB","XRP","DOGE","ADA","AVAX","LINK","DOT","MATIC","LTC","ATOM","UNI","SHIB",
+  "TRX","NEAR","ICP","FIL","ARB","OP","APT","SUI","INJ","FTM","ALGO","VET","HBAR","EGLD","SAND",
+  "MANA","AXS","THETA","XLM","EOS","AAVE","MKR","COMP","CRV","SNX","1INCH","GRT","ENS","IMX",
+  "Bitcoin","Ethereum","Solana","BNB","XRP","Dogecoin","Cardano","Avalanche","Chainlink","Polkadot",
+  "Polygon","Litecoin","Cosmos","Uniswap","Shiba Inu","Tron","NEAR Protocol","Internet Computer",
+  "Filecoin","Arbitrum","Optimism","Aptos","Sui","Injective","Fantom","Algorand","VeChain",
+  "Hedera","MultiversX",
+]);
+const COIN_PRICE_RE = /^[\d.,]+[KkMmBbTt]?$|^\$[\d.,]+|^[+-]?\d+\.?\d*%$/;
 
 // ── Google lang-code overrides ────────────────────────────────────
 const LANG_MAP: Record<string,string> = { zh:"zh-CN", pt:"pt-BR" };
@@ -47,6 +58,7 @@ function collect(): Entry[] {
       const node = child as Text;
       const text = (node.nodeValue ?? "").trim();
       if (text.length < 2 || NUM_RE.test(text)) return;
+      if (COIN_SYMS.has(text) || COIN_PRICE_RE.test(text)) return;
       out.push({ node, original: text });
     });
   });

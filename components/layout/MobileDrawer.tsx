@@ -6,7 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   X, Newspaper, TrendingUp, CircleDollarSign, CreditCard,
   Calendar, BarChart2, Info, Mail, Shield,
-  ChevronDown, MessageSquare, Send, PlayCircle, Globe, Check,
+  ChevronDown, MessageSquare, Send, Globe, Check,
   Sun, Moon,
 } from "lucide-react";
 import BrandLogo from "@/components/ui/BrandLogo";
@@ -40,9 +40,8 @@ const MORE_NAV = [
 ];
 
 const SOCIALS = [
-  { label: "X",        Icon: MessageSquare },
-  { label: "Telegram", Icon: Send },
-  { label: "YouTube",  Icon: PlayCircle },
+  { label: "X",         Icon: MessageSquare, href: "https://x.com/cryptoblockto?s=21&t=GSgByMAktV68aoFJuxO_Dg" },
+  { label: "Instagram", Icon: Send,          href: "https://www.instagram.com/blockto.io?igsh=MXA2Zm1nM2o0MWh3cg%3D%3D" },
 ];
 
 
@@ -365,10 +364,10 @@ export default function MobileDrawer({ open, onClose }: Props) {
         <div className={`flex-shrink-0 px-5 pt-3.5 pb-5 ${isDark ? "border-t border-[rgba(255,255,255,0.05)]" : "border-t border-[rgba(0,0,0,0.07)]"}`}>
           {/* Socials */}
           <div className="flex justify-center gap-2.5 mb-3">
-            {SOCIALS.map(({ label, Icon }) => (
-              <button key={label} aria-label={label} className="w-9 h-9 rounded-[10px] flex items-center justify-center cursor-pointer transition-all duration-200 drawer-soc">
+            {SOCIALS.map(({ label, Icon, href }) => (
+              <a key={label} href={href} target="_blank" rel="noopener noreferrer" aria-label={label} className="w-9 h-9 rounded-[10px] flex items-center justify-center cursor-pointer transition-all duration-200 drawer-soc">
                 <Icon size={14} className="drawer-soc-icon" />
-              </button>
+              </a>
             ))}
           </div>
 
