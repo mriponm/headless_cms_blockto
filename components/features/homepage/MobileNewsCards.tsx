@@ -1,3 +1,5 @@
+"use client";
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import SectionLabel from "@/components/ui/SectionLabel";
@@ -13,7 +15,10 @@ interface Props {
   accentBg?: string;
   accentBorder?: string;
   variant?: "list" | "bitcoin";
+  paginate?: boolean;
 }
+
+const PER_PAGE = 9;
 
 function ListCard({ post }: { post: WPPost }) {
   const cat = primaryCategory(post);
@@ -76,32 +81,74 @@ function HScrollCard({ post, index, accentColor, accentBg, accentBorder }: {
   );
 }
 
+function Pagination({ page, totalPages, setPage }: { page: number; totalPages: number; setPage: (p: number) => void }) {
+  const btn = (i: number) => (
+    <button
+      key={i}
+      onClick={() => setPage(i)}
+      className={`w-7 h-7 rounded-[7px] text-[11px] font-bold transition-all duration-150 ${
+        i === page ? "text-black" : "glass hover:brightness-125 text-[#888]"
+      }`}
+      style={i === page ? { background: "var(--gradient-brand)" } : {}}
+    >
+      {i + 1}
+    </button>
+  );
+
+  const show = new Set([0, 1, 2, totalPages - 1]);
+  [page - 1, page, page + 1].forEach(p => { if (p >= 0 && p < totalPages) show.add(p); });
+  const sorted = [...show].sort((a, b) => a - b);
+  const pages: React.ReactNode[] = [];
+  sorted.forEach((i, idx) => {
+    if (idx > 0 && i - sorted[idx - 1] > 1) {
+      pages.push(<span key={`e${i}`} className="w-9 h-9 flex items-center justify-center text-[#555] text-[13px]">…</span>);
+    }
+    pages.push(btn(i));
+  });
+
+  return (
+    <div className="flex items-center justify-center gap-1 mb-5 mt-1">
+      {pages}
+      <button
+        onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
+        disabled={page === totalPages - 1}
+        className="w-7 h-7 rounded-[7px] text-[11px] font-bold transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed glass hover:brightness-125 text-[#888]"
+      >
+        &rsaquo;
+      </button>
+    </div>
+  );
+}
+
 export default function MobileNewsCards({
   posts, title, viewAllHref,
   accentColor = "#ff6a00",
   accentBg = "rgba(255,106,0,0.08)",
   accentBorder = "rgba(255,106,0,0.15)",
   variant = "list",
+  paginate = false,
 }: Props) {
+  const [page, setPage] = useState(0);
   const unique = posts.filter((p, i, a) => a.findIndex(x => x.id === p.id) === i);
+  const totalPages = Math.ceil(unique.length / PER_PAGE);
+  const visible = paginate ? unique.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE) : unique;
 
   if (variant === "bitcoin") {
-    const scrollPosts = unique.slice(0, 3);
-    const listPosts   = unique.slice(3);
+    const scrollPosts = visible.slice(0, 3);
+    const listPosts   = visible.slice(3);
     return (
       <div className="md:hidden mb-5">
         <SectionLabel title={title} count={unique.length} viewAllHref={viewAllHref} />
-        {/* Horizontal scroll row */}
         <div className="flex gap-2.5 overflow-x-auto pb-2 mb-3 scrollbar-hide -mx-3 px-3">
           {scrollPosts.map((post, i) => (
             <HScrollCard key={post.id} post={post} index={i}
               accentColor={accentColor} accentBg={accentBg} accentBorder={accentBorder} />
           ))}
         </div>
-        {/* Remaining as list cards */}
         {listPosts.map((post) => (
           <ListCard key={post.id} post={post} />
         ))}
+        {paginate && totalPages > 1 && <Pagination page={page} totalPages={totalPages} setPage={setPage} />}
       </div>
     );
   }
@@ -109,9 +156,10 @@ export default function MobileNewsCards({
   return (
     <div className="md:hidden mb-5">
       <SectionLabel title={title} count={unique.length} viewAllHref={viewAllHref} />
-      {unique.map((post) => (
+      {visible.map((post) => (
         <ListCard key={post.id} post={post} />
       ))}
+      {paginate && totalPages > 1 && <Pagination page={page} totalPages={totalPages} setPage={setPage} />}
     </div>
   );
 }

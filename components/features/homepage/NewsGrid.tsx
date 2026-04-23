@@ -1,3 +1,5 @@
+"use client";
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import SectionLabel from "@/components/ui/SectionLabel";
@@ -14,17 +16,22 @@ const CAT_STYLE: Record<string, { color: string; bg: string; border: string }> =
 };
 
 const DEFAULT_STYLE = CAT_STYLE.news;
+const PER_PAGE = 9;
 
 export default function NewsGrid({ posts, title = "General news", viewAllHref = "/category/general-news" }: {
   posts: WPPost[];
   title?: string;
   viewAllHref?: string;
 }) {
+  const [page, setPage] = useState(0);
+  const totalPages = Math.ceil(posts.length / PER_PAGE);
+  const visible = posts.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE);
+
   return (
     <>
       <SectionLabel title={title} count={posts.length} viewAllHref={viewAllHref} />
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-[18px] mb-5">
-        {posts.map((post) => {
+        {visible.map((post) => {
           const cat = primaryCategory(post);
           const style = CAT_STYLE[cat.slug] ?? DEFAULT_STYLE;
           return (
@@ -65,6 +72,49 @@ export default function NewsGrid({ posts, title = "General news", viewAllHref = 
           );
         })}
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-1 mb-6">
+          {/* page buttons: 1, 2, 3, ..., last */}
+          {(() => {
+            const btn = (i: number) => (
+              <button
+                key={i}
+                onClick={() => setPage(i)}
+                className={`w-7 h-7 rounded-[7px] text-[11px] font-bold transition-all duration-150 ${
+                  i === page ? "text-black" : "glass hover:brightness-125 text-[#888]"
+                }`}
+                style={i === page ? { background: "var(--gradient-brand)" } : {}}
+              >
+                {i + 1}
+              </button>
+            );
+
+            const pages: React.ReactNode[] = [];
+            const show = new Set([0, 1, 2, totalPages - 1]);
+            // also include current page and neighbours
+            [page - 1, page, page + 1].forEach(p => { if (p >= 0 && p < totalPages) show.add(p); });
+
+            const sorted = [...show].sort((a, b) => a - b);
+            sorted.forEach((i, idx) => {
+              if (idx > 0 && i - sorted[idx - 1] > 1) {
+                pages.push(<span key={`e${i}`} className="w-9 h-9 flex items-center justify-center text-[#555] text-[13px]">…</span>);
+              }
+              pages.push(btn(i));
+            });
+
+            return pages;
+          })()}
+
+          <button
+            onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+            disabled={page === totalPages - 1}
+            className="w-7 h-7 rounded-[7px] text-[11px] font-bold transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed glass hover:brightness-125 text-[#888]"
+          >
+            &rsaquo;
+          </button>
+        </div>
+      )}
     </>
   );
 }

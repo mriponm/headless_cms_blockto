@@ -12,7 +12,7 @@ import { getPosts } from "@/lib/wordpress/queries";
 export default async function HomePage() {
   const [latestPosts, generalPosts, bitcoinPosts, ethereumPosts, altcoinPosts] = await Promise.all([
     getPosts(6),
-    getPosts(9, "general-news"),
+    getPosts(36, "general-news"),
     getPosts(9, "bitcoin"),
     getPosts(9, "ethereum"),
     getPosts(9, "altcoins"),
@@ -85,10 +85,11 @@ export default async function HomePage() {
             <FadeIn delay={0.18}><HeroSection posts={heroPosts} /></FadeIn>
             <FadeIn delay={0.22}>
               <MobileNewsCards
-                posts={generalPosts.slice(0, 6)}
+                posts={generalPosts}
                 title="General news"
                 viewAllHref="/category/general-news"
                 variant="list"
+                paginate
               />
             </FadeIn>
             <FadeIn delay={0.26}>
