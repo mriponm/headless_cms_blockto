@@ -13,8 +13,8 @@ import UserButton from "@/components/ui/UserButton";
 
 const NAV = [
   { label: "News",      href: "/",        active: true, hasDropdown: true },
-  { label: "Markets",   href: "/markets", dot: true },
   { label: "Prices",    href: "/prices" },
+  { label: "Metrics",   href: "/metrics" },
   { label: "Buy & sell",href: "/buy" },
   { label: "Trading",   href: "/trading" },
   { label: "Events",    href: "/events" },
@@ -121,9 +121,6 @@ export default function Header() {
                 }`}
               >
                 {n.label}
-                {n.dot && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-brand)] shadow-[0_0_8px_var(--color-brand)] pls-anim" />
-                )}
               </Link>
             )
           )}

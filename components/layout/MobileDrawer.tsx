@@ -24,9 +24,9 @@ const NEWS_SUBS = [
 ];
 
 const MAIN_NAV = [
-  { icon: Newspaper,        label: "News",              sub: NEWS_SUBS, badge: "LIVE", href: "/" },
-  { icon: CircleDollarSign, label: "Prices & rates",    href: "/prices" },
-  { icon: TrendingUp,       label: "Markets",           tag: "NEW",     href: "/markets" },
+  { icon: Newspaper,        label: "News",              sub: NEWS_SUBS, href: "/",        active: true },
+  { icon: TrendingUp,       label: "Metrics",           badge: "LIVE",  href: "/metrics" },
+  { icon: CircleDollarSign, label: "Rates",             badge: "LIVE",  href: "/prices" },
   { icon: CreditCard,       label: "Buy & sell",        href: "/buy" },
   { icon: BarChart2,        label: "Trading",           href: "/trading" },
   { icon: Calendar,         label: "Economic calendar", href: "/events" },
@@ -54,13 +54,13 @@ const THEME_OPTIONS: { value: Theme; Icon: React.ElementType; label: string }[] 
 interface Props { open: boolean; onClose: () => void; }
 
 function NavItem({
-  icon: Icon, label, sub, badge, tag, href, onClose,
+  icon: Icon, label, sub, badge, tag, href, active, onClose,
 }: {
   icon: React.ElementType; label: string; sub?: { label: string; href: string }[];
-  badge?: string; tag?: string; href: string; onClose: () => void;
+  badge?: string; tag?: string; href: string; active?: boolean; onClose: () => void;
 }) {
   const [expanded, setExpanded] = useState(false);
-  const isActive = badge != null;
+  const isActive = active ?? false;
 
   const inner = (
     <>
@@ -73,7 +73,8 @@ function NavItem({
         </span>
       </span>
       {badge && (
-        <span className="text-[9px] font-extrabold text-black px-[7px] py-[2px] rounded-[5px] tracking-wide flex-shrink-0" style={{ background: "linear-gradient(135deg,#ff6a00,#ff8a30)" }}>
+        <span className="flex items-center gap-1 text-[9px] font-extrabold text-black px-[7px] py-[2px] rounded-[5px] tracking-wide flex-shrink-0" style={{ background: "linear-gradient(135deg,#ff6a00,#ff8a30)" }}>
+          <span className="w-[5px] h-[5px] rounded-full bg-black/40 pls-anim flex-shrink-0" />
           {badge}
         </span>
       )}

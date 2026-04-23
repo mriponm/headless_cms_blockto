@@ -6,8 +6,8 @@ import clsx from "clsx";
 
 const ITEMS = [
   { href: "/",        label: "News",    Icon: Newspaper },
-  { href: "/markets", label: "Markets", Icon: TrendingUp },
-  { href: "/prices",  label: "Rates",   Icon: CircleDollarSign },
+  { href: "/prices",  label: "Prices",  Icon: CircleDollarSign },
+  { href: "/metrics", label: "Metrics", Icon: TrendingUp },
   { href: "/buy",     label: "Buy",     Icon: CreditCard },
   { href: "/events",  label: "Events",  Icon: Calendar },
 ];
@@ -39,8 +39,8 @@ export default function BottomNav() {
                 active && "border border-[rgba(255,106,0,0.2)]"
               )}
               style={active ? {
-                background: "linear-gradient(135deg, rgba(255,106,0,0.15), rgba(255,106,0,0.05))",
-                boxShadow: "0 0 20px rgba(255,106,0,0.15), inset 0 1px 0 rgba(255,255,255,0.08)",
+                background: "linear-gradient(135deg, rgba(255,106,0,0.09), rgba(255,106,0,0.03))",
+                boxShadow: "0 0 12px rgba(255,106,0,0.08), inset 0 1px 0 rgba(255,255,255,0.06)",
               } : {}}
               aria-current={active ? "page" : undefined}
             >

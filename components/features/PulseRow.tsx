@@ -1,6 +1,6 @@
 "use client";
 import { useCryptoData } from "@/lib/hooks/useCryptoData";
-import { formatDollarCompact, formatPercent, percentClass } from "@/lib/utils/formatters";
+import { formatDollarCompact, formatPercent } from "@/lib/utils/formatters";
 import clsx from "clsx";
 
 const STATIC_METRICS = [
@@ -26,8 +26,8 @@ export default function PulseRow() {
 
   return (
     <div className="grid grid-cols-3 md:grid-cols-6 gap-2 md:gap-3 mb-6">
-      {metrics.map((m) => (
-        <div key={m.label} className="glass relative overflow-hidden p-3 md:p-4 rounded-[12px] md:rounded-[14px]">
+      {metrics.map((m, i) => (
+        <div key={m.label} className={`glass relative overflow-hidden p-3 md:p-4 rounded-[12px] md:rounded-[14px]${i >= 3 ? " hidden md:block" : ""}`}>
           {/* top shimmer */}
           <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
           <p className="text-[8px] md:text-[9px] text-[#666] uppercase tracking-[0.8px] font-bold mb-1 md:mb-1.5 font-[family-name:var(--font-display)]">
