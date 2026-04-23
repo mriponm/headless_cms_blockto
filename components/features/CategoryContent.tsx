@@ -221,41 +221,52 @@ export default function CategoryContent({
     <div className="relative z-[2] max-w-[1440px] mx-auto px-3 md:px-10 pb-16 pt-4">
 
       {/* Category hero header */}
-      <motion.div {...fadeUp(0)} className="relative rounded-[24px] overflow-hidden mb-8 p-7 md:p-10"
-        style={{ background: `linear-gradient(135deg, ${BRAND_BG}, rgba(255,255,255,0.01))`, border: `0.5px solid ${BRAND_BORDER}` }}>
-        <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(255,255,255,0.15)] to-transparent pointer-events-none" />
-        <span className="absolute top-[-30%] right-[-10%] w-[50%] h-[150%] rounded-full pointer-events-none"
-          style={{ background: `radial-gradient(circle, ${BRAND_GLOW}, transparent 65%)`, filter: "blur(40px)" }} />
+      <motion.div {...fadeUp(0)} className="relative rounded-[20px] md:rounded-[28px] overflow-hidden mb-8"
+        style={{ background: `linear-gradient(135deg, rgba(255,106,0,0.10), rgba(255,106,0,0.03) 60%, rgba(0,0,0,0.2))`, border: `0.5px solid ${BRAND_BORDER}`, boxShadow: `0 0 60px rgba(255,106,0,0.08), 0 1px 0 rgba(255,255,255,0.06) inset` }}>
+        {/* Top shimmer */}
+        <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(255,106,0,0.4)] to-transparent pointer-events-none" />
+        {/* Glow orb */}
+        <span className="absolute top-[-40%] right-[-5%] w-[55%] h-[160%] rounded-full pointer-events-none"
+          style={{ background: `radial-gradient(circle, ${BRAND_GLOW}, transparent 65%)`, filter: "blur(50px)" }} />
+        {/* Bottom left accent */}
+        <span className="absolute bottom-0 left-0 w-[200px] h-[1px] bg-gradient-to-r from-[rgba(255,106,0,0.3)] to-transparent pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center gap-5">
-          <div className="w-[70px] h-[70px] md:w-[80px] md:h-[80px] rounded-[22px] flex items-center justify-center flex-shrink-0"
-            style={{ background: `linear-gradient(135deg, ${BRAND_GRAD_FROM}, ${BRAND_GRAD_TO})`, boxShadow: `0 0 30px ${BRAND_GLOW}, 0 8px 20px rgba(0,0,0,0.3)` }}>
-            <Icon size={36} style={{ color: "#000" }} />
+        <div className="relative z-10 flex flex-row items-center gap-4 md:gap-8 p-5 md:p-10">
+          {/* Icon */}
+          <div className="w-[56px] h-[56px] md:w-[88px] md:h-[88px] rounded-[16px] md:rounded-[24px] flex items-center justify-center flex-shrink-0"
+            style={{ background: `linear-gradient(135deg, ${BRAND_GRAD_FROM}, ${BRAND_GRAD_TO})`, boxShadow: `0 0 30px ${BRAND_GLOW}, 0 8px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.25)` }}>
+            <Icon size={24} className="md:hidden" style={{ color: "#000" }} />
+            <Icon size={40} className="hidden md:block" style={{ color: "#000" }} />
           </div>
+
+          {/* Info */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-              <span className="text-[9px] font-extrabold uppercase tracking-[2px] px-2.5 py-1 rounded-full font-[family-name:var(--font-data)]"
-                style={{ color: BRAND, background: BRAND_BG, border: `0.5px solid ${BRAND_BORDER}` }}>
+            <div className="flex items-center gap-2 mb-2 md:mb-3">
+              <span className="text-[8px] md:text-[9px] font-extrabold uppercase tracking-[2px] px-2.5 py-1 rounded-full font-[family-name:var(--font-data)]"
+                style={{ color: BRAND, background: "rgba(255,106,0,0.1)", border: `0.5px solid rgba(255,106,0,0.25)` }}>
                 Category
               </span>
-              <span className="flex items-center gap-1.5 text-[10px] font-semibold art-sub-text">
-                <Rss size={9} style={{ color: BRAND }} />
+              <span className="flex items-center gap-1.5 text-[9px] md:text-[10px] font-semibold art-sub-text">
+                <span className="w-[5px] h-[5px] rounded-full bg-[#00d47b] shadow-[0_0_6px_#00d47b] pls-anim" />
                 Live feed
               </span>
             </div>
-            <h1 className="text-[30px] md:text-[40px] font-black tracking-[-1.2px] md:tracking-[-1.8px] leading-[1.05] mb-2 art-heading font-[family-name:var(--font-display)]">
+            <h1 className="text-[22px] md:text-[42px] font-black tracking-[-0.8px] md:tracking-[-2px] leading-[1.05] mb-2 md:mb-3 art-heading font-[family-name:var(--font-display)]">
               {meta.label}
             </h1>
-            <p className="text-[13px] md:text-[14px] art-sub-text font-medium leading-[1.55] max-w-[520px]">
+            <p className="text-[11px] md:text-[14px] art-sub-text font-medium leading-[1.5] md:leading-[1.6] max-w-[540px] line-clamp-2 md:line-clamp-none">
               {meta.description}
             </p>
           </div>
-          <div className="flex flex-col items-start md:items-end gap-2 flex-shrink-0">
-            <div className="text-[28px] md:text-[32px] font-black font-[family-name:var(--font-data)] tracking-[-1px] leading-none"
+
+          {/* Article count — right side stat */}
+          <div className="flex flex-col items-center gap-1 flex-shrink-0 px-4 md:px-6 py-3 md:py-4 rounded-[14px] md:rounded-[18px]"
+            style={{ background: "rgba(255,106,0,0.07)", border: "0.5px solid rgba(255,106,0,0.18)" }}>
+            <div className="text-[26px] md:text-[36px] font-black font-[family-name:var(--font-data)] tracking-[-1px] leading-none"
               style={{ color: BRAND }}>
               {posts.length}
             </div>
-            <div className="text-[10px] art-sub-text font-bold uppercase tracking-[1px]">articles</div>
+            <div className="text-[8px] md:text-[9px] art-sub-text font-bold uppercase tracking-[1.5px] whitespace-nowrap">articles</div>
           </div>
         </div>
       </motion.div>
