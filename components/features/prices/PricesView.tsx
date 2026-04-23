@@ -41,7 +41,6 @@ const HERO_STATS = [
   { label: "24h volume",    val: (e: boolean) => fmt(94.2e9,  e), sub: "-3.1%",  up: false },
   { label: "BTC dominance", val: (_: boolean) => "52.4%",         sub: "+0.3%",  up: true  },
   { label: "ETH price",     val: (e: boolean) => fmt(1842,    e), sub: "+1.9%",  up: true  },
-  { label: "Coins tracked", val: (_: boolean) => "12,847",        sub: "live",   neutral: true },
 ];
 
 const RATE = 0.92;
@@ -152,8 +151,8 @@ export default function PricesView() {
           <div key={s.label} className="glass pr-hero-cell">
             <div className="pr-hero-label">{s.label}</div>
             <div className="pr-hero-val">{s.val(eur)}</div>
-            <div className={`pr-hero-sub${s.up ? " text-positive" : s.neutral ? " pr-hero-neutral" : " text-negative"}`}>
-              {!s.neutral && (s.up ? "▲" : "▼")} {s.sub}
+            <div className={`pr-hero-sub${s.up ? " text-positive" : " text-negative"}`}>
+              {s.up ? "▲" : "▼"} {s.sub}
             </div>
           </div>
         ))}

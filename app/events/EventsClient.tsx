@@ -368,8 +368,8 @@ export default function EventsClient({ days, todayIdx }: { days: DayData[]; toda
               <span className="w-[5px] h-[5px] rounded-full pls-anim" style={{ background: "#ff6a00", boxShadow: "0 0 8px #ff6a00" }} />
               Live calendar
             </div>
-            <h1 className="text-[28px] md:text-[34px] font-black tracking-[-1px] leading-[1.1] mb-2.5 font-[family-name:var(--font-league-spartan)] header-brand-text">
-              Crypto events calendar
+            <h1 className="text-[28px] md:text-[34px] font-black tracking-[-1px] leading-[1.1] mb-2.5 font-[family-name:var(--font-league-spartan)]">
+              Crypto <span className="gradient-text-alt">events</span> calendar
             </h1>
             <p className="text-[13px] buy-ex-desc leading-[1.5] font-medium max-w-[440px]">
               Upcoming crypto events, listings, launches, and macro market dates. Click any event for full details.

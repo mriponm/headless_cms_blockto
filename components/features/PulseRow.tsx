@@ -60,14 +60,15 @@ export default function PulseRow() {
     <div className="flex md:grid md:grid-cols-6 gap-2 md:gap-3 overflow-x-auto scrollbar-hide pb-1 md:pb-0">
       {metrics.map((m) => (
         <Link key={m.label} href={m.href} className="block flex-shrink-0 w-[calc((100vw-40px)/3.4)] md:w-auto">
-          <div className="glass relative overflow-hidden p-3 md:p-4 rounded-[12px] md:rounded-[14px] hover:brightness-110 transition-all duration-150">
+          <div className="glass relative overflow-hidden p-3 md:p-4 rounded-[12px] md:rounded-[14px] hover:brightness-110 transition-all duration-150 h-[80px] md:h-[88px] flex flex-col justify-between">
             <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
-            <p className="text-[9px] text-[#666] uppercase tracking-[0.8px] font-bold mb-1.5 font-[family-name:var(--font-display)]">
+            <p className="text-[8.5px] text-[#666] uppercase tracking-[0.8px] font-bold font-[family-name:var(--font-display)] truncate">
               {m.label}
             </p>
             <p
               className={clsx(
-                "text-[18px] font-extrabold font-[family-name:var(--font-data)] tracking-[-0.5px] leading-none",
+                "font-extrabold font-[family-name:var(--font-data)] tracking-[-0.5px] leading-none truncate",
+                m.value.length > 6 ? "text-[14px]" : "text-[17px]",
                 m.special === "brand" && "text-[var(--color-brand)]",
               )}
             >
@@ -75,7 +76,7 @@ export default function PulseRow() {
             </p>
             <p
               className={clsx(
-                "text-[10px] font-bold mt-1.5 font-[family-name:var(--font-data)] min-h-[14px]",
+                "text-[9.5px] font-bold font-[family-name:var(--font-data)]",
                 m.special === "brand" ? "text-[var(--color-brand)]" :
                 m.up ? "text-positive" : "text-negative"
               )}

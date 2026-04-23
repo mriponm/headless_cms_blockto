@@ -198,10 +198,11 @@ function SignalFeed() {
         className="sig-sticky-bar flex items-center gap-3 px-[18px] py-[14px] flex-shrink-0 relative z-10 sig-row-border"
       >
         <div
-          className="w-[44px] h-[44px] rounded-full flex items-center justify-center font-black text-[18px] text-black flex-shrink-0"
-          style={{ background: "linear-gradient(135deg,#ff6a00,#ff8a30)", boxShadow: "0 0 14px rgba(255,106,0,0.3)" }}
+          className="w-[44px] h-[44px] rounded-full overflow-hidden flex-shrink-0"
+          style={{ boxShadow: "0 0 14px rgba(255,106,0,0.3)" }}
         >
-          B
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/blockto_icon.jpeg" alt="Blockto" className="w-full h-full object-cover" />
         </div>
         <div className="flex-1 min-w-0">
           <div className="text-[15px] font-extrabold header-brand-text flex items-center gap-1.5 font-[family-name:var(--font-display)] tracking-[-0.3px]">
@@ -233,22 +234,6 @@ function SignalFeed() {
         </SignalFeedScroll>
       </div>
 
-      {/* join CTA */}
-      <div className="sig-sticky-bar px-[18px] py-[14px] flex-shrink-0 relative z-10" style={{ borderTop: "0.5px solid var(--color-border)" }}>
-        <a
-          href="#"
-          className="w-full py-[13px] rounded-[12px] font-extrabold text-[14px] text-white flex items-center justify-center gap-2.5 cursor-pointer font-[family-name:var(--font-display)] transition-all duration-200 hover:-translate-y-[1px] relative overflow-hidden"
-          style={{
-            background: "linear-gradient(135deg,#229ED9,#1a7fb0)",
-            boxShadow: "0 6px 20px rgba(34,158,217,0.3),inset 0 1px 0 rgba(255,255,255,0.15)",
-          }}
-        >
-          <span className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
-          <TelegramIcon size={16} />
-          Join Channel
-          <ChevronRight size={14} strokeWidth={2.5} />
-        </a>
-      </div>
     </div>
   );
 }

@@ -6,7 +6,6 @@ const SUB_STATS = [
   { label: "Market cap",    value: "$2.87T",  sub: "+1.8%",  up: true  },
   { label: "24h volume",   value: "$94.2B",  sub: "-3.1%",  up: false },
   { label: "BTC dominance",value: "52.4%",   sub: "+0.3%",  up: true  },
-  { label: "Coins tracked",value: "12,847",  sub: "live",   neutral: true },
 ];
 
 const GAINERS = [
@@ -91,8 +90,8 @@ export default function MetricsView() {
           <div key={s.label} className="mtr-stat glass">
             <div className="mtr-stat-label">{s.label}</div>
             <div className="mtr-stat-val">{s.value}</div>
-            <div className={`mtr-stat-sub${s.up ? " text-positive" : s.neutral ? " mtr-stat-neutral" : " text-negative"}`}>
-              {!s.neutral && (s.up ? "▲" : "▼")} {s.sub}
+            <div className={`mtr-stat-sub${s.up ? " text-positive" : " text-negative"}`}>
+              {s.up ? "▲" : "▼"} {s.sub}
             </div>
           </div>
         ))}
