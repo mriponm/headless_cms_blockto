@@ -221,9 +221,9 @@ function MacroCard({ ev, dayDate, expanded, onToggle }: { ev: MacroEvent; dayDat
       {/* title */}
       <div className="ev-title" style={{ fontSize: 14, fontWeight: 700, letterSpacing: "-0.2px", marginBottom: 10, lineHeight: 1.3 }}>{ev.title}</div>
 
-      {/* description — always visible */}
+      {/* description — 2-line preview, full when expanded */}
       {ev.description && (
-        <p className="ev-detail-desc" style={{ fontSize: 12, lineHeight: 1.6, fontWeight: 500, marginBottom: 12, opacity: 0.75 }}>
+        <p className="ev-detail-desc" style={{ fontSize: 12, lineHeight: 1.6, fontWeight: 500, marginBottom: 12, opacity: 0.75, overflow: "hidden", display: "-webkit-box", WebkitBoxOrient: "vertical", WebkitLineClamp: expanded ? "unset" : 2 }}>
           {ev.description}
         </p>
       )}
