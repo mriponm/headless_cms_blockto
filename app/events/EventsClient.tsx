@@ -3,222 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Filter, Star, Bitcoin, Calendar, ChevronDown, Clock, ExternalLink } from "lucide-react";
 import FadeIn from "@/components/ui/FadeIn";
-
-/* ─── Types ──────────────────────────────────────────────────── */
-type Impact = "high" | "med" | "low";
-
-interface HistoryRow { date: string; actual: string; forecast: string | null; }
-
-interface MacroEvent {
-  kind: "macro";
-  id: string;
-  time: string;
-  country: string;
-  countryCode: "us" | "jp" | "au" | "cn" | "gb" | "eu" | "ca" | "de";
-  title: string;
-  impact: Impact;
-  important: boolean;
-  actual: string | null;
-  forecast: string | null;
-  previous: string | null;
-  description?: string;
-  affected?: string[];
-  history?: HistoryRow[];
-}
-
-interface CryptoEvent {
-  kind: "crypto";
-  id: string;
-  time: string;
-  platform: string;
-  platformBg: string;
-  platformColor: string;
-  platformSymbol: string;
-  badge: string;
-  title: string;
-  fields: { label: string; value: string; color?: string }[];
-  description?: string;
-  links?: { label: string; url: string }[];
-  history?: HistoryRow[];
-}
-
-type AnyEvent = MacroEvent | CryptoEvent;
-
-interface DayData {
-  date: number;
-  month: number; // 0-indexed
-  year: number;
-  day: string;
-  fullLabel: string;
-  hasEvents: boolean;
-  events: AnyEvent[];
-}
-
-/* ─── Mock data — replace events[] with API fetch ────────────── */
-// TODO: fetch from /api/events?date=YYYY-MM-DD (reads EVENTS_API_KEY server-side)
-const DAYS: DayData[] = [
-  { date: 19, month: 3, year: 2026, day: "Sat", fullLabel: "Saturday 19 April",  hasEvents: false, events: [] },
-  { date: 20, month: 3, year: 2026, day: "Sun", fullLabel: "Sunday 20 April",    hasEvents: false, events: [] },
-  {
-    date: 21, month: 3, year: 2026, day: "Mon", fullLabel: "Monday 21 April", hasEvents: true,
-    events: [
-      {
-        kind: "crypto", id: "c1", time: "09:00",
-        platform: "Binance", platformBg: "linear-gradient(135deg,#f0b90b,#d4a017)", platformColor: "#000", platformSymbol: "B",
-        badge: "Listing", title: "New token listing: Hyperliquid (HYPE) — spot trading goes live",
-        fields: [{ label: "Token", value: "HYPE", color: "#ff6a00" }, { label: "Pair", value: "HYPE/USDT" }, { label: "Market", value: "Spot" }],
-        description: "Hyperliquid (HYPE) begins spot trading on Binance. HYPE is the native token of the Hyperliquid DEX — a high-performance Layer 1 optimized for on-chain derivatives trading with sub-second finality.",
-        links: [{ label: "Announcement", url: "#" }, { label: "Token info", url: "#" }],
-      },
-      {
-        kind: "macro", id: "m1", time: "01:50", country: "Japan", countryCode: "jp",
-        title: "Foreign bonds buying", impact: "low", important: false,
-        actual: "¥696.2B", forecast: null, previous: "¥2480.9B",
-        description: "Weekly measure of net purchases of foreign bonds by Japanese investors. Sharp decline from prior week reflects risk-off sentiment and potential JPY repatriation flows.",
-        affected: ["JPY", "JGB", "USD/JPY"],
-        history: [
-          { date: "Apr 07", actual: "¥2480.9B", forecast: null },
-          { date: "Mar 31", actual: "¥1340.2B", forecast: null },
-          { date: "Mar 24", actual: "¥890.5B",  forecast: null },
-          { date: "Mar 17", actual: "¥2100.0B", forecast: null },
-        ],
-      },
-      {
-        kind: "macro", id: "m2", time: "03:30", country: "Australia", countryCode: "au",
-        title: "Employment change (March)", impact: "high", important: true,
-        actual: "17.9K", forecast: "19.1K", previous: "49.7K",
-        description: "Net change in employment in Australia for March. Came in below forecast at 17.9K vs expected 19.1K. The miss signals softening labour conditions but is not alarming given prior month's strong revision.",
-        affected: ["AUD/USD", "ASX 200", "RBA rate path"],
-        history: [
-          { date: "Feb", actual: "49.7K",  forecast: "42.0K" },
-          { date: "Jan", actual: "-10.9K", forecast: "20.0K" },
-          { date: "Dec", actual: "56.3K",  forecast: "15.0K" },
-          { date: "Nov", actual: "35.6K",  forecast: "25.0K" },
-        ],
-      },
-      {
-        kind: "macro", id: "m3", time: "03:30", country: "Australia", countryCode: "au",
-        title: "Unemployment rate (March)", impact: "high", important: true,
-        actual: "4.3%", forecast: "4.3%", previous: "4.3%",
-        description: "Australia unemployment rate held steady at 4.3% in March, matching both the forecast and prior month. RBA closely monitors this for rate cut timing decisions.",
-        affected: ["AUD/USD", "RBA rate path"],
-        history: [
-          { date: "Feb", actual: "4.3%", forecast: "4.1%" },
-          { date: "Jan", actual: "4.1%", forecast: "4.0%" },
-          { date: "Dec", actual: "4.0%", forecast: "3.9%" },
-          { date: "Nov", actual: "3.9%", forecast: "3.9%" },
-        ],
-      },
-      {
-        kind: "macro", id: "m4", time: "03:30", country: "China", countryCode: "cn",
-        title: "House prices YoY (March)", impact: "low", important: false,
-        actual: "-3.4%", forecast: null, previous: "-3.2%",
-        description: "China new home prices fell 3.4% YoY in March, deteriorating slightly from -3.2% prior. Property sector remains under pressure despite government stimulus measures.",
-        affected: ["CNY", "Hong Kong property", "Iron ore"],
-        history: [
-          { date: "Feb", actual: "-3.2%", forecast: null },
-          { date: "Jan", actual: "-4.0%", forecast: null },
-          { date: "Dec", actual: "-5.3%", forecast: null },
-          { date: "Nov", actual: "-5.7%", forecast: null },
-        ],
-      },
-      {
-        kind: "crypto", id: "c2", time: "14:00",
-        platform: "Ethereum", platformBg: "linear-gradient(135deg,#627eea,#3c5ad6)", platformColor: "#fff", platformSymbol: "Ξ",
-        badge: "Upgrade", title: "Pectra upgrade — mainnet activation on epoch 364032",
-        fields: [{ label: "Network", value: "Mainnet" }, { label: "Type", value: "Hard fork", color: "#ff6a00" }, { label: "Impact", value: "High", color: "#ff3b4f" }],
-        description: "Ethereum Pectra hard fork activates on mainnet at epoch 364032. Pectra combines the Prague execution layer upgrade and Electra consensus layer upgrade. Key improvements include EIP-7702 (account abstraction), EIP-7251 (increased validator max balance), and EIP-7549.",
-        links: [{ label: "EIP-7702 spec", url: "#" }, { label: "Ethereum blog", url: "#" }, { label: "Watch epoch", url: "#" }],
-      },
-      {
-        kind: "macro", id: "m5", time: "14:30", country: "United States", countryCode: "us",
-        title: "Retail sales MoM (March)", impact: "high", important: true,
-        actual: null, forecast: "0.4%", previous: "0.2%",
-        description: "Monthly change in total value of retail sales. A key leading indicator of consumer spending and GDP. Consensus at +0.4% MoM would signal resilient demand despite high interest rates.",
-        affected: ["USD", "S&P 500", "BTC", "Gold"],
-        history: [
-          { date: "Feb", actual: "0.2%",  forecast: "0.6%"  },
-          { date: "Jan", actual: "-0.9%", forecast: "0.2%"  },
-          { date: "Dec", actual: "0.4%",  forecast: "0.6%"  },
-          { date: "Nov", actual: "0.7%",  forecast: "0.5%"  },
-        ],
-      },
-      {
-        kind: "macro", id: "m6", time: "16:00", country: "United States", countryCode: "us",
-        title: "Fed Chair Powell speech", impact: "high", important: true,
-        actual: null, forecast: null, previous: null,
-        description: "Fed Chair Jerome Powell speaks at the Chicago Economic Club. Market participants will closely parse language around rate cut timing, inflation trajectory, and tariff impact on monetary policy.",
-        affected: ["USD", "US Treasuries", "BTC", "Gold", "S&P 500"],
-        history: [],
-      },
-    ],
-  },
-  {
-    date: 22, month: 3, year: 2026, day: "Tue", fullLabel: "Tuesday 22 April", hasEvents: true,
-    events: [
-      { kind: "macro", id: "t1", time: "08:00", country: "Germany",       countryCode: "de", title: "PPI MoM (March)", impact: "med", important: false, actual: null, forecast: "0.2%", previous: "0.7%", description: "German Producer Price Index month-on-month change.", affected: ["EUR/USD", "Bund"], history: [] },
-      { kind: "macro", id: "t2", time: "10:00", country: "Euro Zone",     countryCode: "eu", title: "Consumer confidence (April)", impact: "med", important: false, actual: null, forecast: "-14.5", previous: "-14.5", description: "Eurozone consumer confidence flash estimate.", affected: ["EUR", "Euro equities"], history: [] },
-      {
-        kind: "crypto", id: "t3", time: "12:00",
-        platform: "Bitcoin", platformBg: "linear-gradient(135deg,#f7931a,#e07b10)", platformColor: "#000", platformSymbol: "₿",
-        badge: "Event", title: "BTC Lightning Network capacity milestone — 10,000 BTC threshold",
-        fields: [{ label: "Network", value: "Mainnet" }, { label: "Capacity", value: "~10K BTC", color: "#ff6a00" }, { label: "Channels", value: "~75K" }],
-        description: "Bitcoin Lightning Network approaches 10,000 BTC in total channel capacity, a symbolic milestone demonstrating growing Layer 2 adoption for micropayments and instant settlements.",
-        links: [{ label: "1ML explorer", url: "#" }, { label: "BOLT specs", url: "#" }],
-      },
-      { kind: "macro", id: "t4", time: "14:30", country: "Canada", countryCode: "ca", title: "Core retail sales MoM (Feb)", impact: "high", important: true, actual: null, forecast: "0.5%", previous: "-0.4%", description: "Canada core retail sales excluding autos.", affected: ["CAD/USD", "TSX"], history: [{ date: "Jan", actual: "-0.4%", forecast: "0.3%" }, { date: "Dec", actual: "0.8%", forecast: "0.4%" }] },
-      { kind: "macro", id: "t5", time: "15:00", country: "United States", countryCode: "us", title: "Existing home sales (March)", impact: "med", important: false, actual: null, forecast: "4.15M", previous: "4.26M", description: "Annualized rate of existing home sales.", affected: ["USD", "Homebuilder stocks"], history: [] },
-    ],
-  },
-  {
-    date: 23, month: 3, year: 2026, day: "Wed", fullLabel: "Wednesday 23 April", hasEvents: true,
-    events: [
-      { kind: "macro", id: "w1", time: "07:15", country: "Euro Zone", countryCode: "eu", title: "ECB President Lagarde speech", impact: "high", important: true, actual: null, forecast: null, previous: null, description: "ECB President Christine Lagarde speaks at European Parliament. Expected to address recent tariff-driven inflation uncertainty and Q2 rate outlook.", affected: ["EUR", "Bund", "Euro stocks"], history: [] },
-      {
-        kind: "crypto", id: "w2", time: "09:00",
-        platform: "Coinbase", platformBg: "linear-gradient(135deg,#0052ff,#003dbf)", platformColor: "#fff", platformSymbol: "C",
-        badge: "Listing", title: "Solana (SOL) perpetual futures listing on Coinbase Advanced",
-        fields: [{ label: "Token", value: "SOL", color: "#9945ff" }, { label: "Pair", value: "SOL-PERP" }, { label: "Market", value: "Futures" }],
-        description: "Coinbase Advanced adds SOL perpetual futures, expanding derivatives access for US institutional traders. SOL-PERP will support up to 10x leverage with USDC margin.",
-        links: [{ label: "Coinbase announcement", url: "#" }],
-      },
-      { kind: "macro", id: "w3", time: "14:30", country: "United States", countryCode: "us", title: "Durable goods orders MoM (March)", impact: "high", important: true, actual: null, forecast: "0.3%", previous: "-1.0%", description: "Change in new orders for durable manufactured goods.", affected: ["USD", "Manufacturing stocks", "BTC"], history: [{ date: "Feb", actual: "-1.0%", forecast: "1.2%" }, { date: "Jan", actual: "3.2%", forecast: "2.0%" }] },
-    ],
-  },
-  {
-    date: 24, month: 3, year: 2026, day: "Thu", fullLabel: "Thursday 24 April", hasEvents: true,
-    events: [
-      { kind: "macro", id: "h1", time: "03:30", country: "Australia", countryCode: "au", title: "CPI QoQ (Q1)", impact: "high", important: true, actual: null, forecast: "0.8%", previous: "0.6%", description: "Australia quarterly CPI — pivotal for RBA rate cut timing.", affected: ["AUD/USD", "ASX 200", "RBA"], history: [{ date: "Q4 2025", actual: "0.6%", forecast: "0.7%" }, { date: "Q3 2025", actual: "0.2%", forecast: "0.3%" }] },
-      { kind: "macro", id: "h2", time: "09:00", country: "Germany", countryCode: "de", title: "Business climate (April)", impact: "high", important: true, actual: null, forecast: "86.0", previous: "86.7", description: "Ifo Business Climate Index — leading indicator of German economic health.", affected: ["EUR/USD", "DAX"], history: [{ date: "Mar", actual: "86.7", forecast: "86.5" }, { date: "Feb", actual: "85.2", forecast: "86.0" }] },
-      {
-        kind: "crypto", id: "h3", time: "10:00",
-        platform: "OKX", platformBg: "linear-gradient(135deg,#333,#111)", platformColor: "#fff", platformSymbol: "O",
-        badge: "Launch", title: "OKX Web3 wallet V3 launch — multi-chain aggregator goes live",
-        fields: [{ label: "Version", value: "V3.0", color: "#ff6a00" }, { label: "Chains", value: "150+" }, { label: "Type", value: "Wallet" }],
-        description: "OKX Web3 Wallet V3 launches with support for 150+ chains, cross-chain swap aggregation, and integrated DeFi yield optimization. Version 3 introduces a new unified account model.",
-        links: [{ label: "OKX Web3 docs", url: "#" }, { label: "Download", url: "#" }],
-      },
-      { kind: "macro", id: "h4", time: "14:30", country: "United States", countryCode: "us", title: "Initial jobless claims", impact: "med", important: false, actual: null, forecast: "218K", previous: "215K", description: "Weekly new unemployment insurance claims.", affected: ["USD", "Fed policy"], history: [{ date: "Apr 14", actual: "215K", forecast: "220K" }, { date: "Apr 07", actual: "223K", forecast: "218K" }] },
-    ],
-  },
-  {
-    date: 25, month: 3, year: 2026, day: "Fri", fullLabel: "Friday 25 April", hasEvents: true,
-    events: [
-      { kind: "macro", id: "f1", time: "08:00", country: "United Kingdom", countryCode: "gb", title: "Retail sales MoM (March)", impact: "high", important: true, actual: null, forecast: "-0.4%", previous: "1.0%", description: "UK monthly retail sales. Forecast points to contraction after prior month's strong bounce.", affected: ["GBP/USD", "FTSE 100"], history: [{ date: "Feb", actual: "1.0%", forecast: "0.3%" }, { date: "Jan", actual: "-0.6%", forecast: "-0.3%" }] },
-      { kind: "macro", id: "f2", time: "14:30", country: "United States", countryCode: "us", title: "Core PCE price index MoM (March)", impact: "high", important: true, actual: null, forecast: "0.3%", previous: "0.4%", description: "Fed's preferred inflation gauge. A softer print would strengthen the case for June rate cut.", affected: ["USD", "US Treasuries", "BTC", "Gold", "S&P 500"], history: [{ date: "Feb", actual: "0.4%", forecast: "0.3%" }, { date: "Jan", actual: "0.3%", forecast: "0.3%" }] },
-      { kind: "macro", id: "f3", time: "14:30", country: "United States", countryCode: "us", title: "GDP growth rate QoQ (Q1 advance)", impact: "high", important: true, actual: null, forecast: "0.8%", previous: "2.4%", description: "First estimate of Q1 2026 GDP. Significant deceleration expected due to tariff-related trade disruptions and slowing consumer spending.", affected: ["USD", "S&P 500", "BTC", "Gold"], history: [{ date: "Q4 2025", actual: "2.4%", forecast: "2.1%" }, { date: "Q3 2025", actual: "3.1%", forecast: "2.8%" }] },
-      {
-        kind: "crypto", id: "f4", time: "16:00",
-        platform: "Solana", platformBg: "linear-gradient(135deg,#9945ff,#7b2ef7)", platformColor: "#fff", platformSymbol: "◎",
-        badge: "Upgrade", title: "Solana v2.2 — Firedancer testnet results release",
-        fields: [{ label: "Client", value: "Firedancer" }, { label: "TPS target", value: "1M+", color: "#9945ff" }, { label: "Stage", value: "Testnet" }],
-        description: "Jump Crypto's Firedancer client publishes Q1 testnet benchmark results. Firedancer aims to achieve 1M+ TPS on Solana mainnet — a 100x improvement that would make SOL the fastest L1 by throughput.",
-        links: [{ label: "Firedancer GitHub", url: "#" }, { label: "Jump Crypto blog", url: "#" }],
-      },
-    ],
-  },
-  { date: 26, month: 3, year: 2026, day: "Sat", fullLabel: "Saturday 26 April", hasEvents: false, events: [] },
-];
+import type { Impact, MacroEvent, CryptoEvent, AnyEvent, DayData } from "./types";
 
 /* ─── Countdown hook ─────────────────────────────────────────── */
 function useCountdown(eventTime: string, eventDate: Date) {
@@ -254,7 +39,7 @@ function getStatus(time: string, dayDate: Date): "upcoming" | "live" | "past" | 
   const [h, m] = time.split(":").map(Number);
   const evTime = new Date(); evTime.setHours(h, m, 0, 0);
   const diffMin = (evTime.getTime() - now.getTime()) / 60000;
-  if (diffMin > 1)   return "upcoming";
+  if (diffMin > 1)    return "upcoming";
   if (diffMin >= -15) return "live";
   return "past";
 }
@@ -273,19 +58,20 @@ function ImpactBars({ level }: { level: Impact }) {
   );
 }
 
-/* ─── Country flags ──────────────────────────────────────────── */
-const FLAG_MAP: Record<string, React.CSSProperties> = {
-  us: { background: "linear-gradient(to bottom,#b22234 0%,#b22234 14%,#fff 14%,#fff 28%,#b22234 28%,#b22234 42%,#fff 42%,#fff 57%,#b22234 57%,#b22234 71%,#fff 71%,#fff 85%,#b22234 85%)" },
-  jp: { background: "#fff" },
-  au: { background: "#012169" },
-  cn: { background: "#de2910" },
-  gb: { background: "linear-gradient(135deg,#012169 0%,#012169 40%,#c8102e 40%,#c8102e 60%,#012169 60%)" },
-  eu: { background: "#003399" },
-  ca: { background: "linear-gradient(to right,#ff0000 25%,#fff 25%,#fff 75%,#ff0000 75%)" },
-  de: { background: "linear-gradient(to bottom,#000 33%,#d00 33%,#d00 66%,#ffce00 66%)" },
-};
+/* ─── Country flags via flagcdn.com ─────────────────────────── */
 function CountryFlag({ code }: { code: string }) {
-  return <div style={{ width: 22, height: 15, borderRadius: 3, flexShrink: 0, boxShadow: "0 0 0 0.5px rgba(255,255,255,0.15)", overflow: "hidden", ...FLAG_MAP[code] }} />;
+  const lower = code.toLowerCase();
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={`https://flagcdn.com/w40/${lower}.png`}
+      alt={code.toUpperCase()}
+      title={code.toUpperCase()}
+      width={22}
+      height={15}
+      style={{ borderRadius: 3, flexShrink: 0, objectFit: "cover", display: "inline-block", boxShadow: "0 0 0 0.5px rgba(255,255,255,0.15)" }}
+    />
+  );
 }
 
 /* ─── Status badge ───────────────────────────────────────────── */
@@ -317,14 +103,12 @@ function ExpandedDetail({ ev, isOpen }: { ev: AnyEvent; isOpen: boolean }) {
       <div style={{ overflow: "hidden" }}>
         <div style={{ height: 0.5, background: "rgba(255,255,255,0.06)", margin: "0 0 14px" }} />
 
-        {/* description */}
         {ev.description && (
           <p className="ev-detail-desc" style={{ fontSize: 12, lineHeight: 1.6, fontWeight: 500, marginBottom: 14 }}>
             {ev.description}
           </p>
         )}
 
-        {/* affected assets (macro) */}
         {ev.kind === "macro" && ev.affected && ev.affected.length > 0 && (
           <div style={{ marginBottom: 14 }}>
             <div style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 6 }} className="ev-cell-label">
@@ -340,14 +124,12 @@ function ExpandedDetail({ ev, isOpen }: { ev: AnyEvent; isOpen: boolean }) {
           </div>
         )}
 
-        {/* history table */}
         {ev.history && ev.history.length > 0 && (
           <div style={{ marginBottom: 12 }}>
             <div style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", marginBottom: 8 }} className="ev-cell-label">
               Historical data
             </div>
             <div style={{ borderRadius: 10, overflow: "hidden", border: "0.5px solid rgba(255,255,255,0.06)" }}>
-              {/* header */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", background: "rgba(255,255,255,0.04)", padding: "7px 12px" }}>
                 {["Period", "Actual", "Forecast"].map((h) => (
                   <div key={h} style={{ fontSize: 8, fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.8px" }} className="ev-cell-label">{h}</div>
@@ -364,7 +146,6 @@ function ExpandedDetail({ ev, isOpen }: { ev: AnyEvent; isOpen: boolean }) {
           </div>
         )}
 
-        {/* links (crypto) */}
         {ev.kind === "crypto" && ev.links && ev.links.length > 0 && (
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
             {ev.links.map((l) => (
@@ -389,7 +170,7 @@ function ExpandedDetail({ ev, isOpen }: { ev: AnyEvent; isOpen: boolean }) {
 
 /* ─── Macro card ─────────────────────────────────────────────── */
 function MacroCard({ ev, dayDate, expanded, onToggle }: { ev: MacroEvent; dayDate: Date; expanded: boolean; onToggle: () => void }) {
-  const status   = getStatus(ev.time, dayDate);
+  const status    = getStatus(ev.time, dayDate);
   const countdown = useCountdown(ev.time, dayDate);
   const isUpcoming = status === "upcoming";
   const isLive     = status === "live";
@@ -397,12 +178,12 @@ function MacroCard({ ev, dayDate, expanded, onToggle }: { ev: MacroEvent; dayDat
   const cardBg = ev.important
     ? "linear-gradient(135deg,rgba(255,59,79,0.06),rgba(255,106,0,0.02))"
     : "rgba(255,255,255,0.03)";
-  const cardBorder = ev.important
-    ? "0.5px solid rgba(255,106,0,0.15)"
-    : isLive
-    ? "0.5px solid rgba(0,212,123,0.2)"
+  const cardBorder = isLive
+    ? "0.5px solid rgba(0,212,123,0.3)"
     : isUpcoming
-    ? "0.5px solid rgba(255,106,0,0.12)"
+    ? "0.5px solid rgba(255,106,0,0.2)"
+    : ev.important
+    ? "0.5px solid rgba(255,106,0,0.15)"
     : "0.5px solid rgba(255,255,255,0.06)";
 
   return (
@@ -411,12 +192,16 @@ function MacroCard({ ev, dayDate, expanded, onToggle }: { ev: MacroEvent; dayDat
       onClick={onToggle}
       role="button"
       aria-expanded={expanded}
-      style={{ padding: "14px 16px", borderRadius: 14, marginBottom: 8, cursor: "pointer", position: "relative", overflow: "hidden", background: cardBg, border: cardBorder, transition: "border-color 0.2s ease, box-shadow 0.2s ease", boxShadow: isLive ? "0 0 0 1px rgba(0,212,123,0.15)" : isUpcoming ? "0 0 12px rgba(255,106,0,0.06)" : "none" }}
+      style={{ padding: "14px 16px", borderRadius: 14, marginBottom: 8, cursor: "pointer", position: "relative", overflow: "hidden", background: cardBg, border: cardBorder, transition: "border-color 0.2s ease, box-shadow 0.2s ease", boxShadow: isLive ? "0 0 0 1px rgba(0,212,123,0.15),0 0 20px rgba(0,212,123,0.06)" : isUpcoming ? "0 0 16px rgba(255,106,0,0.08)" : "none" }}
     >
       <span style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(90deg,transparent,rgba(255,255,255,0.05),transparent)", pointerEvents: "none" }} />
-      {ev.important && (
-        <span style={{ position: "absolute", left: 0, top: 14, bottom: 14, width: 3, background: "linear-gradient(180deg,#ff6a00,#ff8a30)", borderRadius: "0 2px 2px 0", boxShadow: "0 0 8px rgba(255,106,0,0.5)" }} />
-      )}
+      {(() => {
+        const impactColor = ev.impact === "high" ? "#ff3b4f" : ev.impact === "med" ? "#f5c518" : "#00d47b";
+        const impactGlow  = ev.impact === "high" ? "rgba(255,59,79,0.7)" : ev.impact === "med" ? "rgba(245,197,24,0.7)" : "rgba(0,212,123,0.7)";
+        return (
+          <span style={{ position: "absolute", left: 0, top: 14, bottom: 14, width: 3, background: impactColor, borderRadius: "0 2px 2px 0", boxShadow: `0 0 ${isUpcoming ? 12 : 8}px ${impactGlow}` }} />
+        );
+      })()}
 
       {/* top row */}
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
@@ -430,14 +215,28 @@ function MacroCard({ ev, dayDate, expanded, onToggle }: { ev: MacroEvent; dayDat
         )}
         <StatusBadge status={status} countdown={countdown} />
         <ImpactBars level={ev.impact} />
-        {/* expand chevron */}
         <ChevronDown size={13} style={{ color: "#555", flexShrink: 0, transition: "transform 0.25s ease", transform: expanded ? "rotate(180deg)" : "rotate(0deg)", marginLeft: 2 }} />
       </div>
 
       {/* title */}
-      <div className="ev-title" style={{ fontSize: 14, fontWeight: 700, letterSpacing: "-0.2px", marginBottom: 12, lineHeight: 1.3 }}>{ev.title}</div>
+      <div className="ev-title" style={{ fontSize: 14, fontWeight: 700, letterSpacing: "-0.2px", marginBottom: 10, lineHeight: 1.3 }}>{ev.title}</div>
 
-      {/* data grid */}
+      {/* description — always visible */}
+      {ev.description && (
+        <p className="ev-detail-desc" style={{ fontSize: 12, lineHeight: 1.6, fontWeight: 500, marginBottom: 12, opacity: 0.75 }}>
+          {ev.description}
+        </p>
+      )}
+
+      {/* countdown bar for upcoming events */}
+      {isUpcoming && countdown && (
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12, padding: "8px 12px", borderRadius: 10, background: "rgba(255,106,0,0.06)", border: "0.5px solid rgba(255,106,0,0.15)" }}>
+          <Clock size={12} style={{ color: "#ff6a00", flexShrink: 0 }} />
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#ff6a00", fontFamily: "var(--font-jetbrains-mono,monospace)" }}>Starts in {countdown}</span>
+        </div>
+      )}
+
+      {/* data grid: actual / forecast / previous */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 1, background: "rgba(255,255,255,0.03)", borderRadius: 10, overflow: "hidden" }}>
         {[
           { label: "Actual",   value: ev.actual,   trend: ev.actual && ev.forecast ? (parseFloat(ev.actual) >= parseFloat(ev.forecast) ? "up" : "dn") : null },
@@ -455,7 +254,7 @@ function MacroCard({ ev, dayDate, expanded, onToggle }: { ev: MacroEvent; dayDat
         ))}
       </div>
 
-      {/* expanded detail */}
+      {/* expanded: historical data only */}
       <ExpandedDetail ev={ev} isOpen={expanded} />
     </div>
   );
@@ -463,7 +262,7 @@ function MacroCard({ ev, dayDate, expanded, onToggle }: { ev: MacroEvent; dayDat
 
 /* ─── Crypto card ────────────────────────────────────────────── */
 function CryptoCard({ ev, dayDate, expanded, onToggle }: { ev: CryptoEvent; dayDate: Date; expanded: boolean; onToggle: () => void }) {
-  const status   = getStatus(ev.time, dayDate);
+  const status    = getStatus(ev.time, dayDate);
   const countdown = useCountdown(ev.time, dayDate);
 
   return (
@@ -476,7 +275,6 @@ function CryptoCard({ ev, dayDate, expanded, onToggle }: { ev: CryptoEvent; dayD
     >
       <span style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(90deg,transparent,rgba(255,106,0,0.15),transparent)", pointerEvents: "none" }} />
 
-      {/* top row */}
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
         <span className="ev-time" style={{ fontFamily: "var(--font-jetbrains-mono,monospace)", fontSize: 13, fontWeight: 700, letterSpacing: "-0.3px", minWidth: 48 }}>{ev.time}</span>
         <div style={{ width: 22, height: 22, borderRadius: 6, flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 900, background: ev.platformBg, color: ev.platformColor, boxShadow: "0 0 8px rgba(255,106,0,0.3)" }}>
@@ -490,10 +288,8 @@ function CryptoCard({ ev, dayDate, expanded, onToggle }: { ev: CryptoEvent; dayD
         <ChevronDown size={13} style={{ color: "#ff6a00", opacity: 0.6, flexShrink: 0, marginLeft: "auto", transition: "transform 0.25s ease", transform: expanded ? "rotate(180deg)" : "rotate(0deg)" }} />
       </div>
 
-      {/* title */}
       <div className="ev-title" style={{ fontSize: 14, fontWeight: 700, letterSpacing: "-0.2px", marginBottom: 12, lineHeight: 1.3 }}>{ev.title}</div>
 
-      {/* data grid */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 1, background: "rgba(255,106,0,0.05)", borderRadius: 10, overflow: "hidden" }}>
         {ev.fields.map(({ label, value, color }) => (
           <div key={label} className="ev-data-cell" style={{ padding: "9px 11px" }}>
@@ -503,45 +299,65 @@ function CryptoCard({ ev, dayDate, expanded, onToggle }: { ev: CryptoEvent; dayD
         ))}
       </div>
 
-      {/* expanded detail */}
       <ExpandedDetail ev={ev} isOpen={expanded} />
     </div>
   );
 }
 
 /* ─── Page ───────────────────────────────────────────────────── */
-export default function EventsClient() {
-  const TODAY_IDX = 2;
-  const [selectedIdx, setSelectedIdx]   = useState(TODAY_IDX);
-  const [activeFilter, setActiveFilter] = useState<"all" | "important" | "crypto">("all");
+export default function EventsClient({ days, todayIdx }: { days: DayData[]; todayIdx: number }) {
+  const [selectedIdx, setSelectedIdx]   = useState(todayIdx);
+  const [activeFilter, setActiveFilter] = useState<"all" | "important" | "high">("all");
   const [expandedId, setExpandedId]     = useState<string | null>(null);
+  const [showPast, setShowPast]         = useState(false);
+  const [limit, setLimit]               = useState(10);
 
   const toggleExpand = useCallback((id: string) => {
     setExpandedId((prev) => (prev === id ? null : id));
   }, []);
 
-  const day = DAYS[selectedIdx];
+  const day     = days[selectedIdx] ?? days[0];
   const dayDate = new Date(day.year, day.month, day.date);
 
-  // collapse expanded card when switching day/filter
-  const handleDayChange = (i: number) => { setSelectedIdx(i); setExpandedId(null); };
-  const handleFilterChange = (f: "all" | "important" | "crypto") => { setActiveFilter(f); setExpandedId(null); };
+  const isToday = selectedIdx === todayIdx;
 
-  const filtered = day.events.filter((ev) => {
+  const handleDayChange    = (i: number) => { setSelectedIdx(i); setExpandedId(null); setShowPast(false); setLimit(10); };
+  const handleFilterChange = (f: "all" | "important" | "high") => { setActiveFilter(f); setExpandedId(null); setLimit(10); };
+
+  const isPastEvent = (ev: AnyEvent) => {
+    if (!isToday) return false;
+    const now = new Date();
+    const [h, m] = ev.time.split(":").map(Number);
+    const t = new Date(); t.setHours(h, m, 0, 0);
+    return t.getTime() < now.getTime() - 15 * 60000;
+  };
+
+  const filtered = day.events.filter((ev: AnyEvent) => {
     if (activeFilter === "important") return ev.kind === "macro" && (ev as MacroEvent).important;
-    if (activeFilter === "crypto")    return ev.kind === "crypto";
+    if (activeFilter === "high")      return ev.kind === "macro" && (ev as MacroEvent).impact === "high";
     return true;
   });
 
+  const pastCount     = isToday ? filtered.filter(isPastEvent).length : 0;
+  const activeEvents  = filtered.filter((ev) => showPast || !isPastEvent(ev));
+  const visibleEvents = activeEvents.slice(0, limit);
+  const hasMore       = activeEvents.length > limit;
+
   const counts = {
     all:       day.events.length,
-    important: day.events.filter((e) => e.kind === "macro" && (e as MacroEvent).important).length,
-    crypto:    day.events.filter((e) => e.kind === "crypto").length,
+    important: day.events.filter((e: AnyEvent) => e.kind === "macro" && (e as MacroEvent).important).length,
+    high:      day.events.filter((e: AnyEvent) => e.kind === "macro" && (e as MacroEvent).impact === "high").length,
   };
 
-  const totalWeek      = DAYS.reduce((s, d) => s + d.events.length, 0);
-  const totalHighToday = DAYS[TODAY_IDX].events.filter((e) => e.kind === "macro" && (e as MacroEvent).impact === "high").length;
-  const totalCrypto    = DAYS[TODAY_IDX].events.filter((e) => e.kind === "crypto").length;
+  const todayDay       = days[todayIdx];
+  const totalWeek      = days.reduce((s: number, d: DayData) => s + d.events.length, 0);
+  const totalHighToday = todayDay?.events.filter((e: AnyEvent) => e.kind === "macro" && (e as MacroEvent).impact === "high").length ?? 0;
+  const totalUpcoming  = todayDay?.events.filter((e: AnyEvent) => {
+    const now = new Date();
+    const [h, m] = e.time.split(":").map(Number);
+    const t = new Date(); t.setHours(h, m, 0, 0);
+    return t > now;
+  }).length ?? 0;
 
   return (
     <div className="relative z-[2] max-w-[1440px] mx-auto px-3 md:px-10 pt-4">
@@ -572,10 +388,10 @@ export default function EventsClient() {
       <FadeIn delay={0.04}>
         <div className="grid grid-cols-4 gap-2 mb-[14px]">
           {[
-            { label: "Today",       value: String(DAYS[TODAY_IDX].events.length), sub: "events",    accent: true,  color: null },
-            { label: "This week",   value: String(totalWeek),                     sub: "scheduled", accent: false, color: null },
-            { label: "High impact", value: String(totalHighToday),                sub: "today",     accent: false, color: "#ff3b4f" },
-            { label: "Crypto",      value: String(totalCrypto),                   sub: "listings",  accent: false, color: "#ff6a00" },
+            { label: "Today",       value: String(todayDay?.events.length ?? 0), sub: "events",    accent: true,  color: null },
+            { label: "This week",   value: String(totalWeek),                    sub: "scheduled", accent: false, color: null },
+            { label: "High impact", value: String(totalHighToday),               sub: "today",     accent: false, color: "#ff3b4f" },
+            { label: "Upcoming",    value: String(totalUpcoming),                sub: "today",     accent: false, color: "#ff6a00" },
           ].map(({ label, value, sub, accent, color }) => (
             <div key={label} className="glass relative overflow-hidden rounded-[14px] py-[12px] px-2 text-center">
               <span className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent" />
@@ -591,9 +407,9 @@ export default function EventsClient() {
       <FadeIn delay={0.06}>
         <div className="flex items-center gap-2 mb-[12px]">
           {([
-            { key: "all",       label: "All events", Icon: Filter  },
-            { key: "important", label: "Important",  Icon: Star    },
-            { key: "crypto",    label: "Crypto",     Icon: Bitcoin },
+            { key: "all",       label: "All events",   Icon: Filter  },
+            { key: "important", label: "Important",    Icon: Star    },
+            { key: "high",      label: "High impact",  Icon: Bitcoin },
           ] as const).map(({ key, label, Icon }) => {
             const active = activeFilter === key;
             return (
@@ -614,10 +430,10 @@ export default function EventsClient() {
       {/* ── Date scrubber ────────────────────────────────────── */}
       <FadeIn delay={0.08}>
         <div className="flex gap-[6px] overflow-x-auto pb-1 mb-[16px]" style={{ scrollbarWidth: "none" }}>
-          {DAYS.map((d, i) => {
+          {days.map((d: DayData, i: number) => {
             const active = i === selectedIdx;
             return (
-              <button key={d.date} onClick={() => handleDayChange(i)}
+              <button key={`${d.year}-${d.month}-${d.date}`} onClick={() => handleDayChange(i)}
                 className="flex-shrink-0 flex flex-col items-center cursor-pointer transition-all duration-150"
                 style={{ padding: "10px 14px", borderRadius: 12, minWidth: 58, background: active ? "linear-gradient(135deg,#ff6a00,#ff8a30)" : "rgba(255,255,255,0.03)", border: active ? "0.5px solid transparent" : "0.5px solid rgba(255,255,255,0.06)", boxShadow: active ? "0 0 16px rgba(255,106,0,0.25)" : "none" }}>
                 <span style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 3, color: active ? "rgba(0,0,0,0.7)" : "#666" }}>{d.day}</span>
@@ -633,11 +449,22 @@ export default function EventsClient() {
       <div className="flex items-center gap-2.5 px-1 mb-3">
         <span className="text-[11px] font-extrabold uppercase tracking-[2px] gradient-text-alt font-[family-name:var(--font-display)]">{day.fullLabel}</span>
         <span className="flex-1 h-px" style={{ background: "linear-gradient(90deg,rgba(255,106,0,0.2),transparent)" }} />
-        <span className="text-[9px] font-extrabold tracking-[1px] font-[family-name:var(--font-data)]" style={{ color: "#444" }}>{filtered.length} EVENTS</span>
+        <span className="text-[9px] font-extrabold tracking-[1px] font-[family-name:var(--font-data)]" style={{ color: "#444" }}>{activeEvents.length} EVENTS</span>
       </div>
 
+      {/* ── Past events toggle (today only) ──────────────────── */}
+      {isToday && pastCount > 0 && (
+        <button
+          onClick={() => { setShowPast((p) => !p); setLimit(10); }}
+          style={{ width: "100%", marginBottom: 10, padding: "9px 16px", borderRadius: 12, background: showPast ? "rgba(255,255,255,0.05)" : "rgba(255,255,255,0.03)", border: showPast ? "0.5px solid rgba(255,255,255,0.1)" : "0.5px solid rgba(255,255,255,0.06)", fontSize: 12, fontWeight: 700, color: showPast ? "#888" : "#555", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "all 0.15s" }}
+        >
+          <ChevronDown size={13} style={{ transition: "transform 0.2s", transform: showPast ? "rotate(180deg)" : "rotate(0deg)" }} />
+          {showPast ? `Hide today's past events (${pastCount})` : `Show today's past events (${pastCount})`}
+        </button>
+      )}
+
       {/* ── Event list ───────────────────────────────────────── */}
-      {filtered.length === 0 ? (
+      {activeEvents.length === 0 ? (
         <FadeIn delay={0}>
           <div className="glass rounded-[16px] py-12 text-center">
             <Calendar size={32} className="mx-auto mb-3 opacity-20" />
@@ -647,12 +474,26 @@ export default function EventsClient() {
           </div>
         </FadeIn>
       ) : (
-        <FadeIn delay={0.1} key={`${selectedIdx}-${activeFilter}`}>
+        <FadeIn delay={0.1} key={`${selectedIdx}-${activeFilter}-${showPast}`}>
           <div>
-            {filtered.map((ev) =>
+            {visibleEvents.map((ev: AnyEvent) =>
               ev.kind === "macro"
-                ? <MacroCard  key={ev.id} ev={ev} dayDate={dayDate} expanded={expandedId === ev.id} onToggle={() => toggleExpand(ev.id)} />
-                : <CryptoCard key={ev.id} ev={ev} dayDate={dayDate} expanded={expandedId === ev.id} onToggle={() => toggleExpand(ev.id)} />
+                ? <MacroCard  key={ev.id} ev={ev as MacroEvent}  dayDate={dayDate} expanded={expandedId === ev.id} onToggle={() => toggleExpand(ev.id)} />
+                : <CryptoCard key={ev.id} ev={ev as CryptoEvent} dayDate={dayDate} expanded={expandedId === ev.id} onToggle={() => toggleExpand(ev.id)} />
+            )}
+
+            {/* load more */}
+            {hasMore && (
+              <button
+                onClick={() => setLimit((l) => l + 10)}
+                style={{ width: "100%", marginTop: 8, padding: "11px 16px", borderRadius: 12, background: "rgba(255,106,0,0.06)", border: "0.5px solid rgba(255,106,0,0.15)", fontSize: 12, fontWeight: 700, color: "#ff6a00", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6, transition: "all 0.15s" }}
+              >
+                <ChevronDown size={13} />
+                Load {Math.min(activeEvents.length - limit, 10)} more
+                <span style={{ fontSize: 10, color: "rgba(255,106,0,0.5)", fontFamily: "var(--font-jetbrains-mono,monospace)" }}>
+                  {activeEvents.length - limit} remaining
+                </span>
+              </button>
             )}
           </div>
         </FadeIn>
