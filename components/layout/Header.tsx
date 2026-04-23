@@ -30,10 +30,10 @@ const NEWS_CATS = [
 ];
 
 export default function Header() {
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
+  const [drawerOpen, setDrawerOpen]     = useState(false);
+  const [searchOpen, setSearchOpen]     = useState(false);
   const [newsDropdown, setNewsDropdown] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const dropdownRef                     = useRef<HTMLDivElement>(null);
   const { resolved } = useTheme();
   const isLight = resolved === "light";
   const pathname = usePathname();
@@ -181,7 +181,7 @@ export default function Header() {
         </div>
       </div>
 
-      {/* ── Price ticker (hidden on article pages) ──────────── */}
+      {/* ── Price ticker ── */}
       {!pathname.startsWith("/news/") && <PriceTicker />}
 
       <MobileDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />

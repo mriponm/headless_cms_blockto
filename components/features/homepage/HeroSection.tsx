@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import SectionLabel from "@/components/ui/SectionLabel";
+import TranslatedText from "@/components/ui/TranslatedText";
 import type { WPPost } from "@/lib/wordpress/types";
 import { relativeDate, primaryCategory } from "@/lib/wordpress/queries";
 
@@ -61,14 +62,14 @@ export default function HeroSection({ posts }: { posts: WPPost[] }) {
             {/* Title + author overlaid at bottom */}
             <div className="absolute bottom-0 left-0 right-0 px-5 pt-4 pb-6 lg:px-7 lg:pt-5 lg:pb-8 z-10">
               <h1 className="text-white text-[19px] lg:text-[27px] font-extrabold tracking-[-0.5px] leading-[1.2] mb-3 font-[family-name:var(--font-display)] line-clamp-3">
-                {hero.title}
+                <TranslatedText text={hero.title} />
               </h1>
               <div className="flex items-center gap-2 text-[12px] text-[#ccc] font-medium">
                 <span className="w-[26px] h-[26px] rounded-full flex items-center justify-center text-[10px] font-extrabold text-black flex-shrink-0"
                   style={{ background: "var(--gradient-brand)" }}>
                   {hero.author.node.name.slice(0, 2).toUpperCase()}
                 </span>
-                <span className="text-[#ddd]">{hero.author.node.name}</span>
+                <span className="text-[#ddd]" data-no-translate>{hero.author.node.name}</span>
                 <span className="text-[#555]">·</span>
                 <span className="text-[#888]">4 min read</span>
               </div>
@@ -107,7 +108,7 @@ export default function HeroSection({ posts }: { posts: WPPost[] }) {
                     {cat.name.toUpperCase()}
                   </span>
                   <p className="text-white text-[12px] lg:text-[15px] font-bold tracking-[-0.2px] leading-[1.35] mb-2 font-[family-name:var(--font-display)] line-clamp-2">
-                    {post!.title}
+                    <TranslatedText text={post!.title} />
                   </p>
                   <p className="text-[10px] text-[#777] font-medium font-[family-name:var(--font-display)] flex items-center gap-1.5">
                     <span className="w-[6px] h-[6px] rounded-full bg-[#00d47b] inline-block flex-shrink-0" />

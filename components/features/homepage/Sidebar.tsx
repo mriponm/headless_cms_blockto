@@ -1,5 +1,6 @@
 "use client";
 import { Star, Flame, Clock } from "lucide-react";
+import TranslatedText from "@/components/ui/TranslatedText";
 import Link from "next/link";
 import { useCryptoData } from "@/lib/hooks/useCryptoData";
 import { formatPrice, formatPercent } from "@/lib/utils/formatters";
@@ -81,7 +82,7 @@ export default function Sidebar({ trendingPosts }: { trendingPosts: WPPost[] }) 
                 {String(i + 1).padStart(2, "0")}
               </span>
               <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-semibold leading-[1.35] mb-1 tracking-[-0.1px] font-[family-name:var(--font-display)] line-clamp-2">{post.title}</p>
+                <p className="text-[13px] font-semibold leading-[1.35] mb-1 tracking-[-0.1px] font-[family-name:var(--font-display)] line-clamp-2"><TranslatedText text={post.title} /></p>
                 <p className="text-[10px] text-[#555] font-semibold font-[family-name:var(--font-display)]">{cat.name}</p>
               </div>
             </Link>

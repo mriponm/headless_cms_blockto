@@ -1,13 +1,14 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { Zap } from "lucide-react";
 import { getPostBySlug, getPosts, primaryCategory, relativeDate, stripExcerpt } from "@/lib/wordpress/queries";
 import ArticleInteractive from "@/components/features/ArticleInteractive";
 import ArticleImageActions from "@/components/features/ArticleImageActions";
 import ArticleMetaBar from "@/components/features/ArticleMetaBar";
 import ArticleMarketCard from "@/components/features/ArticleMarketCard";
 import ArticleFooter from "@/components/features/ArticleFooter";
+import ArticleTranslatedBody from "@/components/features/ArticleTranslatedBody";
+import TranslatedLabel from "@/components/ui/TranslatedLabel";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -22,39 +23,6 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       images: post.featuredImage ? [post.featuredImage.node.sourceUrl] : [],
     },
   };
-}
-
-/* ── Key takeaways extracted from excerpt ── */
-function KeyTakeaways({ excerpt }: { excerpt: string }) {
-  const clean = stripExcerpt(excerpt);
-  const sentences = clean.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 20).slice(0, 3);
-  if (!sentences.length) return null;
-  return (
-    <div className="art-takeaways rounded-[16px] p-[18px_20px] mb-6 relative overflow-hidden">
-      <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(255,106,0,0.35)] to-transparent pointer-events-none" />
-      <span className="absolute top-[-30%] right-[-15%] w-[50%] h-[80%] pointer-events-none"
-        style={{ background: "radial-gradient(circle,rgba(255,106,0,0.1),transparent 70%)", filter: "blur(25px)" }} />
-      <div className="flex items-center gap-2 mb-3.5 relative z-10">
-        <Zap size={14} className="text-[var(--color-brand)]" style={{ filter: "drop-shadow(0 0 4px rgba(255,106,0,0.4))" }} />
-        <span className="text-[10px] font-extrabold uppercase tracking-[1.5px] text-[var(--color-brand)] font-[family-name:var(--font-display)]">
-          Key takeaways
-        </span>
-      </div>
-      <div className="relative z-10 flex flex-col gap-1">
-        {sentences.map((s, i) => (
-          <div key={i} className="flex items-start gap-2.5 py-[7px] text-[13px] leading-[1.5] font-medium art-body-text font-[family-name:var(--font-display)]">
-            <span className="w-[18px] h-[18px] rounded-[6px] flex items-center justify-center flex-shrink-0 mt-[1px]"
-              style={{ background: "linear-gradient(135deg,#00d47b,#00a862)", boxShadow: "0 0 8px rgba(0,212,123,0.2)" }}>
-              <svg width="9" height="9" viewBox="0 0 14 14" fill="none" stroke="#000" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 7l3 3 6-6"/>
-              </svg>
-            </span>
-            {s}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
 }
 
 
@@ -150,36 +118,35 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
             ))}
           </div>
 
-          {/* Title block */}
-          <div className="pb-4 mb-0">
-            <h1 className="text-[26px] md:text-[32px] font-black tracking-[-1.2px] leading-[1.1] mb-3 art-heading font-[family-name:var(--font-display)]">
-              {post.title}
-            </h1>
-            <p className="text-[14px] md:text-[15px] art-lead-text leading-[1.55] font-medium font-[family-name:var(--font-display)]">
-              {stripExcerpt(post.excerpt)}
-            </p>
-          </div>
+          {/* Translated title + excerpt + meta + takeaways + body */}
+          <ArticleTranslatedBody
+            title={post.title}
+            excerpt={stripExcerpt(post.excerpt)}
+            content={post.content ?? `<p>${stripExcerpt(post.excerpt)}</p>`}
+            takeaways={
+              stripExcerpt(post.excerpt)
+                .split(/[.!?]+/)
+                .map(s => s.trim())
+                .filter(s => s.length > 20)
+                .slice(0, 3)
+            }
+            metaSlot={
+              <ArticleMetaBar
+                authorName={post.author.node.name}
+                dateStr={dateStr}
+                slug={slug}
+                title={post.title}
+                excerpt={stripExcerpt(post.excerpt)}
+                category={cat?.name ?? ""}
+                image={post.featuredImage?.node.sourceUrl ?? ""}
+              />
+            }
+          />
 
-          {/* Author meta bar with inline follow */}
-          <ArticleMetaBar authorName={post.author.node.name} dateStr={dateStr} />
-
-          {/* Key takeaways */}
-          <KeyTakeaways excerpt={post.excerpt} />
-
-          {/* Article body */}
-          {post.content ? (
-            <div className="mb-4 prose-wp art-body" dangerouslySetInnerHTML={{ __html: post.content }} />
-          ) : (
-            <p className="mb-4 text-[15.5px] leading-[1.75] art-body-text font-[family-name:var(--font-lora)]">
-              {stripExcerpt(post.excerpt)}
-            </p>
-          )}
-
-          {/* How markets are positioning — in middle of content, after body */}
+          {/* How markets are positioning */}
           <div className="flex items-center gap-2.5 mb-3 mt-2">
-            <span className="text-[11px] font-extrabold uppercase tracking-[2px] art-heading font-[family-name:var(--font-display)]">
-              How markets are positioning
-            </span>
+            <TranslatedLabel tKey="article.howMarkets"
+              className="text-[11px] font-extrabold uppercase tracking-[2px] art-heading font-[family-name:var(--font-display)]" />
             <div className="flex-1 h-px bg-gradient-to-r from-[rgba(255,106,0,0.25)] to-transparent" />
           </div>
           <ArticleMarketCard />
@@ -196,9 +163,8 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
           {relatedPosts.length > 0 && (
             <div className="mt-8">
               <div className="flex items-center gap-2.5 mb-4">
-                <span className="text-[11px] font-extrabold uppercase tracking-[2.5px] art-heading font-[family-name:var(--font-display)]">
-                  Similar <span className="gradient-text-alt">news</span>
-                </span>
+                <TranslatedLabel tKey="article.similarNews"
+                  className="text-[11px] font-extrabold uppercase tracking-[2.5px] art-heading font-[family-name:var(--font-display)]" />
                 <div className="flex-1 h-px bg-gradient-to-r from-[rgba(255,106,0,0.25)] to-transparent" />
               </div>
               <div className="flex flex-col gap-2.5">

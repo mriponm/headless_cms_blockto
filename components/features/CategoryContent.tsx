@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import type { WPPost, WPCategory } from "@/lib/wordpress/types";
 import { relativeDate, primaryCategory, stripExcerpt } from "@/lib/wordpress/queries";
+import TranslatedText from "@/components/ui/TranslatedText";
 
 const BRAND = "#ff6a00";
 const BRAND_BG = "rgba(255,106,0,0.08)";
@@ -106,10 +107,10 @@ function FeaturedCard({ post }: { post: WPPost }) {
       </div>
       <div className="p-5">
         <h3 className="text-[17px] md:text-[18px] font-extrabold leading-[1.3] mb-2.5 tracking-[-0.4px] line-clamp-2 art-heading font-[family-name:var(--font-display)]">
-          {post.title}
+          <TranslatedText text={post.title} />
         </h3>
         <p className="text-[13px] art-sub-text leading-[1.55] font-medium mb-4 line-clamp-2 font-[family-name:var(--font-display)]">
-          {stripExcerpt(post.excerpt)}
+          <TranslatedText text={stripExcerpt(post.excerpt)} />
         </p>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-[11px] art-sub-text font-medium">
@@ -117,7 +118,7 @@ function FeaturedCard({ post }: { post: WPPost }) {
               style={{ background: `linear-gradient(135deg,${BRAND_GRAD_FROM},${BRAND_GRAD_TO})` }}>
               {post.author.node.name.slice(0, 2).toUpperCase()}
             </span>
-            {post.author.node.name} · {relativeDate(post.date)}
+            <span data-no-translate>{post.author.node.name}</span> · {relativeDate(post.date)}
           </div>
           <div className="flex items-center gap-1.5 text-[10px] art-sub-text font-semibold px-2 py-1 rounded-[7px] art-tag-pill font-[family-name:var(--font-data)]">
             <Clock size={10} />
@@ -149,7 +150,7 @@ function ListCard({ post }: { post: WPPost }) {
             {cat.name.toUpperCase()}
           </span>
           <p className="text-[14px] font-bold leading-[1.35] tracking-[-0.2px] line-clamp-2 md:line-clamp-3 art-heading font-[family-name:var(--font-display)]">
-            {post.title}
+            <TranslatedText text={post.title} />
           </p>
         </div>
         <div className="flex items-center gap-2 text-[10px] art-sub-text font-medium mt-1.5">

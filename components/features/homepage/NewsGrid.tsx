@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import SectionLabel from "@/components/ui/SectionLabel";
+import TranslatedText from "@/components/ui/TranslatedText";
 import type { WPPost } from "@/lib/wordpress/types";
 import { relativeDate, primaryCategory } from "@/lib/wordpress/queries";
 
@@ -51,13 +52,13 @@ export default function NewsGrid({ posts, title = "General news", viewAllHref = 
                   {cat.name.toUpperCase()}
                 </span>
                 <p className="text-[15px] font-bold leading-[1.35] mb-3 tracking-[-0.2px] line-clamp-3 font-[family-name:var(--font-display)]">
-                  {post.title}
+                  <TranslatedText text={post.title} />
                 </p>
                 <div className="flex items-center gap-1.5 text-[10px] text-[#666] font-medium">
                   <span className="w-[18px] h-[18px] rounded-full flex items-center justify-center text-[8px] font-extrabold text-black flex-shrink-0" style={{ background: "var(--gradient-brand)" }}>
                     {post.author.node.name.slice(0, 2).toUpperCase()}
                   </span>
-                  {post.author.node.name} · {relativeDate(post.date)}
+                  <span data-no-translate>{post.author.node.name}</span> · {relativeDate(post.date)}
                 </div>
               </div>
             </Link>

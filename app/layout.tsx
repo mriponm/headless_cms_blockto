@@ -5,6 +5,8 @@ import Background from "@/components/layout/Background";
 import ConditionalShell from "@/components/layout/ConditionalShell";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { I18nProvider } from "@/components/providers/I18nProvider";
+import { TranslationBatcherProvider } from "@/components/providers/TranslationBatcherProvider";
+import PageTranslator from "@/components/providers/PageTranslator";
 import { AuthModalProvider } from "@/components/providers/AuthModalProvider";
 import AuthModal from "@/components/ui/AuthModal";
 import UserSyncProvider from "@/components/providers/UserSyncProvider";
@@ -60,10 +62,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <AuthModal />
           <ThemeProvider>
             <I18nProvider>
-              <Background />
-              <ConditionalShell>
-                {children}
-              </ConditionalShell>
+              <TranslationBatcherProvider>
+                <PageTranslator />
+                <Background />
+                <ConditionalShell>
+                  {children}
+                </ConditionalShell>
+              </TranslationBatcherProvider>
             </I18nProvider>
           </ThemeProvider>
         </AuthModalProvider>

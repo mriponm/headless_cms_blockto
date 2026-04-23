@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { Check, ExternalLink } from "lucide-react";
+import { useI18n } from "@/components/providers/I18nProvider";
 
 function XIcon() {
   return (
@@ -43,6 +44,7 @@ interface Props {
 export default function ArticleFooter({ tags, postTitle, postUrl, authorName }: Props) {
   const [followed, setFollowed] = useState(false);
   const [copied, setCopied] = useState(false);
+  const { t } = useI18n();
 
   const initials = authorName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
 
@@ -68,10 +70,10 @@ export default function ArticleFooter({ tags, postTitle, postUrl, authorName }: 
         </div>
         <div>
           <p className="text-[10px] font-extrabold uppercase tracking-[1.3px] text-[var(--color-brand)] mb-1 font-[family-name:var(--font-display)]">
-            Disclaimer
+            {t("footer.disclaimer")}
           </p>
           <p className="text-[11px] text-[#888] leading-[1.55] font-medium font-[family-name:var(--font-display)]">
-            This content is for informational purposes only and does not constitute financial, investment, or legal advice. Cryptocurrency trading involves risk and may result in financial loss.
+            {t("footer.disclaimerText")}
           </p>
         </div>
       </div>
@@ -85,12 +87,12 @@ export default function ArticleFooter({ tags, postTitle, postUrl, authorName }: 
           <span className="inline-flex items-center gap-1.5 text-[9px] font-extrabold uppercase tracking-[1.2px] text-[var(--color-brand)] px-[10px] py-1 rounded-full mb-3.5 font-[family-name:var(--font-data)]"
             style={{ border: "0.5px solid rgba(255,106,0,0.3)", background: "rgba(255,106,0,0.05)" }}>
             <span className="w-[4px] h-[4px] bg-[#ff6a00] rounded-full shadow-[0_0_6px_#ff6a00]" />
-            Exclusive partner offer
+            {t("footer.exclusiveOffer")}
           </span>
           <h3 className="text-[20px] font-black tracking-[-0.6px] leading-[1.15] mb-2 font-[family-name:var(--font-display)]">
-            Start trading<br />
+            {t("footer.startTrading")}<br />
             <span style={{ background: "linear-gradient(135deg,#ff6a00,#ffaa44)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-              with BloFin today
+              {t("footer.blofin")}
             </span>
           </h3>
           <p className="text-[12px] text-[#999] font-medium mb-4 leading-[1.5] font-[family-name:var(--font-display)]">
@@ -99,11 +101,11 @@ export default function ArticleFooter({ tags, postTitle, postUrl, authorName }: 
           <a href="https://blofin.com" target="_blank" rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-[12px] text-[14px] font-extrabold text-black cursor-pointer transition-all hover:brightness-110 font-[family-name:var(--font-display)]"
             style={{ background: "linear-gradient(135deg,#ff6a00,#ff8a30)", boxShadow: "0 8px 22px rgba(255,106,0,0.3),inset 0 1px 0 rgba(255,255,255,0.2)" }}>
-            Buy crypto now
+            {t("footer.buyCrypto")}
             <ExternalLink size={13} />
           </a>
           <p className="flex items-center justify-center gap-1 text-[10px] text-[#666] mt-2.5 font-[family-name:var(--font-display)]">
-            ⓘ You will be redirected to <span className="text-[var(--color-brand)] font-bold">BloFin</span>
+            ⓘ {t("footer.redirectNote")} <span className="text-[var(--color-brand)] font-bold">BloFin</span>
           </p>
         </div>
       </div>
@@ -123,7 +125,7 @@ export default function ArticleFooter({ tags, postTitle, postUrl, authorName }: 
       {/* 4. Share bar */}
       <div className="art-share-bar flex items-center gap-2.5 px-4 py-3.5 rounded-[12px]">
         <span className="text-[10px] font-extrabold uppercase tracking-[1.2px] text-[#666] mr-auto font-[family-name:var(--font-display)]">
-          Share article
+          {t("footer.shareArticle")}
         </span>
         <button onClick={shareX} className="art-share-btn w-[34px] h-[34px] rounded-[10px] flex items-center justify-center cursor-pointer transition-all duration-200">
           <XIcon />
@@ -149,7 +151,7 @@ export default function ArticleFooter({ tags, postTitle, postUrl, authorName }: 
         <span className="absolute top-[-30%] right-[-20%] w-[50%] h-[80%] pointer-events-none"
           style={{ background: "radial-gradient(circle,rgba(255,106,0,0.08),transparent 70%)", filter: "blur(30px)" }} />
         <p className="text-[9px] font-extrabold uppercase tracking-[1.5px] text-[var(--color-brand)] mb-3 relative z-10 font-[family-name:var(--font-display)]">
-          About the author
+          {t("footer.aboutAuthor")}
         </p>
         <div className="flex items-center gap-3 mb-3 relative z-10">
           <div className="w-[56px] h-[56px] rounded-full flex items-center justify-center text-[19px] font-extrabold text-black flex-shrink-0"
@@ -162,7 +164,7 @@ export default function ArticleFooter({ tags, postTitle, postUrl, authorName }: 
               <span className="text-[#4a9eff] text-[13px]">✓</span>
             </div>
             <p className="text-[10px] font-extrabold uppercase tracking-[1px] text-[var(--color-brand)] font-[family-name:var(--font-data)]">
-              Senior Market Analyst
+              {t("footer.seniorMarketAnalyst")}
             </p>
           </div>
           <button
@@ -171,14 +173,14 @@ export default function ArticleFooter({ tags, postTitle, postUrl, authorName }: 
             style={followed
               ? { color: "#ff6a00", background: "rgba(255,106,0,0.08)", border: "0.5px solid rgba(255,106,0,0.2)" }
               : { color: "#000", background: "linear-gradient(135deg,#ff6a00,#ff8a30)", boxShadow: "0 0 12px rgba(255,106,0,0.2),inset 0 1px 0 rgba(255,255,255,0.2)" }}>
-            {followed ? "Following" : "+ Follow"}
+            {followed ? t("footer.following") : t("footer.follow")}
           </button>
         </div>
         <p className="text-[12px] text-[#999] leading-[1.55] font-medium mb-3 relative z-10 font-[family-name:var(--font-display)]">
-          8+ years covering crypto markets, macro, and geopolitics. Previously at Decrypt and CoinDesk. Focused on the intersection of digital assets and traditional finance.
+          {t("footer.authorBio")}
         </p>
         <div className="flex items-center gap-[14px] pt-3 border-t border-[rgba(255,255,255,0.04)] relative z-10">
-          {[["142", "Articles"], ["4.2K", "Followers"], ["186K", "Reads"]].map(([val, label]) => (
+          {[["142", t("footer.articles")], ["4.2K", t("footer.followers")], ["186K", t("footer.reads")]].map(([val, label]) => (
             <div key={label} className="flex flex-col gap-0.5">
               <span className="text-[14px] font-extrabold art-heading font-[family-name:var(--font-data)] leading-none">{val}</span>
               <span className="text-[9px] font-extrabold text-[#666] uppercase tracking-[0.8px] font-[family-name:var(--font-display)]">{label}</span>

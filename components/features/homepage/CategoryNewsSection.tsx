@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import SectionLabel from "@/components/ui/SectionLabel";
+import TranslatedText from "@/components/ui/TranslatedText";
 import type { WPPost } from "@/lib/wordpress/types";
 import { relativeDate, primaryCategory } from "@/lib/wordpress/queries";
 
@@ -42,14 +43,14 @@ function FeaturedCard({ post, accentColor, accentBg, accentBorder, accentGrad }:
       </div>
       <div className="p-4">
         <h3 className="text-[15px] font-bold leading-[1.35] mb-2.5 tracking-[-0.3px] line-clamp-2 art-heading font-[family-name:var(--font-display)]">
-          {post.title}
+          <TranslatedText text={post.title} />
         </h3>
         <div className="flex items-center gap-2 text-[10px] art-sub-text font-medium">
           <span className="w-[20px] h-[20px] rounded-full flex items-center justify-center text-[8px] font-extrabold text-black flex-shrink-0"
             style={{ background: accentGrad }}>
             {post.author.node.name.slice(0, 2).toUpperCase()}
           </span>
-          {post.author.node.name} · {relativeDate(post.date)}
+          <span data-no-translate>{post.author.node.name}</span> · {relativeDate(post.date)}
         </div>
       </div>
     </Link>
@@ -79,14 +80,14 @@ function ListCard({ post, accentColor, accentBg, accentBorder, accentGrad }: {
           {cat.name.toUpperCase()}
         </span>
         <p className="text-[13px] font-bold leading-[1.35] tracking-[-0.2px] line-clamp-2 art-heading font-[family-name:var(--font-display)] mb-1">
-          {post.title}
+          <TranslatedText text={post.title} />
         </p>
         <div className="flex items-center gap-1.5 text-[10px] art-sub-text font-medium">
           <span className="w-[14px] h-[14px] rounded-full flex items-center justify-center text-[6px] font-extrabold text-black flex-shrink-0"
             style={{ background: accentGrad }}>
             {post.author.node.name.slice(0, 2).toUpperCase()}
           </span>
-          {post.author.node.name} · {relativeDate(post.date)}
+          <span data-no-translate>{post.author.node.name}</span> · {relativeDate(post.date)}
         </div>
       </div>
     </Link>

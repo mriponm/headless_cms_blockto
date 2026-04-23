@@ -49,7 +49,7 @@ function LanguagePicker() {
   const [open, setOpen] = useState(false);
   const btnRef = useRef<HTMLButtonElement>(null);
   const dropRef = useRef<HTMLDivElement>(null);
-  const [pos, setPos] = useState({ bottom: 0, right: 0 });
+  const [pos, setPos] = useState<{ bottom: number; right: number } | null>(null);
   const current = LANGUAGES.find((l) => l.code === lang) ?? LANGUAGES[0];
 
   /* Calculate fixed position relative to the trigger button */
@@ -60,6 +60,8 @@ function LanguagePicker() {
         bottom: window.innerHeight - r.top + 8,
         right:  window.innerWidth  - r.right,
       });
+    } else if (!open) {
+      setPos(null);
     }
   }, [open]);
 
@@ -92,7 +94,7 @@ function LanguagePicker() {
       </button>
 
       {/* Fixed-position dropdown — escapes footer stacking context entirely */}
-      {open && (
+      {open && pos && (
         <div
           ref={dropRef}
           className="fixed w-[210px] rounded-[14px] overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.45)] z-[500] lang-dropdown"

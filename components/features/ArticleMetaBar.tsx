@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { Clock, Bookmark, BookmarkCheck } from "lucide-react";
 import { useAuthModal } from "@/components/providers/AuthModalProvider";
+import { useI18n } from "@/components/providers/I18nProvider";
 
 export default function ArticleMetaBar({
   authorName, dateStr, slug, title, excerpt, category, image,
@@ -18,6 +19,7 @@ export default function ArticleMetaBar({
   const [saved, setSaved]       = useState(false);
   const [saving, setSaving]     = useState(false);
   const { openModal }           = useAuthModal();
+  const { t }                   = useI18n();
   const initials = authorName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
 
   // Check if already saved
@@ -73,7 +75,7 @@ export default function ArticleMetaBar({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <span className="text-[13px] font-bold art-heading font-[family-name:var(--font-display)]">
-              By {authorName}
+              {t("article.by")} <span data-no-translate>{authorName}</span>
             </span>
             <button
               onClick={() => setFollowed(v => !v)}
@@ -81,18 +83,18 @@ export default function ArticleMetaBar({
               style={followed
                 ? { color: "#aaa", background: "rgba(255,255,255,0.06)", border: "0.5px solid rgba(255,255,255,0.1)" }
                 : { color: "#ff6a00", background: "rgba(255,106,0,0.07)", border: "0.5px solid rgba(255,106,0,0.18)" }}>
-              {followed ? "Following" : "+ Follow"}
+              {followed ? t("footer.following") : t("footer.follow")}
             </button>
           </div>
           <p className="text-[10px] art-author-role font-medium mt-0.5 font-[family-name:var(--font-display)]">
-            Senior market analyst · {dateStr}
+            {t("article.seniorAnalyst")} · {dateStr}
           </p>
         </div>
 
         {/* Read time + Save */}
         <div className="flex items-center gap-2 flex-shrink-0">
           <div className="flex items-center gap-1 text-[10px] text-[#666] font-medium font-[family-name:var(--font-data)]">
-            <Clock size={10} /> 2 min
+            <Clock size={10} /> 2 {t("article.minRead")}
           </div>
           <button
             onClick={toggleSave}
