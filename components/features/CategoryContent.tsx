@@ -273,20 +273,21 @@ export default function CategoryContent({
 
       {/* Sort tabs */}
       <motion.div {...fadeUp(0.08)} className="flex items-center gap-2 mb-6 overflow-x-auto pb-1 scrollbar-hide">
-        <div className="flex items-center gap-1.5 p-1 rounded-[12px] border flex-shrink-0"
+        <div className="flex items-center gap-1 p-0.5 md:p-1 rounded-[10px] md:rounded-[12px] border flex-shrink-0"
           style={{ background: "rgba(255,255,255,0.025)", borderColor: "rgba(255,255,255,0.07)" }}>
           {SORT_TABS.map(({ id, label, icon: TabIcon }) => (
             <button key={id} onClick={() => setActiveSort(id)}
-              className="flex items-center gap-1.5 px-3.5 py-2 rounded-[9px] text-[12px] font-bold transition-all duration-150 cursor-pointer font-[family-name:var(--font-display)] flex-shrink-0"
+              className="flex items-center gap-1 md:gap-1.5 px-2.5 py-1.5 md:px-3.5 md:py-2 rounded-[7px] md:rounded-[9px] text-[10px] md:text-[12px] font-bold transition-all duration-150 cursor-pointer font-[family-name:var(--font-display)] flex-shrink-0"
               style={activeSort === id
                 ? { background: `linear-gradient(135deg,${BRAND_GRAD_FROM},${BRAND_GRAD_TO})`, color: "#000", boxShadow: `0 0 12px ${BRAND_GLOW}` }
                 : { color: "#666" }}>
-              <TabIcon size={11} />
+              <TabIcon size={9} className="md:hidden" />
+              <TabIcon size={11} className="hidden md:block" />
               {label}
             </button>
           ))}
         </div>
-        <div className="ml-auto text-[11px] art-sub-text font-semibold flex-shrink-0 font-[family-name:var(--font-data)]">
+        <div className="ml-auto text-[10px] md:text-[11px] art-sub-text font-semibold flex-shrink-0 font-[family-name:var(--font-data)]">
           {posts.length} results
         </div>
       </motion.div>
