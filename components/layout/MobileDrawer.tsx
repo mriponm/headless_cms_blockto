@@ -132,6 +132,8 @@ function DrawerAuthGateItem({
   me: { name?: string } | null; openModal: (tab: "signin" | "signup") => void; onClose: () => void;
 }) {
   const [popupOpen, setPopupOpen] = useState(false);
+  const { resolved } = useTheme();
+  const isLight = resolved === "light";
 
   if (me) {
     return (
@@ -164,18 +166,25 @@ function DrawerAuthGateItem({
         <div
           className="mx-3 mb-2 rounded-[14px] p-4 relative overflow-hidden"
           style={{
-            background: "rgba(255,106,0,0.05)",
+            background: isLight ? "rgba(255,106,0,0.04)" : "rgba(255,106,0,0.05)",
             border: "0.5px solid rgba(255,106,0,0.2)",
           }}>
           <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(255,106,0,0.3)] to-transparent pointer-events-none" />
           <button
             onClick={() => setPopupOpen(false)}
-            className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full flex items-center justify-center hover:bg-[rgba(255,255,255,0.06)] transition-all cursor-pointer"
-            style={{ color: "rgba(255,255,255,0.35)" }}>
+            className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full flex items-center justify-center transition-all cursor-pointer"
+            style={{
+              color: isLight ? "rgba(0,0,0,0.35)" : "rgba(255,255,255,0.35)",
+              background: "transparent",
+            }}>
             <X size={10} />
           </button>
-          <p className="text-[12px] font-extrabold text-white mb-0.5 pr-5 font-[family-name:var(--font-display)]">{popupTitle}</p>
-          <p className="text-[10px] leading-[1.5] mb-3 font-[family-name:var(--font-display)]" style={{ color: "rgba(255,255,255,0.45)" }}>
+          <p className="text-[12px] font-extrabold mb-0.5 pr-5 font-[family-name:var(--font-display)]"
+            style={{ color: "var(--color-text)" }}>
+            {popupTitle}
+          </p>
+          <p className="text-[10px] leading-[1.5] mb-3 font-[family-name:var(--font-display)]"
+            style={{ color: "var(--color-muted)" }}>
             {popupDesc}
           </p>
           <div className="flex gap-2">
@@ -187,8 +196,12 @@ function DrawerAuthGateItem({
             </button>
             <button
               onClick={() => { setPopupOpen(false); onClose(); openModal("signup"); }}
-              className="flex-1 py-2 rounded-[9px] text-[11px] font-bold cursor-pointer hover:bg-[rgba(255,255,255,0.05)] transition-all font-[family-name:var(--font-display)]"
-              style={{ color: "rgba(255,255,255,0.6)", border: "0.5px solid rgba(255,255,255,0.1)" }}>
+              className="flex-1 py-2 rounded-[9px] text-[11px] font-bold cursor-pointer transition-all font-[family-name:var(--font-display)]"
+              style={{
+                color: isLight ? "rgba(0,0,0,0.6)" : "rgba(255,255,255,0.6)",
+                border: `0.5px solid ${isLight ? "rgba(0,0,0,0.12)" : "rgba(255,255,255,0.12)"}`,
+                background: isLight ? "rgba(0,0,0,0.03)" : "rgba(255,255,255,0.04)",
+              }}>
               Register
             </button>
           </div>
