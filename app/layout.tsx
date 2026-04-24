@@ -10,6 +10,7 @@ import PageTranslator from "@/components/providers/PageTranslator";
 import { AuthModalProvider } from "@/components/providers/AuthModalProvider";
 import AuthModal from "@/components/ui/AuthModal";
 import UserSyncProvider from "@/components/providers/UserSyncProvider";
+import CookieConsent from "@/components/ui/CookieConsent";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -75,6 +76,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <ConditionalShell>
                   {children}
                 </ConditionalShell>
+                <CookieConsent />
               </TranslationBatcherProvider>
             </I18nProvider>
           </ThemeProvider>

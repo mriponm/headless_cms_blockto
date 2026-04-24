@@ -253,7 +253,7 @@ export default function Footer() {
         </div>
 
         <p className="text-[11px] mt-4 text-center sm:text-left font-[family-name:var(--font-display)] footer-dimmed">
-          © {new Date().getFullYear()} Blockto B.V. All rights reserved. Made with ♥ in Utrecht, Netherlands.
+          © {new Date().getFullYear()} Blockto. All rights reserved. Made with ♥ in Utrecht, Netherlands.
         </p>
       </div>
     </footer>

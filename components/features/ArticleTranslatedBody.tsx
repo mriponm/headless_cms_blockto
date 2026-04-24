@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Zap, Languages, RotateCcw, Loader2, RefreshCw } from "lucide-react";
 import { useI18n } from "@/components/providers/I18nProvider";
+import DOMPurify from "dompurify";
 
 interface Props {
   title: string;
@@ -162,7 +163,7 @@ export default function ArticleTranslatedBody({ title, excerpt, content, takeawa
       )}
 
       {/* ── Title ── */}
-      <h1 className="text-[26px] md:text-[32px] font-black tracking-[-1.2px] leading-[1.1] mb-3 art-heading font-[family-name:var(--font-display)]">
+      <h1 className="text-[22px] md:text-[27px] font-medium tracking-[-1.2px] leading-[1.1] mb-3 art-heading font-[family-name:var(--font-display)]">
         {displayTitle}
       </h1>
 
@@ -205,7 +206,7 @@ export default function ArticleTranslatedBody({ title, excerpt, content, takeawa
       {/* ── Article body ── */}
       <div
         className={`mb-4 prose-wp art-body transition-opacity duration-300 ${loading ? "opacity-40 pointer-events-none" : ""}`}
-        dangerouslySetInnerHTML={{ __html: displayContent }}
+        dangerouslySetInnerHTML={{ __html: typeof window !== "undefined" ? DOMPurify.sanitize(displayContent, { USE_PROFILES: { html: true } }) : displayContent }}
       />
     </div>
   );

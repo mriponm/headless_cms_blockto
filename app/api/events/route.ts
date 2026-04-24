@@ -1,15 +1,28 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { rateLimit, rateLimitResponse } from "@/lib/rateLimit";
 
 const BASE = process.env.EVENTS_API_URL!;
 const KEY  = process.env.EVENTS_API_KEY!;
 
-export async function GET(req: Request) {
+function getIP(req: NextRequest): string {
+  return (
+    req.headers.get("x-forwarded-for")?.split(",")[0].trim() ??
+    req.headers.get("x-real-ip") ??
+    "unknown"
+  );
+}
+
+export async function GET(req: NextRequest) {
+  // 20 requests per IP per minute
+  if (!rateLimit(`events:${getIP(req)}`, 20, 60 * 1000)) {
+    return rateLimitResponse();
+  }
+
   const { searchParams } = new URL(req.url);
   const start = searchParams.get("start") ?? new Date().toISOString().slice(0, 10);
   const end   = searchParams.get("end")   ?? start;
 
   try {
-    // CoinMarketCal caps at 150 per page; fetch up to 2 pages to cover busy weeks
     const fetchPage = (page: number) =>
       fetch(
         `${BASE}/events?dateRangeStart=${start}&dateRangeEnd=${end}&max=150&page=${page}`,

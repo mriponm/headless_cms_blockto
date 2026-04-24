@@ -1,10 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseMiddlewareClient } from "@/lib/supabase/ssr";
 
+const ALLOWED_ORIGINS = new Set([
+  process.env.NEXT_PUBLIC_SITE_URL ?? "",
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "https://blockto.io",
+  "https://new.blockto.io",
+  "https://www.blockto.io",
+].filter(Boolean));
+
+const PROTECTED_PATHS = [
+  "/api/auth/login",
+  "/api/auth/register",
+  "/api/auth/logout",
+  "/api/auth/forgot-password",
+  "/api/saved-articles",
+  "/api/watchlist",
+  "/api/following",
+  "/api/sync-user",
+];
+
 export async function proxy(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+  const method = req.method;
+
+  // Block cross-origin POST/DELETE/PATCH on state-changing routes
+  if (["POST", "DELETE", "PATCH", "PUT"].includes(method)) {
+    const isProtected = PROTECTED_PATHS.some((p) => pathname.startsWith(p));
+    if (isProtected) {
+      const origin = req.headers.get("origin");
+      if (origin && !ALLOWED_ORIGINS.has(origin)) {
+        return new NextResponse(
+          JSON.stringify({ error: "Forbidden" }),
+          { status: 403, headers: { "Content-Type": "application/json" } }
+        );
+      }
+    }
+  }
+
   const res = NextResponse.next();
   const supabase = createSupabaseMiddlewareClient(req, res);
-  // Refresh session from cookie — no network call, fast
   await supabase.auth.getSession();
   return res;
 }
