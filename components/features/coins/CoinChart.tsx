@@ -21,11 +21,13 @@ export default function CoinChart({
   type,
   days,
   isLight,
+  containerClassName = "h-[260px]",
 }: {
   coinId: string;
   type: "candles" | "line";
   days: string;
   isLight: boolean;
+  containerClassName?: string;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef     = useRef<any>(null);
@@ -76,7 +78,7 @@ export default function CoinChart({
 
       chart = lw.createChart(containerRef.current, {
         width:  containerRef.current.clientWidth,
-        height: 260,
+        height: containerRef.current.clientHeight || 260,
         layout: {
           background: { type: lw.ColorType.Solid, color: "transparent" },
           textColor,
@@ -157,9 +159,12 @@ export default function CoinChart({
         }
       });
 
-      ro = new ResizeObserver(() => {
-        if (containerRef.current) {
-          chart?.applyOptions({ width: containerRef.current.clientWidth });
+      ro = new ResizeObserver(entries => {
+        for (const entry of entries) {
+          chart?.applyOptions({
+            width:  entry.contentRect.width,
+            height: entry.contentRect.height || 260,
+          });
         }
       });
       ro.observe(containerRef.current);
@@ -210,12 +215,12 @@ export default function CoinChart({
 
       {/* Loading spinner */}
       {isLoading && !hasData && (
-        <div className="absolute inset-0 flex items-center justify-center" style={{ height: 260 }}>
+        <div className="absolute inset-0 flex items-center justify-center">
           <Loader2 size={22} className="animate-spin" style={{ color: "var(--color-brand)" }} />
         </div>
       )}
 
-      <div ref={containerRef} style={{ height: 260 }} />
+      <div ref={containerRef} className={containerClassName} />
     </div>
   );
 }
