@@ -308,14 +308,14 @@ export default function AuthModal() {
     const cb = onSuccess.current;
     onSuccess.current = null;
     closeModal();
-    if (cb) { cb(); } else { window.location.href = "/profile"; }
+    if (cb) { cb(); } else { window.location.reload(); }
   }
 
   function onSignUpComplete() {
     const cb = onSuccess.current;
     onSuccess.current = null;
     closeModal();
-    if (cb) { cb(); } else { window.location.href = "/profile"; }
+    if (cb) { cb(); } else { window.location.reload(); }
   }
 
   function switchToSignIn(email?: string) {
