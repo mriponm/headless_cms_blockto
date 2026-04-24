@@ -67,8 +67,13 @@ export default function CoinChart({
     let chart: any = null;
     let series: any = null;
     let ro: ResizeObserver | null = null;
+    let rafId = 0;
 
     async function init() {
+      // Wait one animation frame so CSS height classes are computed
+      await new Promise<void>(res => { rafId = requestAnimationFrame(() => res()); });
+      if (!containerRef.current) return;
+
       const lw = await import("lightweight-charts");
       if (!containerRef.current) return;
 
@@ -76,9 +81,11 @@ export default function CoinChart({
       const borderColor = isLight ? "rgba(0,0,0,0.09)" : "rgba(255,255,255,0.06)";
       const gridColor   = isLight ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.025)";
 
+      const initH = containerRef.current.offsetHeight || containerRef.current.clientHeight || 300;
+
       chart = lw.createChart(containerRef.current, {
         width:  containerRef.current.clientWidth,
-        height: containerRef.current.clientHeight || 260,
+        height: initH,
         layout: {
           background: { type: lw.ColorType.Solid, color: "transparent" },
           textColor,
@@ -173,6 +180,7 @@ export default function CoinChart({
     init();
 
     return () => {
+      cancelAnimationFrame(rafId);
       ro?.disconnect();
       chart?.remove();
       chartRef.current  = null;

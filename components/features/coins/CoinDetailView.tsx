@@ -244,31 +244,39 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
           HERO — full width, 2-col inside on desktop
       ═══════════════════════════════════════════════ */}
       <Card className="mb-5">
-        <div className="p-5 md:p-6 lg:p-7">
-          <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
+        {/* Decorative top gradient */}
+        <div className="absolute top-0 left-0 right-0 h-[120px] pointer-events-none"
+          style={{ background: "linear-gradient(135deg, rgba(255,106,0,0.1) 0%, rgba(255,80,0,0.04) 50%, transparent 100%)", borderRadius: "20px 20px 0 0" }} />
 
-            {/* LEFT: identity + price + actions */}
+        <div className="relative p-5 md:p-7">
+          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
+
+            {/* ── LEFT: identity + price + actions ── */}
             <div className="flex-1 min-w-0">
 
-              {/* Coin identity row */}
-              <div className="flex items-start gap-4 mb-5">
-                {coin.image?.large ? (
-                  <Image
-                    src={coin.image.large} alt={coin.name}
-                    width={60} height={60}
-                    className="rounded-full flex-shrink-0 md:w-[68px] md:h-[68px]"
-                    style={{ border: "2px solid rgba(255,106,0,0.3)", boxShadow: "0 0 20px rgba(255,106,0,0.15)" }}
-                    unoptimized
-                  />
-                ) : (
-                  <div className="w-[60px] h-[60px] rounded-full flex items-center justify-center text-xl font-extrabold text-black flex-shrink-0"
-                    style={{ background: "var(--gradient-brand)" }}>
-                    {sym.slice(0, 2)}
-                  </div>
-                )}
+              {/* Identity row */}
+              <div className="flex items-start gap-4 mb-6">
+                <div className="relative flex-shrink-0">
+                  {coin.image?.large ? (
+                    <Image
+                      src={coin.image.large} alt={coin.name}
+                      width={64} height={64}
+                      className="rounded-full w-14 h-14 md:w-16 md:h-16"
+                      style={{ border: "2.5px solid rgba(255,106,0,0.35)", boxShadow: "0 0 24px rgba(255,106,0,0.2), 0 4px 12px rgba(0,0,0,0.4)" }}
+                      unoptimized
+                    />
+                  ) : (
+                    <div className="w-14 h-14 md:w-16 md:h-16 rounded-full flex items-center justify-center text-xl font-extrabold text-black"
+                      style={{ background: "var(--gradient-brand)", boxShadow: "0 0 24px rgba(255,106,0,0.25)" }}>
+                      {sym.slice(0, 2)}
+                    </div>
+                  )}
+                  <span className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#00d47b] border-2 border-black shadow-[0_0_6px_#00d47b]" />
+                </div>
+
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap mb-1.5">
-                    <h1 className="text-[22px] md:text-[28px] font-black tracking-[-0.5px] font-[family-name:var(--font-display)]"
+                  <div className="flex items-center gap-2 flex-wrap mb-2">
+                    <h1 className="text-[24px] md:text-[30px] font-black tracking-[-0.6px] font-[family-name:var(--font-display)]"
                       style={{ color: "var(--color-text)" }}>
                       {coin.name}
                     </h1>
@@ -278,41 +286,42 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
                     </span>
                     {coin.market_cap_rank && (
                       <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-[7px] font-[family-name:var(--font-data)]"
-                        style={{ background: "rgba(255,106,0,0.1)", border: "0.5px solid rgba(255,106,0,0.28)", color: "var(--color-brand)" }}>
+                        style={{ background: "rgba(255,106,0,0.12)", border: "0.5px solid rgba(255,106,0,0.3)", color: "var(--color-brand)" }}>
                         #{coin.market_cap_rank}
                       </span>
                     )}
                   </div>
                   <div className="flex items-center gap-1.5 flex-wrap">
                     {(coin.categories ?? []).slice(0, 4).filter(Boolean).map(cat => (
-                      <span key={cat} className="text-[9px] font-bold px-2 py-0.5 rounded-[5px] font-[family-name:var(--font-data)]"
+                      <span key={cat} className="text-[9px] font-bold px-2 py-0.5 rounded-[5px] font-[family-name:var(--font-data)] uppercase"
                         style={{ background: "var(--color-surface)", border: "0.5px solid var(--color-border)", color: "var(--color-muted)" }}>
-                        {cat.toUpperCase()}
+                        {cat}
                       </span>
                     ))}
                   </div>
                 </div>
-                {/* Sparkline mobile only */}
-                <div className="lg:hidden flex-shrink-0 self-center">
+
+                {/* Mobile sparkline */}
+                <div className="lg:hidden flex-shrink-0 self-center opacity-80">
                   <SparklineMini prices={md.sparkline_7d?.price ?? []} w={80} h={36} />
                 </div>
               </div>
 
               {/* Price block */}
-              <div className="mb-6">
-                <div className="flex items-center gap-1.5 mb-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#00d47b] shadow-[0_0_6px_#00d47b] animate-pulse inline-block" />
-                  <span className="text-[9px] font-bold uppercase tracking-[1.4px] font-[family-name:var(--font-data)]"
+              <div className="mb-7">
+                <div className="flex items-center gap-1.5 mb-2.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#00d47b] shadow-[0_0_8px_#00d47b] animate-pulse inline-block" />
+                  <span className="text-[9px] font-extrabold uppercase tracking-[2px] font-[family-name:var(--font-data)]"
                     style={{ color: "var(--color-muted)" }}>Live Price</span>
                 </div>
-                <div className="flex items-end gap-3 flex-wrap mb-2">
-                  <span className="text-[34px] md:text-[46px] font-black tracking-[-2px] leading-none font-[family-name:var(--font-data)]"
+                <div className="flex items-end gap-3 flex-wrap mb-3">
+                  <span className="text-[38px] md:text-[50px] font-black tracking-[-2.5px] leading-none font-[family-name:var(--font-data)]"
                     style={{ color: "var(--color-text)" }}>
                     {formatPrice(price)}
                   </span>
-                  <div className="flex items-center gap-2 mb-1.5">
-                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-[8px] text-[12px] font-extrabold font-[family-name:var(--font-data)] ${isUp ? "text-[#00d47b] bg-[rgba(0,212,123,0.1)] border border-[rgba(0,212,123,0.25)]" : "text-[#ff3b4f] bg-[rgba(255,59,79,0.1)] border border-[rgba(255,59,79,0.25)]"}`}>
-                      {isUp ? <TrendingUp size={11} strokeWidth={2.5} /> : <TrendingDown size={11} strokeWidth={2.5} />}
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-[8px] text-[13px] font-extrabold font-[family-name:var(--font-data)] ${isUp ? "text-[#00d47b] bg-[rgba(0,212,123,0.1)] border border-[rgba(0,212,123,0.25)]" : "text-[#ff3b4f] bg-[rgba(255,59,79,0.1)] border border-[rgba(255,59,79,0.25)]"}`}>
+                      {isUp ? <TrendingUp size={12} strokeWidth={2.5} /> : <TrendingDown size={12} strokeWidth={2.5} />}
                       {pct(change)}
                     </span>
                     <span className="text-[12px] font-semibold font-[family-name:var(--font-data)]" style={{ color: "var(--color-muted)" }}>
@@ -322,11 +331,11 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
                 </div>
                 <div className="flex items-center gap-5 flex-wrap">
                   {[
-                    { label: "H", val: formatPrice(md.high_24h.usd), color: "#00d47b" },
-                    { label: "L", val: formatPrice(md.low_24h.usd),  color: "#ff3b4f" },
+                    { label: "H",  val: formatPrice(md.high_24h.usd), color: "#00d47b" },
+                    { label: "L",  val: formatPrice(md.low_24h.usd),  color: "#ff3b4f" },
                     { label: "1H", val: pct(change1h), color: change1h >= 0 ? "#00d47b" : "#ff3b4f" },
                   ].map(s => (
-                    <span key={s.label} className="text-[11px] font-[family-name:var(--font-data)]" style={{ color: "var(--color-muted)" }}>
+                    <span key={s.label} className="text-[12px] font-[family-name:var(--font-data)]" style={{ color: "var(--color-muted)" }}>
                       {s.label}: <span className="font-bold" style={{ color: s.color }}>{s.val}</span>
                     </span>
                   ))}
@@ -334,71 +343,74 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
               </div>
 
               {/* Action buttons */}
-              <div className="grid grid-cols-3 gap-2.5 max-w-[480px]">
+              <div className="flex gap-2.5 flex-wrap">
                 <Link href="/buy"
-                  className="flex items-center justify-center gap-1.5 py-3 rounded-[13px] text-[13px] font-extrabold text-black transition-all hover:brightness-110 hover:-translate-y-0.5 font-[family-name:var(--font-display)] relative overflow-hidden"
+                  className="flex items-center justify-center gap-1.5 px-6 py-3 rounded-[13px] text-[13px] font-extrabold text-black transition-all hover:brightness-110 hover:-translate-y-0.5 font-[family-name:var(--font-display)] relative overflow-hidden"
                   style={{ background: "var(--gradient-brand)", boxShadow: "0 4px 16px rgba(255,106,0,0.35),inset 0 1px 0 rgba(255,255,255,0.25)" }}>
                   <span className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent rounded-t-[13px] pointer-events-none" />
                   Buy {sym}
                 </Link>
                 <button onClick={toggleWatchlist} disabled={watchLoading}
-                  className={`flex items-center justify-center gap-1.5 py-3 rounded-[13px] text-[13px] font-extrabold border transition-all hover:-translate-y-0.5 cursor-pointer disabled:opacity-60 font-[family-name:var(--font-display)] ${inWatchlist ? "border-[rgba(255,106,0,0.35)] bg-[rgba(255,106,0,0.08)]" : "border-[var(--color-border-md)] bg-[var(--color-surface)]"}`}
+                  className={`flex items-center justify-center gap-1.5 px-5 py-3 rounded-[13px] text-[13px] font-extrabold border transition-all hover:-translate-y-0.5 cursor-pointer disabled:opacity-60 font-[family-name:var(--font-display)] ${inWatchlist ? "border-[rgba(255,106,0,0.35)] bg-[rgba(255,106,0,0.08)]" : "border-[var(--color-border-md)] bg-[var(--color-surface)]"}`}
                   style={{ color: inWatchlist ? "var(--color-brand)" : "var(--color-text)" }}>
                   {watchLoading
                     ? <Loader2 size={13} className="animate-spin" />
                     : <Star size={13} strokeWidth={2.5} className={inWatchlist ? "fill-current" : ""} />}
-                  {inWatchlist ? "Watching" : "Watchlist"}
+                  {inWatchlist ? "Watching" : "Add to Watchlist"}
                 </button>
                 <button
-                  className="flex items-center justify-center gap-1.5 py-3 rounded-[13px] text-[13px] font-extrabold border transition-all hover:border-[rgba(255,106,0,0.3)] hover:-translate-y-0.5 cursor-pointer font-[family-name:var(--font-display)]"
+                  className="flex items-center justify-center gap-1.5 px-5 py-3 rounded-[13px] text-[13px] font-extrabold border transition-all hover:border-[rgba(255,106,0,0.3)] hover:-translate-y-0.5 cursor-pointer font-[family-name:var(--font-display)]"
                   style={{ color: "var(--color-text)", borderColor: "var(--color-border-md)", background: "var(--color-surface)" }}>
                   <Bell size={13} strokeWidth={2.5} /> Alert
                 </button>
               </div>
             </div>
 
-            {/* RIGHT: sparkline + quick stats (desktop only) */}
-            <div className="hidden lg:flex flex-col gap-4 w-[300px] flex-shrink-0">
+            {/* ── RIGHT: stats card matching Market Data style (desktop only) ── */}
+            <div className="hidden lg:block w-[290px] flex-shrink-0">
+              <div className="rounded-[18px] overflow-hidden h-full"
+                style={{ background: "rgba(255,255,255,0.025)", border: "0.5px solid var(--color-border)" }}>
 
-              {/* Large sparkline */}
-              <div className="rounded-[16px] px-4 py-3 relative overflow-hidden"
-                style={{ background: "var(--color-surface)", border: "0.5px solid var(--color-border)" }}>
-                <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(255,106,0,0.12)] to-transparent" />
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-[10px] font-bold font-[family-name:var(--font-data)]" style={{ color: "var(--color-muted)" }}>
-                    7D CHART
-                  </span>
-                  <span className={`text-[11px] font-extrabold font-[family-name:var(--font-data)] ${change7d >= 0 ? "text-[#00d47b]" : "text-[#ff3b4f]"}`}>
-                    {pct(change7d)}
-                  </span>
+                {/* Sparkline header */}
+                <div className="px-4 pt-4 pb-3 relative"
+                  style={{ borderBottom: "0.5px solid var(--color-border)" }}>
+                  <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(255,106,0,0.2)] to-transparent" />
+                  <div className="flex items-center justify-between mb-2.5">
+                    <span className="text-[9px] font-extrabold uppercase tracking-[1.5px] font-[family-name:var(--font-data)]"
+                      style={{ color: "var(--color-muted)" }}>7D Chart</span>
+                    <span className={`text-[11px] font-extrabold font-[family-name:var(--font-data)] ${change7d >= 0 ? "text-[#00d47b]" : "text-[#ff3b4f]"}`}>
+                      {pct(change7d)}
+                    </span>
+                  </div>
+                  <SparklineMini prices={md.sparkline_7d?.price ?? []} w={258} h={64} />
                 </div>
-                <SparklineMini prices={md.sparkline_7d?.price ?? []} w={268} h={72} />
-              </div>
 
-              {/* 2×2 quick stat grid */}
-              <div className="grid grid-cols-2 gap-3">
-                {quickStats.map(s => (
-                  <div key={s.label} className="rounded-[14px] p-3.5 relative overflow-hidden"
-                    style={{ background: "var(--color-surface)", border: "0.5px solid var(--color-border)" }}>
-                    <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
-                    <p className="text-[9px] font-bold uppercase tracking-[0.8px] mb-1.5 font-[family-name:var(--font-data)]"
+                {/* Stats rows — same style as Market Data sidebar */}
+                {quickStats.map((row, i) => (
+                  <div key={row.label}
+                    className="flex items-center justify-between px-4 py-3"
+                    style={{ borderBottom: i < quickStats.length - 1 ? "0.5px solid var(--color-border)" : "none" }}>
+                    <span className="text-[12px] font-medium font-[family-name:var(--font-display)]"
                       style={{ color: "var(--color-muted)" }}>
-                      {s.label}
-                    </p>
-                    <p className="text-[15px] font-extrabold font-[family-name:var(--font-data)] leading-none mb-1"
-                      style={{ color: s.valColor ?? "var(--color-text)" }}>
-                      {s.val}
-                    </p>
-                    {s.sub && (
-                      <p className="text-[10px] font-semibold font-[family-name:var(--font-data)]"
-                        style={{ color: s.subUp ? "#00d47b" : "#ff3b4f" }}>
-                        {s.sub}
+                      {row.label}
+                    </span>
+                    <div className="text-right">
+                      <p className="text-[13px] font-extrabold font-[family-name:var(--font-data)]"
+                        style={{ color: row.valColor ?? "var(--color-text)" }}>
+                        {row.val}
                       </p>
-                    )}
+                      {row.sub && (
+                        <p className="text-[10px] font-semibold mt-0.5 font-[family-name:var(--font-data)]"
+                          style={{ color: row.subUp ? "#00d47b" : "#ff3b4f" }}>
+                          {row.sub}
+                        </p>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
+
           </div>
         </div>
       </Card>
