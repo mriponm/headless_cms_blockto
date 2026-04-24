@@ -7,7 +7,7 @@ import { formatPrice } from "@/lib/utils/formatters";
 interface OHLCBar  { time: number; open: number; high: number; low: number; close: number; }
 interface LinePoint { time: number; value: number; }
 
-interface HoverData {
+export interface HoverData {
   date: string;
   open?: string; high?: string; low?: string; close?: string;
   value?: string;
@@ -22,20 +22,25 @@ export default function CoinChart({
   days,
   isLight,
   height = 300,
+  onHoverChange,
 }: {
   coinId: string;
   type: "candles" | "line";
   days: string;
   isLight: boolean;
   height?: number;
+  onHoverChange?: (data: HoverData | null) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef     = useRef<any>(null);
   const seriesRef    = useRef<any>(null);
-  const [hover, setHover] = useState<HoverData | null>(null);
+  const onHoverRef   = useRef(onHoverChange);
+  onHoverRef.current = onHoverChange;
+
+  const [isLoading, setIsLoading] = useState(true);
 
   const apiType = type === "candles" ? "ohlc" : "line";
-  const { data: rawData, isLoading } = useSWR(
+  const { data: rawData, isLoading: swrLoading } = useSWR(
     `/api/crypto/${coinId}/chart?days=${days}&type=${apiType}`,
     fetcher,
     { refreshInterval: 60_000, keepPreviousData: true },
@@ -60,7 +65,6 @@ export default function CoinChart({
     return [];
   }, [rawData, apiType]);
 
-  // Init / re-init chart when type or theme changes
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -75,7 +79,7 @@ export default function CoinChart({
 
       const textColor   = isLight ? "#888" : "#555";
       const borderColor = isLight ? "rgba(0,0,0,0.09)" : "rgba(255,255,255,0.06)";
-      const gridColor   = isLight ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.025)";
+      const gridColor   = isLight ? "rgba(0,0,0,0.03)" : "rgba(255,255,255,0.02)";
 
       chart = lw.createChart(containerRef.current, {
         width:  containerRef.current.clientWidth,
@@ -93,7 +97,7 @@ export default function CoinChart({
         rightPriceScale: {
           borderColor,
           textColor,
-          scaleMargins: { top: 0.1, bottom: 0.12 },
+          scaleMargins: { top: 0.08, bottom: 0.1 },
         },
         timeScale: {
           borderColor,
@@ -105,8 +109,8 @@ export default function CoinChart({
         },
         crosshair: {
           mode: lw.CrosshairMode.Normal,
-          vertLine: { color: "rgba(255,106,0,0.5)", style: 1 as any, width: 1 },
-          horzLine: { color: "rgba(255,106,0,0.5)", style: 1 as any, width: 1 },
+          vertLine: { color: "rgba(255,106,0,0.45)", style: 1 as any, width: 1 },
+          horzLine: { color: "rgba(255,106,0,0.45)", style: 1 as any, width: 1 },
         },
         handleScroll: { mouseWheel: true, pressedMouseMove: true, horzTouchDrag: true },
         handleScale: { mouseWheel: true, pinch: true },
@@ -120,13 +124,13 @@ export default function CoinChart({
           downColor:       "#ff3b4f",
           borderUpColor:   "#00d47b",
           borderDownColor: "#ff3b4f",
-          wickUpColor:     "#00d47b",
-          wickDownColor:   "#ff3b4f",
+          wickUpColor:     "rgba(0,212,123,0.8)",
+          wickDownColor:   "rgba(255,59,79,0.8)",
         });
       } else {
         series = chart.addAreaSeries({
           lineColor:                     "#ff6a00",
-          topColor:                      "rgba(255,106,0,0.18)",
+          topColor:                      "rgba(255,106,0,0.16)",
           bottomColor:                   "rgba(255,106,0,0)",
           lineWidth:                     2,
           crosshairMarkerRadius:         4,
@@ -138,16 +142,14 @@ export default function CoinChart({
       seriesRef.current = series;
 
       chart.subscribeCrosshairMove((param: any) => {
-        if (!param.time || !seriesRef.current) { setHover(null); return; }
+        if (!param.time || !seriesRef.current) { onHoverRef.current?.(null); return; }
         const price = param.seriesData.get(seriesRef.current);
-        if (!price) { setHover(null); return; }
+        if (!price) { onHoverRef.current?.(null); return; }
         const d = new Date((param.time as number) * 1000);
-        const dateStr = d.toLocaleDateString("en-US", {
-          month: "short", day: "numeric", hour: "2-digit", minute: "2-digit",
-        });
+        const dateStr = d.toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
         if (type === "candles") {
           const bar = price as any;
-          setHover({
+          onHoverRef.current?.({
             date: dateStr,
             open:  formatPrice(bar.open),
             high:  formatPrice(bar.high),
@@ -156,7 +158,7 @@ export default function CoinChart({
             isUp:  bar.close >= bar.open,
           });
         } else {
-          setHover({ date: dateStr, value: formatPrice((price as any).value) });
+          onHoverRef.current?.({ date: dateStr, value: formatPrice((price as any).value) });
         }
       });
 
@@ -168,6 +170,7 @@ export default function CoinChart({
         }
       });
       ro.observe(containerRef.current);
+      setIsLoading(false);
     }
 
     rafId = requestAnimationFrame(() => { init(); });
@@ -179,48 +182,24 @@ export default function CoinChart({
       chartRef.current  = null;
       seriesRef.current = null;
     };
-  }, [type, isLight]);
+  }, [type, isLight, height]);
 
-  // Update data when it changes
   useEffect(() => {
     if (!seriesRef.current || !chartData.length) return;
     try {
       seriesRef.current.setData(chartData);
       chartRef.current?.timeScale().fitContent();
-    } catch {
-      // silently ignore if chart was removed
-    }
+    } catch { /* chart removed */ }
   }, [chartData]);
-
-  const hasData = chartData.length > 0;
 
   return (
     <div className="relative">
-      {/* OHLC hover overlay */}
-      {hover && (
-        <div className="absolute top-2 left-2 z-10 flex items-center gap-3 px-3 py-2 rounded-[9px] pointer-events-none"
-          style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(12px)", border: "0.5px solid rgba(255,255,255,0.1)", fontSize: "10px", fontFamily: "'JetBrains Mono',monospace" }}>
-          <span style={{ color: "#555" }}>{hover.date}</span>
-          {hover.value ? (
-            <span style={{ color: "#fff", fontWeight: 700 }}>{hover.value}</span>
-          ) : (
-            <>
-              <span style={{ color: "#555" }}>O <span style={{ color: "#fff" }}>{hover.open}</span></span>
-              <span style={{ color: hover.isUp ? "#00d47b" : "#ff3b4f" }}>H {hover.high}</span>
-              <span style={{ color: hover.isUp ? "#00d47b" : "#ff3b4f" }}>L {hover.low}</span>
-              <span style={{ color: hover.isUp ? "#00d47b" : "#ff3b4f", fontWeight: 800 }}>C {hover.close}</span>
-            </>
-          )}
+      {(swrLoading || isLoading) && (
+        <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none"
+          style={{ height }}>
+          <Loader2 size={20} className="animate-spin" style={{ color: "var(--color-brand)", opacity: 0.7 }} />
         </div>
       )}
-
-      {/* Loading spinner */}
-      {isLoading && !hasData && (
-        <div className="absolute inset-0 flex items-center justify-center" style={{ height }}>
-          <Loader2 size={22} className="animate-spin" style={{ color: "var(--color-brand)" }} />
-        </div>
-      )}
-
       <div ref={containerRef} style={{ height, width: "100%" }} />
     </div>
   );

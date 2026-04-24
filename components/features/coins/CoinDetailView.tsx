@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -10,46 +10,27 @@ import { useTheme } from "@/components/providers/ThemeProvider";
 import { useAuthModal } from "@/components/providers/AuthModalProvider";
 import { formatPrice, formatPercent, formatDollarCompact } from "@/lib/utils/formatters";
 import type { WPPost } from "@/lib/wordpress/types";
-import CoinChart from "./CoinChart";
+import CoinChart, { type HoverData } from "./CoinChart";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface CoinDetail {
-  id: string;
-  symbol: string;
-  name: string;
-  market_cap_rank: number;
+  id: string; symbol: string; name: string; market_cap_rank: number;
   categories: string[];
   description: { en: string };
-  links: {
-    homepage: string[];
-    blockchain_site: string[];
-    repos_url: { github: string[] };
-    twitter_screen_name: string;
-    subreddit_url: string;
-  };
+  links: { homepage: string[]; blockchain_site: string[]; repos_url: { github: string[] }; twitter_screen_name: string; subreddit_url: string; };
   image: { thumb: string; small: string; large: string };
   market_data: {
-    current_price: { usd: number };
-    market_cap: { usd: number };
-    total_volume: { usd: number };
-    high_24h: { usd: number };
-    low_24h: { usd: number };
-    price_change_24h: number;
-    price_change_percentage_24h: number;
+    current_price: { usd: number }; market_cap: { usd: number }; total_volume: { usd: number };
+    high_24h: { usd: number }; low_24h: { usd: number };
+    price_change_24h: number; price_change_percentage_24h: number;
     price_change_percentage_1h_in_currency: { usd: number };
     price_change_percentage_7d_in_currency: { usd: number };
     price_change_percentage_30d_in_currency: { usd: number };
     price_change_percentage_1y_in_currency: { usd: number };
-    ath: { usd: number };
-    ath_date: { usd: string };
-    ath_change_percentage: { usd: number };
-    atl: { usd: number };
-    atl_date: { usd: string };
-    atl_change_percentage: { usd: number };
-    circulating_supply: number;
-    total_supply: number | null;
-    max_supply: number | null;
+    ath: { usd: number }; ath_date: { usd: string }; ath_change_percentage: { usd: number };
+    atl: { usd: number }; atl_date: { usd: string }; atl_change_percentage: { usd: number };
+    circulating_supply: number; total_supply: number | null; max_supply: number | null;
     fully_diluted_valuation: { usd: number } | null;
     market_cap_change_percentage_24h: number;
     sparkline_7d: { price: number[] };
@@ -63,21 +44,17 @@ function pct(n: number | null | undefined) {
   return formatPercent(n);
 }
 
-function stripHtml(html: string): string {
-  return html
-    .replace(/<[^>]*>/g, "")
+function stripHtml(html: string) {
+  return html.replace(/<[^>]*>/g, "")
     .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
-    .replace(/&#39;/g, "'").replace(/&quot;/g, '"')
-    .trim();
+    .replace(/&#39;/g, "'").replace(/&quot;/g, '"').trim();
 }
 
-function SparklineMini({
-  prices, w = 80, h = 36,
-}: { prices: number[]; w?: number; h?: number }) {
+// Mini sparkline matching the HTML price-spark dimensions
+function SparkMini({ prices, w = 90, h = 40 }: { prices: number[]; w?: number; h?: number }) {
   if (!prices?.length) return null;
-  const sample = prices.filter((_, i) => i % Math.ceil(prices.length / 80) === 0);
-  const min = Math.min(...sample);
-  const max = Math.max(...sample);
+  const sample = prices.filter((_, i) => i % Math.ceil(prices.length / 60) === 0);
+  const min = Math.min(...sample), max = Math.max(...sample);
   const range = max - min || 1;
   const pts = sample.map((v, i) => {
     const x = (i / (sample.length - 1)) * w;
@@ -86,73 +63,81 @@ function SparklineMini({
   }).join(" ");
   const up = sample[sample.length - 1] >= sample[0];
   const color = up ? "#00d47b" : "#ff3b4f";
-  const lastPt = pts.split(" ").pop()!;
-  const [lx, ly] = lastPt.split(",").map(Number);
+  const [lx, ly] = pts.split(" ").pop()!.split(",").map(Number);
   return (
-    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
+    <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none" className="flex-shrink-0 opacity-90">
       <defs>
-        <linearGradient id="spkGrad2" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.22" />
+        <linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.3" />
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
-      <polyline points={`${pts} ${w},${h} 0,${h}`} fill="url(#spkGrad2)" />
-      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx={lx} cy={ly} r="3" fill={color} />
+      <polyline points={`${pts} ${w},${h} 0,${h}`} fill="url(#sg)" />
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx={lx} cy={ly} r="2.8" fill={color} />
+      <circle cx={lx} cy={ly} r="5.5" fill={color} opacity="0.25" />
     </svg>
   );
 }
 
 const TFS = [
-  { label: "1D",  days: "1"   },
-  { label: "1W",  days: "7"   },
-  { label: "1M",  days: "30"  },
-  { label: "3M",  days: "90"  },
-  { label: "1Y",  days: "365" },
-  { label: "ALL", days: "max" },
+  { label: "1D", days: "1" }, { label: "1W", days: "7" },
+  { label: "1M", days: "30" }, { label: "3M", days: "90" },
+  { label: "1Y", days: "365" }, { label: "ALL", days: "max" },
 ];
 
+// Glass card reused throughout
 function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`profile-card rounded-[20px] overflow-hidden relative ${className}`}>
-      <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(255,106,0,0.18)] to-transparent pointer-events-none z-10" />
+    <div className={`rounded-[18px] relative overflow-hidden ${className}`}
+      style={{ background: "rgba(255,255,255,0.025)", border: "0.5px solid rgba(255,255,255,0.07)" }}>
+      <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
       {children}
     </div>
   );
 }
 
-function SectionLabel({ children }: { children: React.ReactNode }) {
+function SectionHeader({ title, action }: { title: string; action?: React.ReactNode }) {
   return (
-    <p className="text-[10px] font-extrabold uppercase tracking-[2px] mb-4 font-[family-name:var(--font-display)]"
-      style={{ color: "var(--color-muted)" }}>
-      {children}
-    </p>
+    <div className="flex items-center justify-between mb-3 px-1">
+      <p className="text-[11px] font-extrabold uppercase tracking-[2px] font-[family-name:var(--font-display)]"
+        style={{ color: "var(--color-text)" }}>{title}</p>
+      {action && <div className="text-[10px] font-bold font-[family-name:var(--font-data)]" style={{ color: "var(--color-muted)" }}>{action}</div>}
+    </div>
   );
 }
 
-// ── Component ─────────────────────────────────────────────────────────────────
+function SidebarSectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[10px] font-extrabold uppercase tracking-[2px] mb-3 font-[family-name:var(--font-display)]"
+      style={{ color: "var(--color-muted)" }}>{children}</p>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
 
 export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news: WPPost[] }) {
   const { resolved } = useTheme();
   const isLight = resolved === "light";
   const { openModal } = useAuthModal();
 
-  const [chartHeight, setChartHeight] = useState(280);
-  useEffect(() => {
-    const update = () => setChartHeight(window.innerWidth >= 1024 ? 420 : 280);
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
-
   const [chartType, setChartType]       = useState<"candles" | "line">("candles");
   const [timeframe, setTimeframe]       = useState("1");
   const [indicators, setIndicators]     = useState<string[]>(["EMA"]);
+  const [chartHover, setChartHover]     = useState<HoverData | null>(null);
   const [inWatchlist, setInWatchlist]   = useState(false);
   const [watchLoading, setWatchLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn]     = useState(false);
   const [copied, setCopied]             = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
+  const [chartHeight, setChartHeight]   = useState(280);
+
+  useEffect(() => {
+    const upd = () => setChartHeight(window.innerWidth >= 1024 ? 400 : 280);
+    upd();
+    window.addEventListener("resize", upd);
+    return () => window.removeEventListener("resize", upd);
+  }, []);
 
   const md       = coin.market_data;
   const price    = md.current_price.usd;
@@ -165,15 +150,13 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
 
   const homepage = coin.links?.homepage?.[0] || "";
   const github   = coin.links?.repos_url?.github?.[0] || "";
-  const twitter  = coin.links?.twitter_screen_name
-    ? `https://twitter.com/${coin.links.twitter_screen_name}` : "";
+  const twitter  = coin.links?.twitter_screen_name ? `https://twitter.com/${coin.links.twitter_screen_name}` : "";
   const explorer = coin.links?.blockchain_site?.find(s => s) || "";
 
   useEffect(() => {
-    fetch("/api/auth/me")
-      .then(r => (r.ok ? r.json() : null))
+    fetch("/api/auth/me").then(r => r.ok ? r.json() : null)
       .then(me => { if (!me) return; setIsLoggedIn(true); return fetch("/api/watchlist"); })
-      .then(r => (r && r.ok ? r.json() : null))
+      .then(r => r && r.ok ? r.json() : null)
       .then(wl => { if (Array.isArray(wl)) setInWatchlist(wl.some((i: any) => i.coin_symbol === sym)); })
       .catch(() => {});
   }, [sym]);
@@ -187,8 +170,7 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
         setInWatchlist(false);
       } else {
         await fetch("/api/watchlist", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
+          method: "POST", headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ coin_symbol: sym, coin_name: coin.name }),
         });
         setInWatchlist(true);
@@ -196,13 +178,13 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
     } finally { setWatchLoading(false); }
   }
 
+  const handleHover = useCallback((d: HoverData | null) => setChartHover(d), []);
+
   function copyExplorer() {
     if (explorer) navigator.clipboard.writeText(explorer).catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 1200);
   }
-
-  // ── Data arrays ──────────────────────────────────────────────────────────────
 
   const perfItems = [
     { label: "1H",  val: change1h },
@@ -213,215 +195,225 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
   ];
 
   const marketRows = [
-    { label: "Market Cap",          val: formatDollarCompact(md.market_cap.usd),   sub: `${pct(md.market_cap_change_percentage_24h)} 24h` },
-    { label: "24h Volume",          val: formatDollarCompact(md.total_volume.usd), sub: "" },
-    { label: "FDV",                 val: md.fully_diluted_valuation?.usd ? formatDollarCompact(md.fully_diluted_valuation.usd) : "∞", sub: "" },
-    { label: "Today's High",        val: formatPrice(md.high_24h.usd),             sub: "" },
-    { label: "Today's Low",         val: formatPrice(md.low_24h.usd),              sub: "" },
-    { label: "Circulating Supply",  val: `${(md.circulating_supply / 1e6).toFixed(2)}M ${sym}`, sub: md.max_supply ? `${((md.circulating_supply / md.max_supply) * 100).toFixed(1)}% of max` : "" },
-    { label: "Max Supply",          val: md.max_supply ? `${(md.max_supply / 1e6).toFixed(2)}M ${sym}` : "∞", sub: "" },
+    { label: "Market Cap",         val: formatDollarCompact(md.market_cap.usd),   sub: `${pct(md.market_cap_change_percentage_24h)} 24h` },
+    { label: "24h Volume",         val: formatDollarCompact(md.total_volume.usd), sub: "" },
+    { label: "FDV",                val: md.fully_diluted_valuation?.usd ? formatDollarCompact(md.fully_diluted_valuation.usd) : "∞", sub: "" },
+    { label: "Circulating Supply", val: `${(md.circulating_supply / 1e6).toFixed(2)}M ${sym}`, sub: md.max_supply ? `${((md.circulating_supply / md.max_supply) * 100).toFixed(1)}% of max` : "" },
+    { label: "Max Supply",         val: md.max_supply ? `${(md.max_supply / 1e6).toFixed(2)}M ${sym}` : "∞", sub: "" },
+    { label: "Today's High",       val: formatPrice(md.high_24h.usd),   sub: "" },
+    { label: "Today's Low",        val: formatPrice(md.low_24h.usd),    sub: "" },
   ];
 
-  // ── Render ────────────────────────────────────────────────────────────────────
+  const socialLinks = [
+    homepage && { label: "Website",  href: homepage, icon: <Globe size={11} /> },
+    github   && { label: "GitHub",   href: github,   icon: <ExternalLink size={11} /> },
+    twitter  && { label: "Twitter",  href: twitter,  icon: <ExternalLink size={11} /> },
+    explorer && { label: "Explorer", href: explorer, icon: <ExternalLink size={11} /> },
+  ].filter(Boolean) as { label: string; href: string; icon: React.ReactNode }[];
+
+  // ── Render ───────────────────────────────────────────────────────────────────
 
   return (
-    <div className="relative z-[2] max-w-[1440px] mx-auto px-3 md:px-8 lg:px-10 pt-3 pb-24">
+    <div className="relative z-[2] max-w-[1440px] mx-auto px-3 sm:px-5 md:px-8 lg:px-10 pt-3 pb-20">
 
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 mb-4 px-1">
+      <div className="flex items-center gap-2 mb-4">
         <Link href="/prices"
-          className="flex items-center gap-1.5 text-[12px] font-semibold transition-colors hover:text-[var(--color-brand)] font-[family-name:var(--font-display)]"
+          className="flex items-center gap-1.5 text-[11px] sm:text-[12px] font-semibold transition-colors hover:text-[var(--color-brand)] font-[family-name:var(--font-display)]"
           style={{ color: "var(--color-muted)" }}>
-          <ArrowLeft size={14} /> Prices
+          <ArrowLeft size={13} /> Prices
         </Link>
-        <span className="text-[12px]" style={{ color: "var(--color-border-md)" }}>/</span>
-        <span className="text-[12px] font-semibold font-[family-name:var(--font-display)]" style={{ color: "var(--color-text)" }}>
+        <span className="text-[11px]" style={{ color: "var(--color-border-md)" }}>/</span>
+        <span className="text-[11px] sm:text-[12px] font-semibold font-[family-name:var(--font-display)]" style={{ color: "var(--color-text)" }}>
           {coin.name}
         </span>
       </div>
 
       {/* ══════════════════════════════════════════════════
-          HERO CARD — full width
-          Left: coin identity + action buttons
-          Right: live price
+          HERO CARD — full width, matches HTML hero section
       ══════════════════════════════════════════════════ */}
-      <Card className="mb-5">
-        {/* subtle orange top glow */}
-        <div className="absolute top-0 left-0 right-0 h-[100px] pointer-events-none rounded-t-[20px]"
-          style={{ background: "linear-gradient(180deg, rgba(255,106,0,0.07) 0%, transparent 100%)" }} />
+      <Card className="mb-4 sm:mb-5">
+        <div className="p-4 sm:p-5 md:p-6">
 
-        <div className="relative flex flex-col lg:flex-row">
-
-          {/* ── LEFT: identity + buttons ────────── */}
-          <div className="flex-1 p-5 md:p-7 flex flex-col justify-between gap-6">
-
-            {/* Coin identity */}
-            <div className="flex items-start gap-4">
-              <div className="relative flex-shrink-0">
-                {coin.image?.large ? (
-                  <Image
-                    src={coin.image.large} alt={coin.name}
-                    width={68} height={68}
-                    className="rounded-full"
-                    style={{ border: "2.5px solid rgba(255,106,0,0.35)", boxShadow: "0 0 28px rgba(255,106,0,0.22), 0 4px 14px rgba(0,0,0,0.5)" }}
-                    unoptimized
-                  />
-                ) : (
-                  <div className="w-[68px] h-[68px] rounded-full flex items-center justify-center text-2xl font-extrabold text-black"
-                    style={{ background: "var(--gradient-brand)" }}>
-                    {sym.slice(0, 2)}
-                  </div>
-                )}
-                <span className="absolute -bottom-0.5 -right-0.5 w-[14px] h-[14px] rounded-full bg-[#00d47b] border-[2px] border-black shadow-[0_0_8px_#00d47b]" />
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap mb-2">
-                  <h1 className="text-[26px] md:text-[32px] font-black tracking-[-0.7px] font-[family-name:var(--font-display)]"
-                    style={{ color: "var(--color-text)" }}>
-                    {coin.name}
-                  </h1>
-                  <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-[7px] font-[family-name:var(--font-data)]"
-                    style={{ background: "var(--color-surface-md)", border: "0.5px solid var(--color-border-md)", color: "var(--color-muted)" }}>
-                    {sym}
-                  </span>
-                  {coin.market_cap_rank && (
-                    <span className="text-[11px] font-extrabold px-2.5 py-0.5 rounded-[7px] font-[family-name:var(--font-data)]"
-                      style={{ background: "rgba(255,106,0,0.12)", border: "0.5px solid rgba(255,106,0,0.3)", color: "var(--color-brand)" }}>
-                      #{coin.market_cap_rank}
-                    </span>
-                  )}
+          {/* Identity: logo + meta */}
+          <div className="flex items-center gap-3 sm:gap-4 mb-5">
+            <div className="relative flex-shrink-0">
+              {coin.image?.large ? (
+                <Image src={coin.image.large} alt={coin.name} width={48} height={48}
+                  className="rounded-full w-10 h-10 sm:w-12 sm:h-12 md:w-[48px] md:h-[48px]"
+                  style={{ border: "0.5px solid rgba(255,106,0,0.3)", boxShadow: "0 0 28px rgba(255,106,0,0.28), inset 0 1px 0 rgba(255,255,255,0.2)" }}
+                  unoptimized />
+              ) : (
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-xl font-extrabold text-black"
+                  style={{ background: "var(--gradient-brand)", boxShadow: "0 0 28px rgba(255,106,0,0.35)" }}>
+                  {sym.slice(0, 2)}
                 </div>
-                <div className="flex items-center gap-1.5 flex-wrap">
-                  {(coin.categories ?? []).slice(0, 5).filter(Boolean).map(cat => (
-                    <span key={cat} className="text-[9px] font-bold px-2 py-0.5 rounded-[5px] font-[family-name:var(--font-data)]"
-                      style={{ background: "var(--color-surface)", border: "0.5px solid var(--color-border)", color: "var(--color-muted)" }}>
-                      {cat.toUpperCase()}
-                    </span>
-                  ))}
-                </div>
-              </div>
+              )}
             </div>
 
-            {/* Action buttons */}
-            <div className="flex gap-2.5 flex-wrap">
-              <Link href="/buy"
-                className="flex items-center justify-center gap-1.5 px-6 py-2.5 rounded-[12px] text-[13px] font-extrabold text-black transition-all hover:brightness-110 hover:-translate-y-0.5 font-[family-name:var(--font-display)] relative overflow-hidden"
-                style={{ background: "var(--gradient-brand)", boxShadow: "0 4px 16px rgba(255,106,0,0.35),inset 0 1px 0 rgba(255,255,255,0.25)" }}>
-                <span className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent rounded-t-[12px] pointer-events-none" />
-                Buy {sym}
-              </Link>
-              <button onClick={toggleWatchlist} disabled={watchLoading}
-                className={`flex items-center gap-1.5 px-5 py-2.5 rounded-[12px] text-[13px] font-extrabold border transition-all hover:-translate-y-0.5 cursor-pointer disabled:opacity-60 font-[family-name:var(--font-display)] ${inWatchlist ? "border-[rgba(255,106,0,0.35)] bg-[rgba(255,106,0,0.08)]" : "border-[var(--color-border-md)] bg-[var(--color-surface)]"}`}
-                style={{ color: inWatchlist ? "var(--color-brand)" : "var(--color-text)" }}>
-                {watchLoading
-                  ? <Loader2 size={13} className="animate-spin" />
-                  : <Star size={13} strokeWidth={2.5} className={inWatchlist ? "fill-current" : ""} />}
-                {inWatchlist ? "Watching" : "Add to Watchlist"}
-              </button>
-              <button
-                className="flex items-center gap-1.5 px-5 py-2.5 rounded-[12px] text-[13px] font-extrabold border transition-all hover:border-[rgba(255,106,0,0.3)] hover:-translate-y-0.5 cursor-pointer font-[family-name:var(--font-display)]"
-                style={{ color: "var(--color-text)", borderColor: "var(--color-border-md)", background: "var(--color-surface)" }}>
-                <Bell size={13} strokeWidth={2.5} /> Alert
-              </button>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap mb-1.5">
+                <h1 className="text-[17px] sm:text-[20px] md:text-[22px] font-extrabold tracking-[-0.4px] font-[family-name:var(--font-display)]"
+                  style={{ color: "var(--color-text)" }}>
+                  {coin.name}
+                </h1>
+                <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-[5px] font-[family-name:var(--font-data)]"
+                  style={{ background: "rgba(255,255,255,0.04)", border: "0.5px solid rgba(255,255,255,0.1)", color: "#888" }}>
+                  {sym}
+                </span>
+                {coin.market_cap_rank && (
+                  <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-[5px] font-[family-name:var(--font-data)]"
+                    style={{ background: "rgba(255,106,0,0.1)", border: "0.5px solid rgba(255,106,0,0.25)", color: "var(--color-brand)" }}>
+                    #{coin.market_cap_rank}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-1 flex-wrap">
+                {(coin.categories ?? []).slice(0, 4).filter(Boolean).map(cat => (
+                  <span key={cat} className="text-[9px] font-bold px-1.5 py-0.5 rounded-[4px] font-[family-name:var(--font-data)]"
+                    style={{ background: "rgba(255,255,255,0.03)", border: "0.5px solid rgba(255,255,255,0.06)", color: "#888" }}>
+                    {cat.toUpperCase()}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Vertical divider — desktop only */}
-          <div className="hidden lg:block w-px self-stretch my-5" style={{ background: "var(--color-border)" }} />
-          {/* Horizontal divider — mobile only */}
-          <div className="lg:hidden h-px mx-5" style={{ background: "var(--color-border)" }} />
-
-          {/* ── RIGHT: live price ───────────────── */}
-          <div className="p-5 md:p-7 lg:w-[46%] flex flex-col justify-center">
-            <div className="flex items-center gap-1.5 mb-3">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#00d47b] shadow-[0_0_8px_#00d47b] animate-pulse" />
-              <span className="text-[9px] font-extrabold uppercase tracking-[2px] font-[family-name:var(--font-data)]"
-                style={{ color: "var(--color-muted)" }}>Live Price</span>
-            </div>
-
-            <div className="flex items-end gap-3 flex-wrap mb-3">
-              <span className="text-[40px] md:text-[54px] font-black tracking-[-2.5px] leading-none font-[family-name:var(--font-data)]"
+          {/* Price block: price left, sparkline right */}
+          <div className="flex items-end justify-between gap-3 mb-5">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-1.5 mb-1.5">
+                <span className="w-[5px] h-[5px] rounded-full bg-[#00d47b] shadow-[0_0_6px_#00d47b] animate-pulse" />
+                <span className="text-[9px] font-bold uppercase tracking-[1.4px] font-[family-name:var(--font-data)]"
+                  style={{ color: "#666" }}>Live Price</span>
+              </div>
+              <div className="text-[36px] sm:text-[40px] md:text-[44px] lg:text-[48px] font-black tracking-[-2px] leading-none font-[family-name:var(--font-data)]"
                 style={{ color: "var(--color-text)" }}>
                 {formatPrice(price)}
-              </span>
+              </div>
+              <div className="flex items-center gap-2 mt-2.5 flex-wrap">
+                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-[7px] text-[11px] font-extrabold font-[family-name:var(--font-data)] ${isUp ? "bg-[rgba(0,212,123,0.12)] text-[#00d47b] border border-[rgba(0,212,123,0.28)]" : "bg-[rgba(255,59,79,0.12)] text-[#ff3b4f] border border-[rgba(255,59,79,0.28)]"}`}>
+                  {isUp ? "▲" : "▼"} {pct(change)}
+                </span>
+                <span className="text-[11px] font-bold font-[family-name:var(--font-data)]" style={{ color: "#888" }}>
+                  {isUp ? "+" : "–"}{formatPrice(Math.abs(md.price_change_24h))} (24h)
+                </span>
+              </div>
             </div>
+            <SparkMini prices={md.sparkline_7d?.price ?? []} w={90} h={40} />
+          </div>
 
-            <div className="flex items-center gap-3 mb-4 flex-wrap">
-              <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[9px] text-[14px] font-extrabold font-[family-name:var(--font-data)] ${isUp ? "text-[#00d47b] bg-[rgba(0,212,123,0.1)] border border-[rgba(0,212,123,0.25)]" : "text-[#ff3b4f] bg-[rgba(255,59,79,0.1)] border border-[rgba(255,59,79,0.25)]"}`}>
-                {isUp ? <TrendingUp size={13} strokeWidth={2.5} /> : <TrendingDown size={13} strokeWidth={2.5} />}
-                {pct(change)}
-              </span>
-              <span className="text-[13px] font-semibold font-[family-name:var(--font-data)]" style={{ color: "var(--color-muted)" }}>
-                {isUp ? "+" : ""}{formatPrice(Math.abs(md.price_change_24h))} (24h)
-              </span>
-            </div>
-
-            <div className="flex items-center gap-5 flex-wrap pt-3" style={{ borderTop: "0.5px solid var(--color-border)" }}>
-              {[
-                { label: "24H High", val: formatPrice(md.high_24h.usd), color: "#00d47b" },
-                { label: "24H Low",  val: formatPrice(md.low_24h.usd),  color: "#ff3b4f" },
-                { label: "1H",       val: pct(change1h),                 color: change1h >= 0 ? "#00d47b" : "#ff3b4f" },
-              ].map(s => (
-                <div key={s.label}>
-                  <p className="text-[9px] font-bold uppercase tracking-[0.8px] mb-0.5 font-[family-name:var(--font-data)]"
-                    style={{ color: "var(--color-muted)" }}>{s.label}</p>
-                  <p className="text-[13px] font-extrabold font-[family-name:var(--font-data)]" style={{ color: s.color }}>{s.val}</p>
-                </div>
-              ))}
-            </div>
+          {/* Action buttons — 3-col grid */}
+          <div className="grid grid-cols-3 gap-2">
+            <Link href="/buy"
+              className="flex items-center justify-center gap-1.5 py-3 rounded-[11px] text-[12px] font-extrabold text-black relative overflow-hidden transition-all hover:brightness-110 hover:-translate-y-0.5 font-[family-name:var(--font-display)]"
+              style={{ background: "linear-gradient(135deg,#ff6a00,#ff8a30)", boxShadow: "0 4px 14px rgba(255,106,0,0.3), inset 0 1px 0 rgba(255,255,255,0.25)" }}>
+              <span className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent rounded-t-[11px] pointer-events-none" />
+              <svg viewBox="0 0 12 12" className="w-3 h-3 fill-none stroke-current" strokeWidth="2.6" strokeLinecap="round"><path d="M6 2v8M2 6h8"/></svg>
+              Buy {sym}
+            </Link>
+            <button onClick={toggleWatchlist} disabled={watchLoading}
+              className={`flex items-center justify-center gap-1.5 py-3 rounded-[11px] text-[12px] font-extrabold border transition-all hover:-translate-y-0.5 cursor-pointer disabled:opacity-60 font-[family-name:var(--font-display)] ${inWatchlist ? "bg-[rgba(255,106,0,0.08)] border-[rgba(255,106,0,0.25)] text-[#ff6a00]" : "text-[#e5e5e5] border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.025)]"}`}>
+              {watchLoading
+                ? <Loader2 size={12} className="animate-spin" />
+                : <Star size={12} strokeWidth={2.2} className={inWatchlist ? "fill-current" : ""} />}
+              {inWatchlist ? "Watching" : "Watchlist"}
+            </button>
+            <button
+              className="flex items-center justify-center gap-1.5 py-3 rounded-[11px] text-[12px] font-extrabold border text-[#e5e5e5] border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.025)] transition-all hover:bg-[rgba(255,106,0,0.08)] hover:border-[rgba(255,106,0,0.25)] hover:text-[#ff6a00] cursor-pointer font-[family-name:var(--font-display)]">
+              <Bell size={12} strokeWidth={2.2} /> Alert
+            </button>
           </div>
         </div>
       </Card>
 
       {/* ══════════════════════════════════════════════════
-          BODY — left main + right sidebar
+          BODY — single col mobile, 2-col desktop
       ══════════════════════════════════════════════════ */}
-      <div className="grid lg:grid-cols-[1fr_340px] gap-5 items-start">
+      <div className="grid lg:grid-cols-[1fr_360px] gap-4 lg:gap-5 items-start">
 
-        {/* ── LEFT: chart, performance, about, news ── */}
-        <div className="flex flex-col gap-4">
+        {/* ── LEFT COLUMN ── */}
+        <div className="flex flex-col gap-4 sm:gap-5 min-w-0">
 
-          {/* Chart */}
+          {/* Chart panel */}
           <Card>
-            <div className="p-4 pb-3">
-              <div className="flex items-center justify-between gap-3 mb-3 flex-wrap">
-                <div className="flex p-1 rounded-[10px] gap-0.5"
-                  style={{ background: "rgba(0,0,0,0.35)", border: "0.5px solid var(--color-border)" }}>
+            <div className="p-3 sm:p-4 pb-3">
+
+              {/* Chart header */}
+              <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
+                <div className="flex p-[3px] rounded-[10px] gap-0.5"
+                  style={{ background: "rgba(0,0,0,0.4)", border: "0.5px solid rgba(255,255,255,0.06)" }}>
                   {(["candles", "line"] as const).map(t => (
                     <button key={t} onClick={() => setChartType(t)}
-                      className="px-4 py-1.5 rounded-[7px] text-[11px] font-bold cursor-pointer transition-all font-[family-name:var(--font-data)]"
+                      className="flex items-center gap-1 px-2.5 py-[7px] rounded-[7px] text-[10px] font-bold cursor-pointer transition-all font-[family-name:var(--font-data)]"
                       style={chartType === t
-                        ? { background: "rgba(255,106,0,0.18)", color: "var(--color-brand)" }
-                        : { color: "var(--color-muted)" }}>
+                        ? { background: "linear-gradient(135deg,rgba(255,106,0,0.18),rgba(255,106,0,0.08))", color: "var(--color-brand)" }
+                        : { color: "#888" }}>
+                      {t === "candles" ? (
+                        <svg viewBox="0 0 14 14" className="w-[11px] h-[11px]" fill="currentColor">
+                          <rect x="3" y="4" width="2.5" height="8" rx="0.5"/>
+                          <rect x="8.5" y="3" width="2.5" height="6" rx="0.5"/>
+                        </svg>
+                      ) : (
+                        <svg viewBox="0 0 14 14" className="w-[11px] h-[11px]" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                          <path d="M2 10l3-4 3 2 4-6"/>
+                        </svg>
+                      )}
                       {t === "candles" ? "Candles" : "Line"}
                     </button>
                   ))}
                 </div>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-1">
                   {["EMA", "RSI", "VOL"].map(ind => (
                     <button key={ind}
                       onClick={() => setIndicators(p => p.includes(ind) ? p.filter(i => i !== ind) : [...p, ind])}
-                      className="px-2.5 py-1.5 rounded-[7px] text-[9px] font-bold cursor-pointer transition-all font-[family-name:var(--font-data)]"
+                      className="px-2 py-[7px] rounded-[7px] text-[9px] font-bold cursor-pointer transition-all font-[family-name:var(--font-data)]"
                       style={indicators.includes(ind)
-                        ? { background: "rgba(74,158,255,0.1)", color: "#4a9eff", border: "0.5px solid rgba(74,158,255,0.3)" }
-                        : { background: "rgba(0,0,0,0.25)", color: "var(--color-muted)", border: "0.5px solid rgba(255,255,255,0.06)" }}>
+                        ? { background: "rgba(74,158,255,0.1)", color: "#4a9eff", border: "0.5px solid rgba(74,158,255,0.25)" }
+                        : { background: "rgba(0,0,0,0.3)", color: "#666", border: "0.5px solid rgba(255,255,255,0.05)" }}>
                       {ind}
                     </button>
                   ))}
                 </div>
               </div>
 
-              <CoinChart coinId={coin.id} type={chartType} days={timeframe} isLight={isLight} height={chartHeight} />
+              {/* OHLC info bar */}
+              <div className="flex items-center justify-between gap-2 px-2.5 py-2 rounded-[9px] mb-2.5 font-[family-name:var(--font-data)]"
+                style={{ background: "rgba(0,0,0,0.3)", border: "0.5px solid rgba(255,255,255,0.04)", fontSize: "10px", fontWeight: 700 }}>
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  {chartType === "candles" ? (
+                    <>
+                      <span><span style={{ color: "#555" }}>O </span><span style={{ color: "#fff" }}>{chartHover?.open ?? "—"}</span></span>
+                      <span><span style={{ color: "#555" }}>H </span><span style={{ color: "#00d47b" }}>{chartHover?.high ?? "—"}</span></span>
+                      <span><span style={{ color: "#555" }}>L </span><span style={{ color: "#ff3b4f" }}>{chartHover?.low ?? "—"}</span></span>
+                      <span><span style={{ color: "#555" }}>C </span><span style={{ color: chartHover?.isUp ? "#00d47b" : "#ff3b4f" }}>{chartHover?.close ?? "—"}</span></span>
+                    </>
+                  ) : (
+                    <span style={{ color: "#fff" }}>{chartHover?.value ?? formatPrice(price)}</span>
+                  )}
+                </div>
+                {indicators.includes("EMA") && <span style={{ color: "#4a9eff" }}>EMA 20</span>}
+              </div>
 
-              <div className="flex p-1 rounded-[10px] gap-0.5 mt-3"
-                style={{ background: "rgba(0,0,0,0.35)", border: "0.5px solid var(--color-border)" }}>
+              {/* Chart */}
+              <CoinChart
+                coinId={coin.id}
+                type={chartType}
+                days={timeframe}
+                isLight={isLight}
+                height={chartHeight}
+                onHoverChange={handleHover}
+              />
+
+              {/* Timeframe bar */}
+              <div className="flex p-[3px] rounded-[10px] gap-px mt-3"
+                style={{ background: "rgba(0,0,0,0.4)", border: "0.5px solid rgba(255,255,255,0.06)" }}>
                 {TFS.map(tf => (
                   <button key={tf.days} onClick={() => setTimeframe(tf.days)}
                     className="flex-1 py-2 rounded-[7px] text-[10px] font-bold cursor-pointer text-center transition-all font-[family-name:var(--font-data)]"
                     style={timeframe === tf.days
-                      ? { background: "rgba(255,106,0,0.18)", color: "var(--color-brand)" }
-                      : { color: "var(--color-muted)" }}>
+                      ? { background: "linear-gradient(135deg,rgba(255,106,0,0.18),rgba(255,106,0,0.08))", color: "var(--color-brand)" }
+                      : { color: "#666" }}>
                     {tf.label}
                   </button>
                 ))}
@@ -430,243 +422,275 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
           </Card>
 
           {/* Performance */}
-          <Card>
-            <div className="p-5">
-              <SectionLabel>Price Performance</SectionLabel>
-              <div className="grid grid-cols-5 gap-2">
-                {perfItems.map(item => (
-                  <div key={item.label} className="rounded-[12px] py-4 px-2 text-center relative overflow-hidden"
-                    style={{ background: "var(--color-surface)", border: "0.5px solid var(--color-border)" }}>
-                    <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
-                    <p className="text-[9px] font-extrabold uppercase tracking-[0.5px] mb-2.5 font-[family-name:var(--font-data)]"
-                      style={{ color: "var(--color-muted)" }}>
-                      {item.label}
-                    </p>
-                    <p className={`text-[14px] font-extrabold font-[family-name:var(--font-data)] ${item.val >= 0 ? "text-[#00d47b]" : "text-[#ff3b4f]"}`}>
-                      {pct(item.val)}
-                    </p>
-                  </div>
-                ))}
-              </div>
+          <div>
+            <SectionHeader title="Performance" action="VS USD" />
+            <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
+              {perfItems.map(item => (
+                <div key={item.label} className="py-3 px-1 rounded-[10px] text-center relative overflow-hidden"
+                  style={{ background: "rgba(255,255,255,0.025)", border: "0.5px solid rgba(255,255,255,0.06)" }}>
+                  <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+                  <p className="text-[8px] sm:text-[9px] font-extrabold uppercase tracking-[0.4px] mb-1.5 font-[family-name:var(--font-data)]" style={{ color: "#666" }}>
+                    {item.label}
+                  </p>
+                  <p className={`text-[10px] sm:text-[12px] font-extrabold font-[family-name:var(--font-data)] ${item.val >= 0 ? "text-[#00d47b]" : "text-[#ff3b4f]"}`}>
+                    {pct(item.val)}
+                  </p>
+                </div>
+              ))}
             </div>
-          </Card>
+
+            {/* ATH / ATL */}
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              {[
+                { label: "ALL-TIME HIGH", icon: <TrendingUp size={10} />, val: md.ath.usd, delta: md.ath_change_percentage.usd, date: md.ath_date.usd },
+                { label: "ALL-TIME LOW",  icon: <TrendingDown size={10} />, val: md.atl.usd, delta: md.atl_change_percentage.usd, date: md.atl_date.usd },
+              ].map(item => (
+                <div key={item.label} className="p-3 rounded-[12px] relative overflow-hidden"
+                  style={{ background: "rgba(255,255,255,0.025)", border: "0.5px solid rgba(255,255,255,0.06)" }}>
+                  <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
+                  <div className="flex items-center gap-1 mb-1.5" style={{ color: "#666" }}>
+                    {item.icon}
+                    <span className="text-[8px] sm:text-[9px] font-extrabold uppercase tracking-[0.4px] font-[family-name:var(--font-data)]">{item.label}</span>
+                  </div>
+                  <p className="text-[14px] sm:text-[15px] font-extrabold font-[family-name:var(--font-data)] mb-1" style={{ color: "var(--color-text)" }}>
+                    {formatPrice(item.val)}
+                  </p>
+                  <p className={`text-[10px] font-bold font-[family-name:var(--font-data)] ${item.delta >= 0 ? "text-[#00d47b]" : "text-[#ff3b4f]"}`}>
+                    {item.delta >= 0 ? "▲" : "▼"} {pct(item.delta)}
+                  </p>
+                  <p className="text-[9px] mt-0.5 font-[family-name:var(--font-data)]" style={{ color: "#555" }}>
+                    {new Date(item.date).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Market Data — mobile only (visible below lg) */}
+          <div className="lg:hidden">
+            <SectionHeader title="Market Data" action="LIVE" />
+            <Card>
+              {marketRows.map((row, i) => (
+                <div key={row.label} className="flex items-center justify-between px-4 py-3.5"
+                  style={{ borderBottom: i < marketRows.length - 1 ? "0.5px solid rgba(255,255,255,0.04)" : "none" }}>
+                  <span className="text-[12px] font-medium font-[family-name:var(--font-display)]" style={{ color: "#888" }}>{row.label}</span>
+                  <div className="text-right">
+                    <p className="text-[12px] sm:text-[13px] font-extrabold font-[family-name:var(--font-data)]" style={{ color: "var(--color-text)" }}>{row.val}</p>
+                    {row.sub && <p className="text-[10px] font-semibold mt-0.5 font-[family-name:var(--font-data)]"
+                      style={{ color: row.sub.startsWith("+") ? "#00d47b" : row.sub.startsWith("-") ? "#ff3b4f" : "#555" }}>{row.sub}</p>}
+                  </div>
+                </div>
+              ))}
+            </Card>
+          </div>
 
           {/* About */}
           {description && (
+            <div>
+              <SectionHeader title={`About ${coin.name}`} />
+              <Card>
+                <div className="px-4 py-4">
+                  <p className={`text-[12px] sm:text-[13px] leading-[1.7] font-[family-name:var(--font-display)] ${!descExpanded ? "line-clamp-5" : ""}`}
+                    style={{ color: "#888" }}>
+                    {description}
+                  </p>
+                  {description.length > 300 && (
+                    <button onClick={() => setDescExpanded(v => !v)}
+                      className="flex items-center gap-1 mt-2.5 text-[11px] font-bold cursor-pointer font-[family-name:var(--font-display)]"
+                      style={{ color: "var(--color-brand)" }}>
+                      {descExpanded ? <><ChevronUp size={12} /> Show less</> : <><ChevronDown size={12} /> Read more</>}
+                    </button>
+                  )}
+                </div>
+              </Card>
+            </div>
+          )}
+
+          {/* Contract & Info — mobile only */}
+          <div className="lg:hidden">
+            <SectionHeader title="Contract & Info" action="OFFICIAL" />
             <Card>
-              <div className="p-5">
-                <SectionLabel>About {coin.name}</SectionLabel>
-                <p className={`text-[13px] leading-[1.75] font-[family-name:var(--font-display)] ${!descExpanded ? "line-clamp-6" : ""}`}
-                  style={{ color: "var(--color-muted)" }}>
-                  {description}
-                </p>
-                {description.length > 300 && (
-                  <button onClick={() => setDescExpanded(v => !v)}
-                    className="flex items-center gap-1 mt-3 text-[12px] font-bold cursor-pointer hover:opacity-80 transition-opacity font-[family-name:var(--font-display)]"
-                    style={{ color: "var(--color-brand)" }}>
-                    {descExpanded
-                      ? <><ChevronUp size={13} /> Show less</>
-                      : <><ChevronDown size={13} /> Read more</>}
-                  </button>
+              <div className="px-4 py-2">
+                {explorer && (
+                  <div className="flex items-center justify-between py-3" style={{ borderBottom: "0.5px solid rgba(255,255,255,0.04)" }}>
+                    <span className="text-[11px] font-semibold font-[family-name:var(--font-display)]" style={{ color: "#888" }}>Explorer</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[12px] font-bold font-[family-name:var(--font-data)]" style={{ color: "var(--color-text)" }}>
+                        {(() => { try { return new URL(explorer).hostname.replace("www.", ""); } catch { return explorer; } })()}
+                      </span>
+                      <button onClick={copyExplorer} className="w-6 h-6 rounded-[6px] flex items-center justify-center cursor-pointer transition-all"
+                        style={copied ? { background: "rgba(0,212,123,0.15)", border: "0.5px solid rgba(0,212,123,0.3)" } : { background: "rgba(255,255,255,0.025)", border: "0.5px solid rgba(255,255,255,0.1)" }}>
+                        <Copy size={10} style={{ color: copied ? "#00d47b" : "#888" }} />
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {socialLinks.length > 0 && (
+                  <div className="flex gap-1.5 py-3 flex-wrap">
+                    {socialLinks.map(link => (
+                      <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer"
+                        className="flex-1 flex items-center justify-center gap-1 py-2.5 px-2 rounded-[9px] text-[10px] font-bold transition-all hover:text-[#ff6a00] font-[family-name:var(--font-display)]"
+                        style={{ background: "rgba(255,255,255,0.03)", border: "0.5px solid rgba(255,255,255,0.06)", color: "#aaa" }}>
+                        {link.icon} {link.label}
+                      </a>
+                    ))}
+                  </div>
                 )}
               </div>
             </Card>
-          )}
+          </div>
 
           {/* News */}
           {news.length > 0 && (
-            <Card>
-              <div className="p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <SectionLabel>Latest {coin.name} News</SectionLabel>
-                  <Link href={`/category/${coin.id}`}
-                    className="text-[10px] font-bold hover:text-[var(--color-brand)] transition-colors font-[family-name:var(--font-data)] -mt-4"
-                    style={{ color: "var(--color-muted)" }}>
-                    SEE ALL →
-                  </Link>
-                </div>
-                <div className="flex flex-col gap-3">
-                  {news.map(post => (
-                    <Link key={post.id} href={`/post/${post.slug}`}
-                      className="flex gap-3 p-3 rounded-[14px] transition-all hover:bg-[rgba(255,106,0,0.04)] hover:border-[rgba(255,106,0,0.15)] cursor-pointer"
-                      style={{ border: "0.5px solid var(--color-border)", textDecoration: "none" }}>
+            <div>
+              <SectionHeader title="Latest News" action={<Link href={`/category/${coin.id}`}>SEE ALL →</Link>} />
+              <div className="flex flex-col gap-2">
+                {news.map(post => (
+                  <Link key={post.id} href={`/post/${post.slug}`} style={{ textDecoration: "none" }}>
+                    <Card className="flex gap-3 p-3 cursor-pointer transition-all hover:bg-[rgba(255,255,255,0.04)]">
                       {post.featuredImage?.node?.sourceUrl && (
-                        <div className="w-[68px] h-[68px] rounded-[10px] flex-shrink-0 overflow-hidden">
+                        <div className="w-16 h-16 rounded-[10px] flex-shrink-0 overflow-hidden bg-[rgba(255,255,255,0.03)]">
                           <img src={post.featuredImage.node.sourceUrl} alt="" className="w-full h-full object-cover" />
                         </div>
                       )}
-                      <div className="flex-1 min-w-0 flex flex-col justify-center">
-                        <p className="text-[13px] font-bold leading-[1.38] mb-1.5 line-clamp-2 font-[family-name:var(--font-display)]"
+                      <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
+                        <p className="text-[12px] font-bold leading-[1.38] line-clamp-2 font-[family-name:var(--font-display)]"
                           style={{ color: "var(--color-text)" }}
                           dangerouslySetInnerHTML={{ __html: post.title }} />
-                        <p className="text-[10px] font-semibold font-[family-name:var(--font-data)]" style={{ color: "var(--color-muted)" }}>
-                          {post.author?.node?.name} · {new Date(post.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                        <p className="text-[9px] font-semibold font-[family-name:var(--font-data)]" style={{ color: "#555" }}>
+                          <span style={{ color: "#aaa" }}>{post.author?.node?.name}</span>
+                          {" · "}{new Date(post.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                         </p>
                       </div>
-                    </Link>
-                  ))}
-                </div>
+                    </Card>
+                  </Link>
+                ))}
               </div>
-            </Card>
+            </div>
           )}
         </div>
 
-        {/* ── RIGHT SIDEBAR ───────────────────────── */}
-        <div className="flex flex-col gap-4 lg:sticky lg:top-[76px]">
+        {/* ── RIGHT SIDEBAR — desktop only ── */}
+        <div className="hidden lg:flex flex-col gap-4 sticky top-[76px]">
 
           {/* Market Data */}
-          <Card>
-            <div className="p-4">
-              <SectionLabel>Market Data</SectionLabel>
-              <div className="rounded-[14px] overflow-hidden" style={{ border: "0.5px solid var(--color-border)" }}>
-                {marketRows.map((row, i) => (
-                  <div key={row.label} className="flex items-center justify-between px-4 py-3"
-                    style={{ borderBottom: i < marketRows.length - 1 ? "0.5px solid var(--color-border)" : "none" }}>
-                    <span className="text-[12px] font-medium font-[family-name:var(--font-display)]" style={{ color: "var(--color-muted)" }}>
-                      {row.label}
-                    </span>
-                    <div className="text-right">
-                      <p className="text-[12px] font-extrabold font-[family-name:var(--font-data)]" style={{ color: "var(--color-text)" }}>
-                        {row.val}
-                      </p>
-                      {row.sub && (
-                        <p className="text-[10px] font-semibold mt-0.5 font-[family-name:var(--font-data)]"
-                          style={{ color: row.sub.startsWith("+") ? "#00d47b" : row.sub.startsWith("-") ? "#ff3b4f" : "var(--color-muted)" }}>
-                          {row.sub}
-                        </p>
-                      )}
-                    </div>
+          <div>
+            <SectionHeader title="Market Data" action="LIVE" />
+            <Card>
+              {marketRows.map((row, i) => (
+                <div key={row.label} className="flex items-center justify-between px-4 py-3"
+                  style={{ borderBottom: i < marketRows.length - 1 ? "0.5px solid rgba(255,255,255,0.04)" : "none" }}>
+                  <span className="text-[12px] font-medium font-[family-name:var(--font-display)]" style={{ color: "#888" }}>{row.label}</span>
+                  <div className="text-right">
+                    <p className="text-[12px] font-extrabold font-[family-name:var(--font-data)]" style={{ color: "var(--color-text)" }}>{row.val}</p>
+                    {row.sub && <p className="text-[10px] font-semibold mt-0.5 font-[family-name:var(--font-data)]"
+                      style={{ color: row.sub.startsWith("+") ? "#00d47b" : row.sub.startsWith("-") ? "#ff3b4f" : "#555" }}>{row.sub}</p>}
                   </div>
-                ))}
-              </div>
-            </div>
-          </Card>
+                </div>
+              ))}
+            </Card>
+          </div>
 
           {/* Links & Info */}
-          <Card>
-            <div className="p-4">
-              <SectionLabel>Links & Info</SectionLabel>
-              {explorer && (
-                <div className="flex items-center justify-between pb-3 mb-3"
-                  style={{ borderBottom: "0.5px solid var(--color-border)" }}>
-                  <span className="text-[12px] font-medium font-[family-name:var(--font-display)]" style={{ color: "var(--color-muted)" }}>
-                    Explorer
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-bold font-[family-name:var(--font-data)]" style={{ color: "var(--color-text)" }}>
-                      {(() => { try { return new URL(explorer).hostname.replace("www.", ""); } catch { return explorer; } })()}
-                    </span>
-                    <button onClick={copyExplorer}
-                      className="w-6 h-6 rounded-[6px] flex items-center justify-center transition-all cursor-pointer"
-                      style={copied
-                        ? { background: "rgba(0,212,123,0.15)", border: "0.5px solid rgba(0,212,123,0.3)" }
-                        : { background: "var(--color-surface)", border: "0.5px solid var(--color-border-md)" }}>
-                      <Copy size={10} style={{ color: copied ? "#00d47b" : "var(--color-muted)" }} />
-                    </button>
+          <div>
+            <SectionHeader title="Links & Info" action="OFFICIAL" />
+            <Card>
+              <div className="px-4 py-2">
+                {explorer && (
+                  <div className="flex items-center justify-between py-3" style={{ borderBottom: "0.5px solid rgba(255,255,255,0.04)" }}>
+                    <span className="text-[11px] font-semibold font-[family-name:var(--font-display)]" style={{ color: "#888" }}>Explorer</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[12px] font-bold font-[family-name:var(--font-data)]" style={{ color: "var(--color-text)" }}>
+                        {(() => { try { return new URL(explorer).hostname.replace("www.", ""); } catch { return explorer; } })()}
+                      </span>
+                      <button onClick={copyExplorer} className="w-6 h-6 rounded-[6px] flex items-center justify-center cursor-pointer transition-all"
+                        style={copied ? { background: "rgba(0,212,123,0.15)", border: "0.5px solid rgba(0,212,123,0.3)" } : { background: "rgba(255,255,255,0.025)", border: "0.5px solid rgba(255,255,255,0.1)" }}>
+                        <Copy size={10} style={{ color: copied ? "#00d47b" : "#888" }} />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              )}
-              <div className="grid grid-cols-2 gap-2">
-                {([
-                  homepage && { label: "Website",  href: homepage, icon: <Globe size={11} /> },
-                  github   && { label: "GitHub",   href: github,   icon: <ExternalLink size={11} /> },
-                  twitter  && { label: "Twitter",  href: twitter,  icon: <ExternalLink size={11} /> },
-                  explorer && { label: "Explorer", href: explorer, icon: <ExternalLink size={11} /> },
-                ] as any[]).filter(Boolean).map((link: any) => (
-                  <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-[9px] text-[11px] font-bold transition-all hover:border-[rgba(255,106,0,0.3)] hover:text-[var(--color-brand)] font-[family-name:var(--font-display)]"
-                    style={{ background: "var(--color-surface)", border: "0.5px solid var(--color-border)", color: "var(--color-muted)" }}>
-                    {link.icon} {link.label}
-                  </a>
-                ))}
+                )}
+                {socialLinks.length > 0 && (
+                  <div className="flex gap-1.5 py-3 flex-wrap">
+                    {socialLinks.map(link => (
+                      <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer"
+                        className="flex-1 flex items-center justify-center gap-1 py-2.5 px-2 rounded-[9px] text-[10px] font-bold transition-all hover:text-[#ff6a00] hover:border-[rgba(255,106,0,0.2)] font-[family-name:var(--font-display)]"
+                        style={{ background: "rgba(255,255,255,0.03)", border: "0.5px solid rgba(255,255,255,0.06)", color: "#aaa" }}>
+                        {link.icon} {link.label}
+                      </a>
+                    ))}
+                  </div>
+                )}
               </div>
-            </div>
-          </Card>
+            </Card>
+          </div>
 
           {/* Historical Data */}
-          <Card>
-            <div className="p-4">
-              <SectionLabel>Historical Data</SectionLabel>
-              <div className="flex flex-col gap-3">
-
-                {/* ATH */}
-                <div className="rounded-[14px] p-4 relative overflow-hidden"
-                  style={{ background: "rgba(0,212,123,0.04)", border: "0.5px solid rgba(0,212,123,0.15)" }}>
-                  <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,212,123,0.2)] to-transparent" />
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <TrendingUp size={11} className="text-[#00d47b]" />
-                    <span className="text-[9px] font-extrabold uppercase tracking-[1px] text-[#00d47b] font-[family-name:var(--font-data)]">
-                      All-Time High
-                    </span>
-                  </div>
-                  <p className="text-[20px] font-extrabold font-[family-name:var(--font-data)] leading-none mb-1.5"
-                    style={{ color: "var(--color-text)" }}>
-                    {formatPrice(md.ath.usd)}
-                  </p>
-                  <div className="flex items-center justify-between">
-                    <p className="text-[11px] font-bold font-[family-name:var(--font-data)] text-[#ff3b4f]">
-                      {pct(md.ath_change_percentage.usd)} from ATH
-                    </p>
-                    <p className="text-[10px] font-[family-name:var(--font-data)]" style={{ color: "var(--color-muted)" }}>
-                      {new Date(md.ath_date.usd).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
-                    </p>
-                  </div>
+          <div>
+            <SectionHeader title="Historical Data" />
+            <div className="flex flex-col gap-2">
+              <div className="rounded-[14px] p-4 relative overflow-hidden"
+                style={{ background: "rgba(0,212,123,0.04)", border: "0.5px solid rgba(0,212,123,0.18)" }}>
+                <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,212,123,0.2)] to-transparent" />
+                <div className="flex items-center gap-1 mb-2">
+                  <TrendingUp size={10} className="text-[#00d47b]" />
+                  <span className="text-[8px] font-extrabold uppercase tracking-[1px] text-[#00d47b] font-[family-name:var(--font-data)]">All-Time High</span>
                 </div>
-
-                {/* ATL */}
-                <div className="rounded-[14px] p-4 relative overflow-hidden"
-                  style={{ background: "rgba(255,59,79,0.04)", border: "0.5px solid rgba(255,59,79,0.15)" }}>
-                  <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(255,59,79,0.2)] to-transparent" />
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <TrendingDown size={11} className="text-[#ff3b4f]" />
-                    <span className="text-[9px] font-extrabold uppercase tracking-[1px] text-[#ff3b4f] font-[family-name:var(--font-data)]">
-                      All-Time Low
-                    </span>
-                  </div>
-                  <p className="text-[20px] font-extrabold font-[family-name:var(--font-data)] leading-none mb-1.5"
-                    style={{ color: "var(--color-text)" }}>
-                    {formatPrice(md.atl.usd)}
+                <p className="text-[18px] font-extrabold font-[family-name:var(--font-data)] leading-none mb-1.5" style={{ color: "var(--color-text)" }}>
+                  {formatPrice(md.ath.usd)}
+                </p>
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-bold font-[family-name:var(--font-data)] text-[#ff3b4f]">{pct(md.ath_change_percentage.usd)} from ATH</p>
+                  <p className="text-[9px] font-[family-name:var(--font-data)]" style={{ color: "#555" }}>
+                    {new Date(md.ath_date.usd).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
                   </p>
-                  <div className="flex items-center justify-between">
-                    <p className="text-[11px] font-bold font-[family-name:var(--font-data)] text-[#00d47b]">
-                      {pct(md.atl_change_percentage.usd)} from ATL
-                    </p>
-                    <p className="text-[10px] font-[family-name:var(--font-data)]" style={{ color: "var(--color-muted)" }}>
-                      {new Date(md.atl_date.usd).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
-                    </p>
-                  </div>
                 </div>
+              </div>
 
-                {/* Supply bar */}
-                {md.max_supply && (
-                  <div className="rounded-[14px] p-4" style={{ background: "var(--color-surface)", border: "0.5px solid var(--color-border)" }}>
+              <div className="rounded-[14px] p-4 relative overflow-hidden"
+                style={{ background: "rgba(255,59,79,0.04)", border: "0.5px solid rgba(255,59,79,0.18)" }}>
+                <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(255,59,79,0.2)] to-transparent" />
+                <div className="flex items-center gap-1 mb-2">
+                  <TrendingDown size={10} className="text-[#ff3b4f]" />
+                  <span className="text-[8px] font-extrabold uppercase tracking-[1px] text-[#ff3b4f] font-[family-name:var(--font-data)]">All-Time Low</span>
+                </div>
+                <p className="text-[18px] font-extrabold font-[family-name:var(--font-data)] leading-none mb-1.5" style={{ color: "var(--color-text)" }}>
+                  {formatPrice(md.atl.usd)}
+                </p>
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] font-bold font-[family-name:var(--font-data)] text-[#00d47b]">{pct(md.atl_change_percentage.usd)} from ATL</p>
+                  <p className="text-[9px] font-[family-name:var(--font-data)]" style={{ color: "#555" }}>
+                    {new Date(md.atl_date.usd).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                  </p>
+                </div>
+              </div>
+
+              {md.max_supply && (
+                <Card>
+                  <div className="px-4 py-3.5">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-[10px] font-bold font-[family-name:var(--font-data)]" style={{ color: "var(--color-muted)" }}>
-                        Circulating Supply
-                      </span>
-                      <span className="text-[11px] font-extrabold font-[family-name:var(--font-data)] text-[var(--color-brand)]">
+                      <span className="text-[10px] font-bold font-[family-name:var(--font-data)]" style={{ color: "#888" }}>Circulating Supply</span>
+                      <span className="text-[11px] font-extrabold font-[family-name:var(--font-data)]" style={{ color: "var(--color-brand)" }}>
                         {((md.circulating_supply / md.max_supply) * 100).toFixed(1)}%
                       </span>
                     </div>
-                    <div className="h-1.5 rounded-full overflow-hidden mb-2" style={{ background: "rgba(255,255,255,0.06)" }}>
-                      <div className="h-full rounded-full" style={{
-                        width: `${Math.min((md.circulating_supply / md.max_supply) * 100, 100)}%`,
-                        background: "var(--gradient-brand)",
-                      }} />
+                    <div className="h-[3px] rounded-full overflow-hidden mb-2" style={{ background: "rgba(255,255,255,0.05)" }}>
+                      <div className="h-full rounded-full"
+                        style={{ width: `${Math.min((md.circulating_supply / md.max_supply) * 100, 100)}%`, background: "linear-gradient(90deg,#ff6a00,#ffaa44)" }} />
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-[10px] font-[family-name:var(--font-data)]" style={{ color: "var(--color-muted)" }}>
+                      <span className="text-[10px] font-[family-name:var(--font-data)]" style={{ color: "#666" }}>
                         {(md.circulating_supply / 1e6).toFixed(2)}M {sym}
                       </span>
-                      <span className="text-[10px] font-[family-name:var(--font-data)]" style={{ color: "var(--color-muted)" }}>
+                      <span className="text-[10px] font-[family-name:var(--font-data)]" style={{ color: "#666" }}>
                         Max {(md.max_supply / 1e6).toFixed(2)}M
                       </span>
                     </div>
                   </div>
-                )}
-              </div>
+                </Card>
+              )}
             </div>
-          </Card>
+          </div>
 
         </div>
       </div>
