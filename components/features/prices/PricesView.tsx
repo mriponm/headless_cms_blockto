@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { COIN_ICONS } from "./coinIcons";
 import { COIN_IDS } from "@/lib/coinIds";
 
@@ -88,10 +89,20 @@ function CoinIcon({ sym }: { sym: string }) {
 }
 
 export default function PricesView() {
+  const router = useRouter();
   const [query, setQuery]       = useState("");
   const [eur, setEur]           = useState(false);
   const [page, setPage]         = useState(1);
   const [expanded, setExpanded] = useState<string | null>(null);
+
+  function handleRowClick(sym: string, coinId: string | undefined) {
+    // Desktop (md+): navigate to coin detail. Mobile: toggle accordion.
+    if (typeof window !== "undefined" && window.innerWidth >= 768 && coinId) {
+      router.push(`/coins/${coinId}`);
+    } else {
+      setExpanded(prev => prev === sym ? null : sym);
+    }
+  }
 
   const filtered = ALL_COINS.filter(
     (c) =>
@@ -197,7 +208,7 @@ export default function PricesView() {
                 <div key={c.s}>
                   <div
                     className={`pr-coin-row-full${isOpen ? " pr-coin-row-open" : ""}`}
-                    onClick={() => setExpanded(isOpen ? null : c.s)}
+                    onClick={() => handleRowClick(c.s, COIN_IDS[c.s])}
                     style={{ cursor: "pointer" }}
                   >
                     <span className="pr-rank">{c.r}</span>
@@ -209,11 +220,7 @@ export default function PricesView() {
                       </div>
                       <div>
                         <div className="pr-coin-name" data-no-translate>
-                          {COIN_IDS[c.s] ? (
-                            <Link href={`/coins/${COIN_IDS[c.s]}`} onClick={e => e.stopPropagation()} className="hover:text-[var(--color-brand)] transition-colors">
-                              {c.n}
-                            </Link>
-                          ) : c.n}
+                          {c.n}
                           <span className="pr-mob-chevron">{isOpen ? " ▲" : " ▾"}</span>
                         </div>
                         <div className="pr-coin-sym" data-no-translate>{c.s}</div>
@@ -299,7 +306,7 @@ export default function PricesView() {
                           </svg>
                         </div>
 
-                        {/* Buy + Details buttons */}
+                        {/* View Details + Buy buttons */}
                         <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
                           {COIN_IDS[c.s] && (
                             <Link href={`/coins/${COIN_IDS[c.s]}`} className="pr-mob-buy-btn"

@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -11,6 +11,7 @@ import { useAuthModal } from "@/components/providers/AuthModalProvider";
 import { formatPrice, formatPercent, formatDollarCompact } from "@/lib/utils/formatters";
 import type { WPPost } from "@/lib/wordpress/types";
 import CoinChart, { type HoverData } from "./CoinChart";
+import { TF_TO_INTERVAL, BINANCE_SYMBOLS } from "@/lib/binanceSymbols";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -80,18 +81,14 @@ function SparkMini({ prices, w = 90, h = 40 }: { prices: number[]; w?: number; h
   );
 }
 
-const TFS = [
-  { label: "1D", days: "1" }, { label: "1W", days: "7" },
-  { label: "1M", days: "30" }, { label: "3M", days: "90" },
-  { label: "1Y", days: "365" }, { label: "ALL", days: "max" },
-];
+const TFS = ["1D", "1W", "1M", "3M", "1Y", "ALL"] as const;
+type TfLabel = typeof TFS[number];
 
 // Glass card reused throughout
 function Card({ children, className = "" }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={`rounded-[18px] relative overflow-hidden ${className}`}
-      style={{ background: "rgba(255,255,255,0.025)", border: "0.5px solid rgba(255,255,255,0.07)" }}>
-      <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.06] to-transparent pointer-events-none" />
+    <div className={`profile-card rounded-[18px] relative overflow-hidden ${className}`}>
+      <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(255,106,0,0.12)] to-transparent pointer-events-none z-10" />
       {children}
     </div>
   );
@@ -122,7 +119,7 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
   const { openModal } = useAuthModal();
 
   const [chartType, setChartType]       = useState<"candles" | "line">("candles");
-  const [timeframe, setTimeframe]       = useState("1");
+  const [tfLabel, setTfLabel]           = useState<TfLabel>("1D");
   const [indicators, setIndicators]     = useState<string[]>(["EMA"]);
   const [chartHover, setChartHover]     = useState<HoverData | null>(null);
   const [inWatchlist, setInWatchlist]   = useState(false);
@@ -131,6 +128,10 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
   const [copied, setCopied]             = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
   const [chartHeight, setChartHeight]   = useState(280);
+  const [livePrice, setLivePrice]       = useState<number | null>(null);
+  const [priceFlash, setPriceFlash]     = useState<"up" | "down" | null>(null);
+  const prevPriceRef                    = useRef<number | null>(null);
+  const flashTimerRef                   = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const upd = () => setChartHeight(window.innerWidth >= 1024 ? 400 : 280);
@@ -139,8 +140,45 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
     return () => window.removeEventListener("resize", upd);
   }, []);
 
+  // Binance miniTicker WebSocket for live price flash
+  useEffect(() => {
+    const binSym = BINANCE_SYMBOLS[coin.id];
+    if (!binSym) return;
+
+    let ws: WebSocket;
+    let reconnectTimer: ReturnType<typeof setTimeout>;
+
+    function connect() {
+      ws = new WebSocket(`wss://stream.binance.com:9443/ws/${binSym.toLowerCase()}@miniTicker`);
+      ws.onmessage = (e) => {
+        try {
+          const msg = JSON.parse(e.data);
+          const newPrice = parseFloat(msg.c);
+          if (isNaN(newPrice)) return;
+          if (prevPriceRef.current !== null && newPrice !== prevPriceRef.current) {
+            const dir = newPrice > prevPriceRef.current ? "up" : "down";
+            setPriceFlash(dir);
+            if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
+            flashTimerRef.current = setTimeout(() => setPriceFlash(null), 800);
+          }
+          prevPriceRef.current = newPrice;
+          setLivePrice(newPrice);
+        } catch { /* ignore */ }
+      };
+      ws.onclose = () => { reconnectTimer = setTimeout(connect, 3000); };
+      ws.onerror = () => ws.close();
+    }
+
+    connect();
+    return () => {
+      clearTimeout(reconnectTimer);
+      if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
+      ws?.close();
+    };
+  }, [coin.id]);
+
   const md       = coin.market_data;
-  const price    = md.current_price.usd;
+  const price    = livePrice ?? md.current_price.usd;
   const change   = md.price_change_percentage_24h;
   const change1h = md.price_change_percentage_1h_in_currency?.usd ?? 0;
   const change7d = md.price_change_percentage_7d_in_currency?.usd ?? 0;
@@ -235,32 +273,27 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
       <Card className="mb-4 sm:mb-5">
         <div className="p-4 sm:p-5 md:p-6">
 
-          {/* Identity: logo + meta */}
+          {/* Identity row — same on all breakpoints */}
           <div className="flex items-center gap-3 sm:gap-4 mb-5">
             <div className="relative flex-shrink-0">
               {coin.image?.large ? (
                 <Image src={coin.image.large} alt={coin.name} width={48} height={48}
-                  className="rounded-full w-10 h-10 sm:w-12 sm:h-12 md:w-[48px] md:h-[48px]"
+                  className="rounded-full w-10 h-10 sm:w-12 sm:h-12"
                   style={{ border: "0.5px solid rgba(255,106,0,0.3)", boxShadow: "0 0 28px rgba(255,106,0,0.28), inset 0 1px 0 rgba(255,255,255,0.2)" }}
                   unoptimized />
               ) : (
                 <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-xl font-extrabold text-black"
-                  style={{ background: "var(--gradient-brand)", boxShadow: "0 0 28px rgba(255,106,0,0.35)" }}>
+                  style={{ background: "var(--gradient-brand)" }}>
                   {sym.slice(0, 2)}
                 </div>
               )}
             </div>
-
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap mb-1.5">
+              <div className="flex items-center gap-1.5 flex-wrap mb-1.5">
                 <h1 className="text-[17px] sm:text-[20px] md:text-[22px] font-extrabold tracking-[-0.4px] font-[family-name:var(--font-display)]"
-                  style={{ color: "var(--color-text)" }}>
-                  {coin.name}
-                </h1>
+                  style={{ color: "var(--color-text)" }}>{coin.name}</h1>
                 <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-[5px] font-[family-name:var(--font-data)]"
-                  style={{ background: "rgba(255,255,255,0.04)", border: "0.5px solid rgba(255,255,255,0.1)", color: "#888" }}>
-                  {sym}
-                </span>
+                  style={{ background: isLight ? "rgba(0,0,0,0.05)" : "rgba(255,255,255,0.06)", border: `0.5px solid ${isLight ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.12)"}`, color: "var(--color-muted)" }}>{sym}</span>
                 {coin.market_cap_rank && (
                   <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded-[5px] font-[family-name:var(--font-data)]"
                     style={{ background: "rgba(255,106,0,0.1)", border: "0.5px solid rgba(255,106,0,0.25)", color: "var(--color-brand)" }}>
@@ -271,7 +304,7 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
               <div className="flex items-center gap-1 flex-wrap">
                 {(coin.categories ?? []).slice(0, 4).filter(Boolean).map(cat => (
                   <span key={cat} className="text-[9px] font-bold px-1.5 py-0.5 rounded-[4px] font-[family-name:var(--font-data)]"
-                    style={{ background: "rgba(255,255,255,0.03)", border: "0.5px solid rgba(255,255,255,0.06)", color: "#888" }}>
+                    style={{ background: isLight ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.03)", border: `0.5px solid ${isLight ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.07)"}`, color: "var(--color-muted)" }}>
                     {cat.toUpperCase()}
                   </span>
                 ))}
@@ -279,50 +312,58 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
             </div>
           </div>
 
-          {/* Price block: price left, sparkline right */}
-          <div className="flex items-end justify-between gap-3 mb-5">
-            <div className="flex-1 min-w-0">
+          {/* Price + buttons: stack on mobile, side-by-side on desktop */}
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+
+            {/* Price block */}
+            <div>
               <div className="flex items-center gap-1.5 mb-1.5">
                 <span className="w-[5px] h-[5px] rounded-full bg-[#00d47b] shadow-[0_0_6px_#00d47b] animate-pulse" />
                 <span className="text-[9px] font-bold uppercase tracking-[1.4px] font-[family-name:var(--font-data)]"
                   style={{ color: "#666" }}>Live Price</span>
               </div>
-              <div className="text-[36px] sm:text-[40px] md:text-[44px] lg:text-[48px] font-black tracking-[-2px] leading-none font-[family-name:var(--font-data)]"
-                style={{ color: "var(--color-text)" }}>
+              <div className="text-[26px] sm:text-[30px] md:text-[34px] font-black tracking-[-1.5px] leading-none font-[family-name:var(--font-data)] transition-colors duration-300"
+                style={{
+                  color: priceFlash === "up"   ? "#00d47b"
+                       : priceFlash === "down" ? "#ff3b4f"
+                       : "var(--color-text)",
+                }}>
                 {formatPrice(price)}
               </div>
-              <div className="flex items-center gap-2 mt-2.5 flex-wrap">
-                <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-[7px] text-[11px] font-extrabold font-[family-name:var(--font-data)] ${isUp ? "bg-[rgba(0,212,123,0.12)] text-[#00d47b] border border-[rgba(0,212,123,0.28)]" : "bg-[rgba(255,59,79,0.12)] text-[#ff3b4f] border border-[rgba(255,59,79,0.28)]"}`}>
+              <div className="flex items-center gap-2 mt-2 flex-wrap">
+                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-[6px] text-[11px] font-extrabold font-[family-name:var(--font-data)] ${isUp ? "bg-[rgba(0,212,123,0.12)] text-[#00d47b] border border-[rgba(0,212,123,0.28)]" : "bg-[rgba(255,59,79,0.12)] text-[#ff3b4f] border border-[rgba(255,59,79,0.28)]"}`}>
                   {isUp ? "▲" : "▼"} {pct(change)}
                 </span>
-                <span className="text-[11px] font-bold font-[family-name:var(--font-data)]" style={{ color: "#888" }}>
+                <span className="text-[11px] font-bold font-[family-name:var(--font-data)]" style={{ color: "#666" }}>
                   {isUp ? "+" : "–"}{formatPrice(Math.abs(md.price_change_24h))} (24h)
                 </span>
               </div>
             </div>
-            <SparkMini prices={md.sparkline_7d?.price ?? []} w={90} h={40} />
-          </div>
 
-          {/* Action buttons — 3-col grid */}
-          <div className="grid grid-cols-3 gap-2">
-            <Link href="/buy"
-              className="flex items-center justify-center gap-1.5 py-3 rounded-[11px] text-[12px] font-extrabold text-black relative overflow-hidden transition-all hover:brightness-110 hover:-translate-y-0.5 font-[family-name:var(--font-display)]"
-              style={{ background: "linear-gradient(135deg,#ff6a00,#ff8a30)", boxShadow: "0 4px 14px rgba(255,106,0,0.3), inset 0 1px 0 rgba(255,255,255,0.25)" }}>
-              <span className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent rounded-t-[11px] pointer-events-none" />
-              <svg viewBox="0 0 12 12" className="w-3 h-3 fill-none stroke-current" strokeWidth="2.6" strokeLinecap="round"><path d="M6 2v8M2 6h8"/></svg>
-              Buy {sym}
-            </Link>
-            <button onClick={toggleWatchlist} disabled={watchLoading}
-              className={`flex items-center justify-center gap-1.5 py-3 rounded-[11px] text-[12px] font-extrabold border transition-all hover:-translate-y-0.5 cursor-pointer disabled:opacity-60 font-[family-name:var(--font-display)] ${inWatchlist ? "bg-[rgba(255,106,0,0.08)] border-[rgba(255,106,0,0.25)] text-[#ff6a00]" : "text-[#e5e5e5] border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.025)]"}`}>
-              {watchLoading
-                ? <Loader2 size={12} className="animate-spin" />
-                : <Star size={12} strokeWidth={2.2} className={inWatchlist ? "fill-current" : ""} />}
-              {inWatchlist ? "Watching" : "Watchlist"}
-            </button>
-            <button
-              className="flex items-center justify-center gap-1.5 py-3 rounded-[11px] text-[12px] font-extrabold border text-[#e5e5e5] border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.025)] transition-all hover:bg-[rgba(255,106,0,0.08)] hover:border-[rgba(255,106,0,0.25)] hover:text-[#ff6a00] cursor-pointer font-[family-name:var(--font-display)]">
-              <Bell size={12} strokeWidth={2.2} /> Alert
-            </button>
+            {/* Action buttons */}
+            <div className="flex items-center gap-2 flex-wrap md:flex-nowrap md:flex-shrink-0">
+              <Link href="/buy"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-[12px] font-extrabold text-black relative overflow-hidden transition-all hover:brightness-110 hover:-translate-y-0.5 font-[family-name:var(--font-display)]"
+                style={{ background: "linear-gradient(135deg,#ff6a00,#ff8a30)", boxShadow: "0 3px 10px rgba(255,106,0,0.3), inset 0 1px 0 rgba(255,255,255,0.2)" }}>
+                <span className="absolute top-0 left-0 right-0 h-1/2 bg-gradient-to-b from-white/15 to-transparent rounded-t-[10px] pointer-events-none" />
+                <svg viewBox="0 0 12 12" className="w-[11px] h-[11px] fill-none stroke-current flex-shrink-0" strokeWidth="2.6" strokeLinecap="round"><path d="M6 2v8M2 6h8"/></svg>
+                Buy {sym}
+              </Link>
+              <button onClick={toggleWatchlist} disabled={watchLoading}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-[12px] font-extrabold border transition-all hover:-translate-y-0.5 cursor-pointer disabled:opacity-60 font-[family-name:var(--font-display)] ${inWatchlist ? "bg-[rgba(255,106,0,0.08)] border-[rgba(255,106,0,0.25)] text-[#ff6a00]" : ""}`}
+              style={!inWatchlist ? { color: "var(--color-muted)", borderColor: isLight ? "rgba(0,0,0,0.12)" : "rgba(255,255,255,0.12)", background: isLight ? "rgba(0,0,0,0.03)" : "rgba(255,255,255,0.03)" } : undefined}>
+                {watchLoading
+                  ? <Loader2 size={11} className="animate-spin" />
+                  : <Star size={11} strokeWidth={2.2} className={inWatchlist ? "fill-current" : ""} />}
+                {inWatchlist ? "Watching" : "Watchlist"}
+              </button>
+              <button
+                className="flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-[12px] font-extrabold border transition-all hover:bg-[rgba(255,106,0,0.08)] hover:border-[rgba(255,106,0,0.25)] hover:text-[#ff6a00] cursor-pointer font-[family-name:var(--font-display)]"
+              style={{ color: "var(--color-muted)", borderColor: isLight ? "rgba(0,0,0,0.12)" : "rgba(255,255,255,0.12)", background: isLight ? "rgba(0,0,0,0.03)" : "rgba(255,255,255,0.03)" }}>
+                <Bell size={11} strokeWidth={2.2} /> Alert
+              </button>
+            </div>
+
           </div>
         </div>
       </Card>
@@ -342,7 +383,7 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
               {/* Chart header */}
               <div className="flex items-center justify-between gap-2 mb-3 flex-wrap">
                 <div className="flex p-[3px] rounded-[10px] gap-0.5"
-                  style={{ background: "rgba(0,0,0,0.4)", border: "0.5px solid rgba(255,255,255,0.06)" }}>
+                  style={{ background: isLight ? "rgba(0,0,0,0.05)" : "rgba(0,0,0,0.4)", border: `0.5px solid ${isLight ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.06)"}` }}>
                   {(["candles", "line"] as const).map(t => (
                     <button key={t} onClick={() => setChartType(t)}
                       className="flex items-center gap-1 px-2.5 py-[7px] rounded-[7px] text-[10px] font-bold cursor-pointer transition-all font-[family-name:var(--font-data)]"
@@ -369,8 +410,8 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
                       onClick={() => setIndicators(p => p.includes(ind) ? p.filter(i => i !== ind) : [...p, ind])}
                       className="px-2 py-[7px] rounded-[7px] text-[9px] font-bold cursor-pointer transition-all font-[family-name:var(--font-data)]"
                       style={indicators.includes(ind)
-                        ? { background: "rgba(74,158,255,0.1)", color: "#4a9eff", border: "0.5px solid rgba(74,158,255,0.25)" }
-                        : { background: "rgba(0,0,0,0.3)", color: "#666", border: "0.5px solid rgba(255,255,255,0.05)" }}>
+                        ? { background: "rgba(74,158,255,0.12)", color: "#4a9eff", border: "0.5px solid rgba(74,158,255,0.3)" }
+                        : { background: isLight ? "rgba(0,0,0,0.04)" : "rgba(0,0,0,0.3)", color: "var(--color-muted)", border: `0.5px solid ${isLight ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.06)"}` }}>
                       {ind}
                     </button>
                   ))}
@@ -379,17 +420,17 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
 
               {/* OHLC info bar */}
               <div className="flex items-center justify-between gap-2 px-2.5 py-2 rounded-[9px] mb-2.5 font-[family-name:var(--font-data)]"
-                style={{ background: "rgba(0,0,0,0.3)", border: "0.5px solid rgba(255,255,255,0.04)", fontSize: "10px", fontWeight: 700 }}>
+                style={{ background: isLight ? "rgba(0,0,0,0.04)" : "rgba(0,0,0,0.3)", border: `0.5px solid ${isLight ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.05)"}`, fontSize: "10px", fontWeight: 700 }}>
                 <div className="flex items-center gap-2.5 flex-wrap">
                   {chartType === "candles" ? (
                     <>
-                      <span><span style={{ color: "#555" }}>O </span><span style={{ color: "#fff" }}>{chartHover?.open ?? "—"}</span></span>
-                      <span><span style={{ color: "#555" }}>H </span><span style={{ color: "#00d47b" }}>{chartHover?.high ?? "—"}</span></span>
-                      <span><span style={{ color: "#555" }}>L </span><span style={{ color: "#ff3b4f" }}>{chartHover?.low ?? "—"}</span></span>
-                      <span><span style={{ color: "#555" }}>C </span><span style={{ color: chartHover?.isUp ? "#00d47b" : "#ff3b4f" }}>{chartHover?.close ?? "—"}</span></span>
+                      <span><span style={{ color: "var(--color-muted)" }}>O </span><span style={{ color: "var(--color-text)" }}>{chartHover?.open ?? "—"}</span></span>
+                      <span><span style={{ color: "var(--color-muted)" }}>H </span><span style={{ color: "#00d47b" }}>{chartHover?.high ?? "—"}</span></span>
+                      <span><span style={{ color: "var(--color-muted)" }}>L </span><span style={{ color: "#ff3b4f" }}>{chartHover?.low ?? "—"}</span></span>
+                      <span><span style={{ color: "var(--color-muted)" }}>C </span><span style={{ color: chartHover?.isUp ? "#00d47b" : "#ff3b4f" }}>{chartHover?.close ?? "—"}</span></span>
                     </>
                   ) : (
-                    <span style={{ color: "#fff" }}>{chartHover?.value ?? formatPrice(price)}</span>
+                    <span style={{ color: "var(--color-text)" }}>{chartHover?.value ?? formatPrice(price)}</span>
                   )}
                 </div>
                 {indicators.includes("EMA") && <span style={{ color: "#4a9eff" }}>EMA 20</span>}
@@ -399,7 +440,8 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
               <CoinChart
                 coinId={coin.id}
                 type={chartType}
-                days={timeframe}
+                interval={TF_TO_INTERVAL[tfLabel].interval}
+                limit={TF_TO_INTERVAL[tfLabel].limit}
                 isLight={isLight}
                 height={chartHeight}
                 onHoverChange={handleHover}
@@ -407,14 +449,14 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
 
               {/* Timeframe bar */}
               <div className="flex p-[3px] rounded-[10px] gap-px mt-3"
-                style={{ background: "rgba(0,0,0,0.4)", border: "0.5px solid rgba(255,255,255,0.06)" }}>
+                style={{ background: isLight ? "rgba(0,0,0,0.05)" : "rgba(0,0,0,0.4)", border: `0.5px solid ${isLight ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.06)"}` }}>
                 {TFS.map(tf => (
-                  <button key={tf.days} onClick={() => setTimeframe(tf.days)}
+                  <button key={tf} onClick={() => setTfLabel(tf)}
                     className="flex-1 py-2 rounded-[7px] text-[10px] font-bold cursor-pointer text-center transition-all font-[family-name:var(--font-data)]"
-                    style={timeframe === tf.days
+                    style={tfLabel === tf
                       ? { background: "linear-gradient(135deg,rgba(255,106,0,0.18),rgba(255,106,0,0.08))", color: "var(--color-brand)" }
                       : { color: "#666" }}>
-                    {tf.label}
+                    {tf}
                   </button>
                 ))}
               </div>
@@ -426,8 +468,7 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
             <SectionHeader title="Performance" action="VS USD" />
             <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
               {perfItems.map(item => (
-                <div key={item.label} className="py-3 px-1 rounded-[10px] text-center relative overflow-hidden"
-                  style={{ background: "rgba(255,255,255,0.025)", border: "0.5px solid rgba(255,255,255,0.06)" }}>
+                <div key={item.label} className="profile-card py-3 px-1 rounded-[10px] text-center relative overflow-hidden">
                   <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
                   <p className="text-[8px] sm:text-[9px] font-extrabold uppercase tracking-[0.4px] mb-1.5 font-[family-name:var(--font-data)]" style={{ color: "#666" }}>
                     {item.label}
@@ -445,8 +486,7 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
                 { label: "ALL-TIME HIGH", icon: <TrendingUp size={10} />, val: md.ath.usd, delta: md.ath_change_percentage.usd, date: md.ath_date.usd },
                 { label: "ALL-TIME LOW",  icon: <TrendingDown size={10} />, val: md.atl.usd, delta: md.atl_change_percentage.usd, date: md.atl_date.usd },
               ].map(item => (
-                <div key={item.label} className="p-3 rounded-[12px] relative overflow-hidden"
-                  style={{ background: "rgba(255,255,255,0.025)", border: "0.5px solid rgba(255,255,255,0.06)" }}>
+                <div key={item.label} className="profile-card p-3 rounded-[12px] relative overflow-hidden">
                   <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
                   <div className="flex items-center gap-1 mb-1.5" style={{ color: "#666" }}>
                     {item.icon}
@@ -519,7 +559,7 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
                         {(() => { try { return new URL(explorer).hostname.replace("www.", ""); } catch { return explorer; } })()}
                       </span>
                       <button onClick={copyExplorer} className="w-6 h-6 rounded-[6px] flex items-center justify-center cursor-pointer transition-all"
-                        style={copied ? { background: "rgba(0,212,123,0.15)", border: "0.5px solid rgba(0,212,123,0.3)" } : { background: "rgba(255,255,255,0.025)", border: "0.5px solid rgba(255,255,255,0.1)" }}>
+                        style={copied ? { background: "rgba(0,212,123,0.15)", border: "0.5px solid rgba(0,212,123,0.3)" } : { background: isLight ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.04)", border: `0.5px solid ${isLight ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)"}` }}>
                         <Copy size={10} style={{ color: copied ? "#00d47b" : "#888" }} />
                       </button>
                     </div>
@@ -530,7 +570,7 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
                     {socialLinks.map(link => (
                       <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer"
                         className="flex-1 flex items-center justify-center gap-1 py-2.5 px-2 rounded-[9px] text-[10px] font-bold transition-all hover:text-[#ff6a00] font-[family-name:var(--font-display)]"
-                        style={{ background: "rgba(255,255,255,0.03)", border: "0.5px solid rgba(255,255,255,0.06)", color: "#aaa" }}>
+                        style={{ background: isLight ? "rgba(0,0,0,0.03)" : "rgba(255,255,255,0.03)", border: `0.5px solid ${isLight ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.07)"}`, color: "var(--color-muted)" }}>
                         {link.icon} {link.label}
                       </a>
                     ))}
@@ -604,7 +644,7 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
                         {(() => { try { return new URL(explorer).hostname.replace("www.", ""); } catch { return explorer; } })()}
                       </span>
                       <button onClick={copyExplorer} className="w-6 h-6 rounded-[6px] flex items-center justify-center cursor-pointer transition-all"
-                        style={copied ? { background: "rgba(0,212,123,0.15)", border: "0.5px solid rgba(0,212,123,0.3)" } : { background: "rgba(255,255,255,0.025)", border: "0.5px solid rgba(255,255,255,0.1)" }}>
+                        style={copied ? { background: "rgba(0,212,123,0.15)", border: "0.5px solid rgba(0,212,123,0.3)" } : { background: isLight ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.04)", border: `0.5px solid ${isLight ? "rgba(0,0,0,0.1)" : "rgba(255,255,255,0.1)"}` }}>
                         <Copy size={10} style={{ color: copied ? "#00d47b" : "#888" }} />
                       </button>
                     </div>
@@ -615,7 +655,7 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
                     {socialLinks.map(link => (
                       <a key={link.label} href={link.href} target="_blank" rel="noopener noreferrer"
                         className="flex-1 flex items-center justify-center gap-1 py-2.5 px-2 rounded-[9px] text-[10px] font-bold transition-all hover:text-[#ff6a00] hover:border-[rgba(255,106,0,0.2)] font-[family-name:var(--font-display)]"
-                        style={{ background: "rgba(255,255,255,0.03)", border: "0.5px solid rgba(255,255,255,0.06)", color: "#aaa" }}>
+                        style={{ background: isLight ? "rgba(0,0,0,0.03)" : "rgba(255,255,255,0.03)", border: `0.5px solid ${isLight ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.07)"}`, color: "var(--color-muted)" }}>
                         {link.icon} {link.label}
                       </a>
                     ))}
