@@ -2,6 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { COIN_ICONS } from "./coinIcons";
+import { COIN_IDS } from "@/lib/coinIds";
 
 const ALL_COINS = [
   { r: 1,  n: "Bitcoin",          s: "BTC",  p: 84231,     mc: 1.67e12, vol: 32.1e9,  c: 2.4,   c1: 0.3,  c7: 5.8,   up: true,  u7: true,  cs: 19.84e6,   sp: "0,14 6,12 12,16 18,10 24,8 30,11 36,6 44,4",   ico: "btc"  },
@@ -208,7 +209,11 @@ export default function PricesView() {
                       </div>
                       <div>
                         <div className="pr-coin-name" data-no-translate>
-                          {c.n}
+                          {COIN_IDS[c.s] ? (
+                            <Link href={`/coins/${COIN_IDS[c.s]}`} onClick={e => e.stopPropagation()} className="hover:text-[var(--color-brand)] transition-colors">
+                              {c.n}
+                            </Link>
+                          ) : c.n}
                           <span className="pr-mob-chevron">{isOpen ? " ▲" : " ▾"}</span>
                         </div>
                         <div className="pr-coin-sym" data-no-translate>{c.s}</div>
@@ -294,13 +299,17 @@ export default function PricesView() {
                           </svg>
                         </div>
 
-                        {/* Buy button */}
-                        <div style={{ display: "flex", justifyContent: "center" }}>
-                          <Link
-                            href="/buy"
-                            className="pr-mob-buy-btn"
-                            onClick={e => e.stopPropagation()}
-                          >
+                        {/* Buy + Details buttons */}
+                        <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
+                          {COIN_IDS[c.s] && (
+                            <Link href={`/coins/${COIN_IDS[c.s]}`} className="pr-mob-buy-btn"
+                              onClick={e => e.stopPropagation()}
+                              style={{ background: "rgba(255,106,0,0.07)", color: "var(--color-brand)", border: "0.5px solid rgba(255,106,0,0.2)" }}>
+                              <span>View Details</span>
+                              <span className="pr-mob-buy-arrow">→</span>
+                            </Link>
+                          )}
+                          <Link href="/buy" className="pr-mob-buy-btn" onClick={e => e.stopPropagation()}>
                             <span>Buy {c.n}</span>
                             <span className="pr-mob-buy-arrow">→</span>
                           </Link>
