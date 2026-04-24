@@ -137,6 +137,14 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
   const isLight = resolved === "light";
   const { openModal } = useAuthModal();
 
+  const [chartHeight, setChartHeight] = useState(280);
+  useEffect(() => {
+    const update = () => setChartHeight(window.innerWidth >= 1024 ? 420 : 280);
+    update();
+    window.addEventListener("resize", update);
+    return () => window.removeEventListener("resize", update);
+  }, []);
+
   const [chartType, setChartType]       = useState<"candles" | "line">("candles");
   const [timeframe, setTimeframe]       = useState("1");
   const [indicators, setIndicators]     = useState<string[]>(["EMA"]);
@@ -458,7 +466,7 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
                 type={chartType}
                 days={timeframe}
                 isLight={isLight}
-                containerClassName="h-[260px] lg:h-[400px]"
+                height={chartHeight}
               />
 
               <div className="flex p-1 rounded-[10px] gap-0.5 mt-3"

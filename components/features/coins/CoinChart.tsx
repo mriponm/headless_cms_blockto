@@ -21,13 +21,13 @@ export default function CoinChart({
   type,
   days,
   isLight,
-  containerClassName = "h-[260px]",
+  height = 300,
 }: {
   coinId: string;
   type: "candles" | "line";
   days: string;
   isLight: boolean;
-  containerClassName?: string;
+  height?: number;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef     = useRef<any>(null);
@@ -70,10 +70,6 @@ export default function CoinChart({
     let rafId = 0;
 
     async function init() {
-      // Wait one animation frame so CSS height classes are computed
-      await new Promise<void>(res => { rafId = requestAnimationFrame(() => res()); });
-      if (!containerRef.current) return;
-
       const lw = await import("lightweight-charts");
       if (!containerRef.current) return;
 
@@ -81,11 +77,9 @@ export default function CoinChart({
       const borderColor = isLight ? "rgba(0,0,0,0.09)" : "rgba(255,255,255,0.06)";
       const gridColor   = isLight ? "rgba(0,0,0,0.04)" : "rgba(255,255,255,0.025)";
 
-      const initH = containerRef.current.offsetHeight || containerRef.current.clientHeight || 300;
-
       chart = lw.createChart(containerRef.current, {
         width:  containerRef.current.clientWidth,
-        height: initH,
+        height,
         layout: {
           background: { type: lw.ColorType.Solid, color: "transparent" },
           textColor,
@@ -168,16 +162,15 @@ export default function CoinChart({
 
       ro = new ResizeObserver(entries => {
         for (const entry of entries) {
-          chart?.applyOptions({
-            width:  entry.contentRect.width,
-            height: entry.contentRect.height || 260,
-          });
+          if (entry.contentRect.width > 0) {
+            chart?.applyOptions({ width: entry.contentRect.width, height });
+          }
         }
       });
       ro.observe(containerRef.current);
     }
 
-    init();
+    rafId = requestAnimationFrame(() => { init(); });
 
     return () => {
       cancelAnimationFrame(rafId);
@@ -223,12 +216,12 @@ export default function CoinChart({
 
       {/* Loading spinner */}
       {isLoading && !hasData && (
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="absolute inset-0 flex items-center justify-center" style={{ height }}>
           <Loader2 size={22} className="animate-spin" style={{ color: "var(--color-brand)" }} />
         </div>
       )}
 
-      <div ref={containerRef} className={containerClassName} />
+      <div ref={containerRef} style={{ height, width: "100%" }} />
     </div>
   );
 }
