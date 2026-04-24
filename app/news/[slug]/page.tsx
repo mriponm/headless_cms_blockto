@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import AuthorAvatar from "@/components/ui/AuthorAvatar";
 import Image from "next/image";
 import Link from "next/link";
 import { getPostBySlug, getPosts, primaryCategory, relativeDate, stripExcerpt } from "@/lib/wordpress/queries";
@@ -133,6 +134,7 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
             metaSlot={
               <ArticleMetaBar
                 authorName={post.author.node.name}
+                avatarUrl={post.author.node.avatar?.url}
                 dateStr={dateStr}
               />
             }
@@ -186,10 +188,7 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
                           </p>
                         </div>
                         <div className="flex items-center gap-1.5 text-[10px] art-sub-text font-medium mt-1.5">
-                          <span className="w-[14px] h-[14px] rounded-full flex items-center justify-center text-[7px] font-extrabold text-black flex-shrink-0"
-                            style={{ background: "var(--gradient-brand)" }}>
-                            {rp.author.node.name.slice(0, 2).toUpperCase()}
-                          </span>
+                          <AuthorAvatar name={rp.author.node.name} avatarUrl={rp.author.node.avatar?.url} size={14} />
                           {rp.author.node.name} · {relativeDate(rp.date)}
                         </div>
                       </div>

@@ -3,6 +3,7 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import SectionLabel from "@/components/ui/SectionLabel";
+import AuthorAvatar from "@/components/ui/AuthorAvatar";
 import TranslatedText from "@/components/ui/TranslatedText";
 import type { WPPost } from "@/lib/wordpress/types";
 import { relativeDate, primaryCategory } from "@/lib/wordpress/queries";
@@ -43,7 +44,8 @@ function ListCard({ post }: { post: WPPost }) {
           <span className="text-[9px] font-extrabold text-[var(--color-brand)] bg-[rgba(255,106,0,0.08)] border border-[rgba(255,106,0,0.15)] px-[7px] py-[2px] rounded-[5px] tracking-[0.5px] font-[family-name:var(--font-data)]">
             {cat.name.toUpperCase()}
           </span>
-          <span className="text-[10px] text-[#888] font-medium font-[family-name:var(--font-display)]">
+          <span className="flex items-center gap-1 text-[10px] text-[#888] font-medium font-[family-name:var(--font-display)]">
+            <AuthorAvatar name={post.author.node.name} avatarUrl={post.author.node.avatar?.url} size={14} />
             <span data-no-translate>{post.author.node.name}</span>
           </span>
           <span className="flex items-center gap-1 text-[10px] text-[#666] font-medium font-[family-name:var(--font-display)] before:content-[''] before:w-[3px] before:h-[3px] before:bg-[#444] before:rounded-full">
@@ -74,7 +76,8 @@ function HScrollCard({ post, index, accentColor, accentBg, accentBorder }: {
         style={{ color: accentColor, background: accentBg, border: `0.5px solid ${accentBorder}` }}>
         {cat.name.toUpperCase()}
       </span>
-      <span className="text-[9px] text-[#666] font-medium font-[family-name:var(--font-display)]">
+      <span className="flex items-center gap-1 text-[9px] text-[#666] font-medium font-[family-name:var(--font-display)]">
+        <AuthorAvatar name={post.author.node.name} avatarUrl={post.author.node.avatar?.url} size={12} />
         <span data-no-translate>{post.author.node.name}</span> · {relativeDate(post.date)}
       </span>
     </Link>

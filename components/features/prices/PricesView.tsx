@@ -1,39 +1,39 @@
 "use client";
-import { useState, useEffect } from "react";
-import { Star } from "lucide-react";
+import { useState } from "react";
+import Link from "next/link";
 import { COIN_ICONS } from "./coinIcons";
 
 const ALL_COINS = [
-  { r: 1,  n: "Bitcoin",          s: "BTC",  p: 84231,     mc: 1.67e12, vol: 32.1e9,  c: 2.4,   c7: 5.8,   up: true,  u7: true,  sp: "0,14 6,12 12,16 18,10 24,8 30,11 36,6 44,4",   ico: "btc"  },
-  { r: 2,  n: "Ethereum",         s: "ETH",  p: 1842,      mc: 221e9,   vol: 14.2e9,  c: 1.9,   c7: 3.2,   up: true,  u7: true,  sp: "0,12 6,10 12,14 18,8 24,9 30,6 36,7 44,4",    ico: "eth"  },
-  { r: 3,  n: "Tether",           s: "USDT", p: 1.00,      mc: 121.3e9, vol: 88.4e9,  c: 0.01,  c7: 0.02,  up: true,  u7: true,  sp: "0,10 6,10 12,10 18,10 24,10 30,10 36,10 44,10", ico: "usdt" },
-  { r: 4,  n: "BNB",              s: "BNB",  p: 587.40,    mc: 85.1e9,  vol: 2.1e9,   c: 0.6,   c7: 1.4,   up: true,  u7: true,  sp: "0,10 6,9 12,11 18,8 24,10 30,7 36,8 44,6",    ico: "bnb"  },
-  { r: 5,  n: "Solana",           s: "SOL",  p: 134.20,    mc: 61.4e9,  vol: 4.8e9,   c: -0.8,  c7: -2.1,  up: false, u7: false, sp: "0,6 6,8 12,5 18,10 24,12 30,9 36,14 44,12",   ico: "sol"  },
-  { r: 6,  n: "USD Coin",         s: "USDC", p: 1.00,      mc: 39.2e9,  vol: 12.8e9,  c: 0.01,  c7: 0.01,  up: true,  u7: true,  sp: "0,10 6,10 12,10 18,10 24,10 30,10 36,10 44,10", ico: "usdc" },
-  { r: 7,  n: "XRP",              s: "XRP",  p: 1.33,      mc: 76.2e9,  vol: 5.4e9,   c: -4.1,  c7: -6.8,  up: false, u7: false, sp: "0,4 6,6 12,5 18,8 24,12 30,14 36,16 44,15",   ico: "xrp"  },
-  { r: 8,  n: "Dogecoin",         s: "DOGE", p: 0.081,     mc: 11.8e9,  vol: 1.2e9,   c: -1.2,  c7: 0.4,   up: false, u7: true,  sp: "0,8 6,10 12,7 18,12 24,11 30,13 36,12 44,14",  ico: "doge" },
-  { r: 9,  n: "Tron",             s: "TRX",  p: 0.244,     mc: 21.0e9,  vol: 0.9e9,   c: 1.2,   c7: 2.8,   up: true,  u7: true,  sp: "0,12 6,11 12,13 18,10 24,9 30,11 36,8 44,7",   ico: "trx"  },
-  { r: 10, n: "Cardano",          s: "ADA",  p: 0.42,      mc: 14.8e9,  vol: 0.9e9,   c: 3.1,   c7: 7.4,   up: true,  u7: true,  sp: "0,16 6,14 12,12 18,10 24,8 30,9 36,6 44,4",    ico: "ada"  },
-  { r: 11, n: "Avalanche",        s: "AVAX", p: 28.40,     mc: 11.6e9,  vol: 0.8e9,   c: 4.7,   c7: 8.1,   up: true,  u7: true,  sp: "0,18 6,14 12,12 18,10 24,8 30,7 36,5 44,2",    ico: "avax" },
-  { r: 12, n: "Shiba Inu",        s: "SHIB", p: 0.0000124, mc: 7.3e9,   vol: 1.1e9,   c: 5.2,   c7: 12.3,  up: true,  u7: true,  sp: "0,16 6,14 12,10 18,8 24,6 30,8 36,4 44,2",     ico: "shib" },
-  { r: 13, n: "Polkadot",         s: "DOT",  p: 5.12,      mc: 7.3e9,   vol: 0.4e9,   c: -0.4,  c7: -1.8,  up: false, u7: false, sp: "0,8 6,10 12,9 18,11 24,10 30,12 36,11 44,12",  ico: "dot"  },
-  { r: 14, n: "Chainlink",        s: "LINK", p: 14.80,     mc: 9.1e9,   vol: 0.6e9,   c: 2.8,   c7: 4.2,   up: true,  u7: true,  sp: "0,14 6,12 12,10 18,11 24,8 30,6 36,5 44,4",    ico: "link" },
-  { r: 15, n: "Litecoin",         s: "LTC",  p: 84.60,     mc: 6.3e9,   vol: 0.5e9,   c: 1.4,   c7: 3.6,   up: true,  u7: true,  sp: "0,12 6,11 12,13 18,10 24,9 30,8 36,7 44,6",    ico: "ltc"  },
-  { r: 16, n: "NEAR Protocol",    s: "NEAR", p: 4.82,      mc: 5.8e9,   vol: 0.4e9,   c: 3.4,   c7: 6.2,   up: true,  u7: true,  sp: "0,15 6,13 12,11 18,9 24,7 30,8 36,5 44,3",     ico: "near" },
-  { r: 17, n: "Uniswap",          s: "UNI",  p: 6.78,      mc: 4.1e9,   vol: 0.3e9,   c: -2.1,  c7: -4.5,  up: false, u7: false, sp: "0,6 6,8 12,7 18,10 24,12 30,11 36,14 44,13",   ico: "uni"  },
-  { r: 18, n: "Polygon",          s: "MATIC",p: 0.62,      mc: 5.8e9,   vol: 0.5e9,   c: -1.4,  c7: -3.2,  up: false, u7: false, sp: "0,8 6,9 12,11 18,13 24,12 30,14 36,13 44,14",  ico: "matic"},
-  { r: 19, n: "Cosmos",           s: "ATOM", p: 7.24,      mc: 2.8e9,   vol: 0.2e9,   c: -0.9,  c7: -3.1,  up: false, u7: false, sp: "0,8 6,9 12,7 18,10 24,12 30,10 36,13 44,12",   ico: "atom" },
-  { r: 20, n: "Ethereum Classic", s: "ETC",  p: 26.40,     mc: 3.8e9,   vol: 0.3e9,   c: 1.8,   c7: 4.1,   up: true,  u7: true,  sp: "0,13 6,11 12,14 18,10 24,8 30,10 36,7 44,5",   ico: "etc"  },
-  { r: 21, n: "Stellar",          s: "XLM",  p: 0.108,     mc: 3.2e9,   vol: 0.2e9,   c: 1.7,   c7: 2.9,   up: true,  u7: true,  sp: "0,14 6,12 12,14 18,10 24,8 30,10 36,6 44,5",   ico: "xlm"  },
-  { r: 22, n: "Monero",           s: "XMR",  p: 218.50,    mc: 4.0e9,   vol: 0.2e9,   c: 0.8,   c7: 2.1,   up: true,  u7: true,  sp: "0,11 6,10 12,12 18,9 24,8 30,10 36,7 44,6",    ico: "xmr"  },
-  { r: 23, n: "Hedera",           s: "HBAR", p: 0.214,     mc: 8.5e9,   vol: 0.7e9,   c: 5.6,   c7: 11.2,  up: true,  u7: true,  sp: "0,17 6,14 12,12 18,9 24,7 30,8 36,5 44,2",     ico: "hbar" },
-  { r: 24, n: "Optimism",         s: "OP",   p: 1.54,      mc: 1.6e9,   vol: 0.2e9,   c: -3.9,  c7: -5.8,  up: false, u7: false, sp: "0,5 6,7 12,6 18,9 24,11 30,13 36,15 44,16",    ico: "op"   },
-  { r: 25, n: "Filecoin",         s: "FIL",  p: 4.12,      mc: 2.4e9,   vol: 0.2e9,   c: -4.5,  c7: -7.2,  up: false, u7: false, sp: "0,4 6,6 12,8 18,10 24,12 30,14 36,15 44,16",   ico: "fil"  },
-  { r: 26, n: "Arbitrum",         s: "ARB",  p: 0.58,      mc: 2.3e9,   vol: 0.3e9,   c: -2.4,  c7: -4.8,  up: false, u7: false, sp: "0,6 6,8 12,10 18,12 24,11 30,13 36,14 44,15",  ico: "arb"  },
-  { r: 27, n: "Aptos",            s: "APT",  p: 8.24,      mc: 4.2e9,   vol: 0.4e9,   c: -7.2,  c7: -9.1,  up: false, u7: false, sp: "0,3 6,5 12,7 18,10 24,13 30,15 36,16 44,17",   ico: "apt"  },
-  { r: 28, n: "VeChain",          s: "VET",  p: 0.038,     mc: 2.8e9,   vol: 0.2e9,   c: 2.1,   c7: 4.6,   up: true,  u7: true,  sp: "0,14 6,12 12,10 18,8 24,9 30,7 36,5 44,4",     ico: "vet"  },
-  { r: 29, n: "Injective",        s: "INJ",  p: 24.18,     mc: 2.3e9,   vol: 0.5e9,   c: 9.7,   c7: 14.2,  up: true,  u7: true,  sp: "0,18 6,15 12,12 18,9 24,6 30,7 36,4 44,2",     ico: "inj"  },
-  { r: 30, n: "Render",           s: "RNDR", p: 7.42,      mc: 3.1e9,   vol: 0.4e9,   c: 12.1,  c7: 18.4,  up: true,  u7: true,  sp: "0,19 6,16 12,13 18,10 24,7 30,8 36,4 44,1",    ico: "rndr" },
+  { r: 1,  n: "Bitcoin",          s: "BTC",  p: 84231,     mc: 1.67e12, vol: 32.1e9,  c: 2.4,   c1: 0.3,  c7: 5.8,   up: true,  u7: true,  cs: 19.84e6,   sp: "0,14 6,12 12,16 18,10 24,8 30,11 36,6 44,4",   ico: "btc"  },
+  { r: 2,  n: "Ethereum",         s: "ETH",  p: 1842,      mc: 221e9,   vol: 14.2e9,  c: 1.9,   c1: 0.2,  c7: 3.2,   up: true,  u7: true,  cs: 120.2e6,   sp: "0,12 6,10 12,14 18,8 24,9 30,6 36,7 44,4",    ico: "eth"  },
+  { r: 3,  n: "Tether",           s: "USDT", p: 1.00,      mc: 121.3e9, vol: 88.4e9,  c: 0.01,  c1: 0.0,  c7: 0.02,  up: true,  u7: true,  cs: 121.3e9,   sp: "0,10 6,10 12,10 18,10 24,10 30,10 36,10 44,10", ico: "usdt" },
+  { r: 4,  n: "BNB",              s: "BNB",  p: 587.40,    mc: 85.1e9,  vol: 2.1e9,   c: 0.6,   c1: -0.1, c7: 1.4,   up: true,  u7: true,  cs: 145.0e6,   sp: "0,10 6,9 12,11 18,8 24,10 30,7 36,8 44,6",    ico: "bnb"  },
+  { r: 5,  n: "Solana",           s: "SOL",  p: 134.20,    mc: 61.4e9,  vol: 4.8e9,   c: -0.8,  c1: -0.3, c7: -2.1,  up: false, u7: false, cs: 457.0e6,   sp: "0,6 6,8 12,5 18,10 24,12 30,9 36,14 44,12",   ico: "sol"  },
+  { r: 6,  n: "USD Coin",         s: "USDC", p: 1.00,      mc: 39.2e9,  vol: 12.8e9,  c: 0.01,  c1: 0.0,  c7: 0.01,  up: true,  u7: true,  cs: 39.2e9,    sp: "0,10 6,10 12,10 18,10 24,10 30,10 36,10 44,10", ico: "usdc" },
+  { r: 7,  n: "XRP",              s: "XRP",  p: 1.33,      mc: 76.2e9,  vol: 5.4e9,   c: -4.1,  c1: -0.9, c7: -6.8,  up: false, u7: false, cs: 57.2e9,    sp: "0,4 6,6 12,5 18,8 24,12 30,14 36,16 44,15",   ico: "xrp"  },
+  { r: 8,  n: "Dogecoin",         s: "DOGE", p: 0.081,     mc: 11.8e9,  vol: 1.2e9,   c: -1.2,  c1: -0.4, c7: 0.4,   up: false, u7: true,  cs: 145.3e9,   sp: "0,8 6,10 12,7 18,12 24,11 30,13 36,12 44,14",  ico: "doge" },
+  { r: 9,  n: "Tron",             s: "TRX",  p: 0.244,     mc: 21.0e9,  vol: 0.9e9,   c: 1.2,   c1: 0.2,  c7: 2.8,   up: true,  u7: true,  cs: 86.0e9,    sp: "0,12 6,11 12,13 18,10 24,9 30,11 36,8 44,7",   ico: "trx"  },
+  { r: 10, n: "Cardano",          s: "ADA",  p: 0.42,      mc: 14.8e9,  vol: 0.9e9,   c: 3.1,   c1: 0.8,  c7: 7.4,   up: true,  u7: true,  cs: 35.2e9,    sp: "0,16 6,14 12,12 18,10 24,8 30,9 36,6 44,4",    ico: "ada"  },
+  { r: 11, n: "Avalanche",        s: "AVAX", p: 28.40,     mc: 11.6e9,  vol: 0.8e9,   c: 4.7,   c1: 1.2,  c7: 8.1,   up: true,  u7: true,  cs: 408.9e6,   sp: "0,18 6,14 12,12 18,10 24,8 30,7 36,5 44,2",    ico: "avax" },
+  { r: 12, n: "Shiba Inu",        s: "SHIB", p: 0.0000124, mc: 7.3e9,   vol: 1.1e9,   c: 5.2,   c1: 1.4,  c7: 12.3,  up: true,  u7: true,  cs: 589.5e12,  sp: "0,16 6,14 12,10 18,8 24,6 30,8 36,4 44,2",     ico: "shib" },
+  { r: 13, n: "Polkadot",         s: "DOT",  p: 5.12,      mc: 7.3e9,   vol: 0.4e9,   c: -0.4,  c1: -0.1, c7: -1.8,  up: false, u7: false, cs: 1.43e9,    sp: "0,8 6,10 12,9 18,11 24,10 30,12 36,11 44,12",  ico: "dot"  },
+  { r: 14, n: "Chainlink",        s: "LINK", p: 14.80,     mc: 9.1e9,   vol: 0.6e9,   c: 2.8,   c1: 0.7,  c7: 4.2,   up: true,  u7: true,  cs: 614.9e6,   sp: "0,14 6,12 12,10 18,11 24,8 30,6 36,5 44,4",    ico: "link" },
+  { r: 15, n: "Litecoin",         s: "LTC",  p: 84.60,     mc: 6.3e9,   vol: 0.5e9,   c: 1.4,   c1: 0.3,  c7: 3.6,   up: true,  u7: true,  cs: 74.9e6,    sp: "0,12 6,11 12,13 18,10 24,9 30,8 36,7 44,6",    ico: "ltc"  },
+  { r: 16, n: "NEAR Protocol",    s: "NEAR", p: 4.82,      mc: 5.8e9,   vol: 0.4e9,   c: 3.4,   c1: 0.8,  c7: 6.2,   up: true,  u7: true,  cs: 1.2e9,     sp: "0,15 6,13 12,11 18,9 24,7 30,8 36,5 44,3",     ico: "near" },
+  { r: 17, n: "Uniswap",          s: "UNI",  p: 6.78,      mc: 4.1e9,   vol: 0.3e9,   c: -2.1,  c1: -0.5, c7: -4.5,  up: false, u7: false, cs: 600.5e6,   sp: "0,6 6,8 12,7 18,10 24,12 30,11 36,14 44,13",   ico: "uni"  },
+  { r: 18, n: "Polygon",          s: "MATIC",p: 0.62,      mc: 5.8e9,   vol: 0.5e9,   c: -1.4,  c1: -0.3, c7: -3.2,  up: false, u7: false, cs: 9.3e9,     sp: "0,8 6,9 12,11 18,13 24,12 30,14 36,13 44,14",  ico: "matic"},
+  { r: 19, n: "Cosmos",           s: "ATOM", p: 7.24,      mc: 2.8e9,   vol: 0.2e9,   c: -0.9,  c1: -0.2, c7: -3.1,  up: false, u7: false, cs: 387.4e6,   sp: "0,8 6,9 12,7 18,10 24,12 30,10 36,13 44,12",   ico: "atom" },
+  { r: 20, n: "Ethereum Classic", s: "ETC",  p: 26.40,     mc: 3.8e9,   vol: 0.3e9,   c: 1.8,   c1: 0.4,  c7: 4.1,   up: true,  u7: true,  cs: 147.6e6,   sp: "0,13 6,11 12,14 18,10 24,8 30,10 36,7 44,5",   ico: "etc"  },
+  { r: 21, n: "Stellar",          s: "XLM",  p: 0.108,     mc: 3.2e9,   vol: 0.2e9,   c: 1.7,   c1: 0.4,  c7: 2.9,   up: true,  u7: true,  cs: 29.5e9,    sp: "0,14 6,12 12,14 18,10 24,8 30,10 36,6 44,5",   ico: "xlm"  },
+  { r: 22, n: "Monero",           s: "XMR",  p: 218.50,    mc: 4.0e9,   vol: 0.2e9,   c: 0.8,   c1: 0.2,  c7: 2.1,   up: true,  u7: true,  cs: 18.4e6,    sp: "0,11 6,10 12,12 18,9 24,8 30,10 36,7 44,6",    ico: "xmr"  },
+  { r: 23, n: "Hedera",           s: "HBAR", p: 0.214,     mc: 8.5e9,   vol: 0.7e9,   c: 5.6,   c1: 1.8,  c7: 11.2,  up: true,  u7: true,  cs: 39.7e9,    sp: "0,17 6,14 12,12 18,9 24,7 30,8 36,5 44,2",     ico: "hbar" },
+  { r: 24, n: "Optimism",         s: "OP",   p: 1.54,      mc: 1.6e9,   vol: 0.2e9,   c: -3.9,  c1: -1.2, c7: -5.8,  up: false, u7: false, cs: 1.04e9,    sp: "0,5 6,7 12,6 18,9 24,11 30,13 36,15 44,16",    ico: "op"   },
+  { r: 25, n: "Filecoin",         s: "FIL",  p: 4.12,      mc: 2.4e9,   vol: 0.2e9,   c: -4.5,  c1: -1.5, c7: -7.2,  up: false, u7: false, cs: 583.0e6,   sp: "0,4 6,6 12,8 18,10 24,12 30,14 36,15 44,16",   ico: "fil"  },
+  { r: 26, n: "Arbitrum",         s: "ARB",  p: 0.58,      mc: 2.3e9,   vol: 0.3e9,   c: -2.4,  c1: -0.7, c7: -4.8,  up: false, u7: false, cs: 3.97e9,    sp: "0,6 6,8 12,10 18,12 24,11 30,13 36,14 44,15",  ico: "arb"  },
+  { r: 27, n: "Aptos",            s: "APT",  p: 8.24,      mc: 4.2e9,   vol: 0.4e9,   c: -7.2,  c1: -2.1, c7: -9.1,  up: false, u7: false, cs: 510.4e6,   sp: "0,3 6,5 12,7 18,10 24,13 30,15 36,16 44,17",   ico: "apt"  },
+  { r: 28, n: "VeChain",          s: "VET",  p: 0.038,     mc: 2.8e9,   vol: 0.2e9,   c: 2.1,   c1: 0.5,  c7: 4.6,   up: true,  u7: true,  cs: 72.7e9,    sp: "0,14 6,12 12,10 18,8 24,9 30,7 36,5 44,4",     ico: "vet"  },
+  { r: 29, n: "Injective",        s: "INJ",  p: 24.18,     mc: 2.3e9,   vol: 0.5e9,   c: 9.7,   c1: 2.4,  c7: 14.2,  up: true,  u7: true,  cs: 95.1e6,    sp: "0,18 6,15 12,12 18,9 24,6 30,7 36,4 44,2",     ico: "inj"  },
+  { r: 30, n: "Render",           s: "RNDR", p: 7.42,      mc: 3.1e9,   vol: 0.4e9,   c: 12.1,  c1: 3.2,  c7: 18.4,  up: true,  u7: true,  cs: 418.0e6,   sp: "0,19 6,16 12,13 18,10 24,7 30,8 36,4 44,1",    ico: "rndr" },
 ];
 
 const HERO_STATS = [
@@ -56,6 +56,13 @@ function fmt(v: number, eur: boolean) {
   if (val >= 1)    return sym + val.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   if (val >= 0.01) return sym + val.toFixed(3);
   return sym + val.toFixed(7);
+}
+
+function fmtSup(v: number, sym: string) {
+  if (v >= 1e12) return (v / 1e12).toFixed(2) + "T " + sym;
+  if (v >= 1e9)  return (v / 1e9).toFixed(1)  + "B " + sym;
+  if (v >= 1e6)  return (v / 1e6).toFixed(2)  + "M " + sym;
+  return v.toLocaleString("en-US") + " " + sym;
 }
 
 function CoinIcon({ sym }: { sym: string }) {
@@ -83,36 +90,7 @@ export default function PricesView() {
   const [query, setQuery]       = useState("");
   const [eur, setEur]           = useState(false);
   const [page, setPage]         = useState(1);
-  const [watched, setWatched]   = useState<Set<string>>(new Set());
-  const [toggling, setToggling] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetch("/api/watchlist")
-      .then(r => r.ok ? r.json() : [])
-      .then((list: { coin_symbol: string }[]) => {
-        if (Array.isArray(list)) setWatched(new Set(list.map(c => c.coin_symbol)));
-      })
-      .catch(() => {});
-  }, []);
-
-  async function toggleWatch(sym: string, name: string) {
-    if (toggling) return;
-    setToggling(sym);
-    try {
-      if (watched.has(sym)) {
-        const res = await fetch(`/api/watchlist?symbol=${sym}`, { method: "DELETE" });
-        if (res.ok) setWatched(prev => { const s = new Set(prev); s.delete(sym); return s; });
-      } else {
-        const res = await fetch("/api/watchlist", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ coin_symbol: sym, coin_name: name }),
-        });
-        if (res.ok) setWatched(prev => new Set(prev).add(sym));
-      }
-    } catch { /* noop */ }
-    setToggling(null);
-  }
+  const [expanded, setExpanded] = useState<string | null>(null);
 
   const filtered = ALL_COINS.filter(
     (c) =>
@@ -145,8 +123,8 @@ export default function PricesView() {
   return (
     <div className="pr-root">
 
-      {/* ── 5 hero stats ──────────────────────────────── */}
-      <div className="pr-5grid">
+      {/* ── 4 hero stats ──────────────────────────────── */}
+      <div className="mtr-4grid">
         {HERO_STATS.map((s) => (
           <div key={s.label} className="glass pr-hero-cell">
             <div className="pr-hero-label">{s.label}</div>
@@ -194,11 +172,13 @@ export default function PricesView() {
             <div className="pr-table-head-full">
               <span>#</span><span>Name</span>
               <span className="text-right">Price</span>
-              <span className="text-right">24h</span>
-              <span className="text-right">7d</span>
+              <span className="text-right">1h %</span>
+              <span className="text-right">24h %</span>
+              <span className="text-right">7d %</span>
               <span className="text-right">Market Cap</span>
-              <span className="text-right">Volume</span>
-              <span className="text-right">Chart</span>
+              <span className="text-right">Volume (24h)</span>
+              <span className="text-right">Circ. Supply</span>
+              <span className="text-right">Last 7 Days</span>
               <span></span>
             </div>
             {/* Mobile head */}
@@ -206,64 +186,132 @@ export default function PricesView() {
               <span>#</span><span>Name</span>
               <span className="text-right">Price</span>
               <span className="text-right">24h</span>
-              <span></span>
             </div>
 
             {paged.length === 0 && <div className="pr-no-results">No coins found</div>}
 
-            {paged.map((c) => (
-              <div key={c.s} className="pr-coin-row-full">
-                <span className="pr-rank">{c.r}</span>
+            {paged.map((c) => {
+              const isOpen = expanded === c.s;
+              return (
+                <div key={c.s}>
+                  <div
+                    className={`pr-coin-row-full${isOpen ? " pr-coin-row-open" : ""}`}
+                    onClick={() => setExpanded(isOpen ? null : c.s)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <span className="pr-rank">{c.r}</span>
 
-                <div className="pr-coin-info">
-                  <div className="pr-coin-ico-wrap">
-                    <CoinIcon sym={c.s} />
-                    {/* Fallback letter avatar */}
-                    <span className="pr-coin-fallback" style={{ display: "none" }}>
-                      {c.s[0]}
-                    </span>
+                    <div className="pr-coin-info">
+                      <div className="pr-coin-ico-wrap">
+                        <CoinIcon sym={c.s} />
+                        <span className="pr-coin-fallback" style={{ display: "none" }}>{c.s[0]}</span>
+                      </div>
+                      <div>
+                        <div className="pr-coin-name" data-no-translate>
+                          {c.n}
+                          <span className="pr-mob-chevron">{isOpen ? " ▲" : " ▾"}</span>
+                        </div>
+                        <div className="pr-coin-sym" data-no-translate>{c.s}</div>
+                      </div>
+                    </div>
+
+                    <div className="pr-coin-price">{fmt(c.p, eur)}</div>
+
+                    <div className={`pr-chg-1h${c.c1 >= 0 ? " text-positive" : " text-negative"}`}>
+                      {c.c1 > 0 ? "+" : ""}{c.c1}%
+                    </div>
+
+                    <div className={`pr-chg${c.up ? " pr-chg-up" : " pr-chg-dn"}`}>
+                      {c.c > 0 ? "+" : ""}{c.c}%
+                    </div>
+
+                    <div className={`pr-chg-7d${c.u7 ? " text-positive" : " text-negative"}`}>
+                      {c.c7 > 0 ? "+" : ""}{c.c7}%
+                    </div>
+
+                    <div className="pr-coin-mc">{fmt(c.mc, eur)}</div>
+                    <div className="pr-coin-vol">{fmt(c.vol, eur)}</div>
+                    <div className="pr-coin-cs">{fmtSup(c.cs, c.s)}</div>
+
+                    <svg className="pr-spark" viewBox="0 0 44 20">
+                      <polyline points={c.sp} fill="none" stroke={c.u7 ? "#00d47b" : "#ff3b4f"} strokeWidth="1.5" strokeLinecap="round" />
+                    </svg>
+
+                    <Link href="/buy" className="pr-buy-btn" onClick={e => e.stopPropagation()}>Buy</Link>
                   </div>
-                  <div>
-                    <div className="pr-coin-name" data-no-translate>{c.n}</div>
-                    <div className="pr-coin-sym" data-no-translate>{c.s}</div>
+
+                  {/* Smooth accordion — always rendered, animated via CSS grid trick */}
+                  <div className={`pr-mob-expand-wrap${isOpen ? " pr-mob-expand-open" : ""}`}>
+                    <div className="pr-mob-expand-inner">
+                      <div className="pr-mob-expand-body">
+
+                        {/* Row 1: 1h% and 7d% */}
+                        <div className="pr-mob-pill-row">
+                          <div className="pr-mob-pill">
+                            <span className={`pr-mob-pill-val${c.c1 >= 0 ? " text-positive" : " text-negative"}`}>
+                              {c.c1 > 0 ? "+" : ""}{c.c1}%
+                            </span>
+                            <span className="pr-mob-pill-lbl">1h Change</span>
+                          </div>
+                          <div className="pr-mob-pill">
+                            <span className={`pr-mob-pill-val${c.u7 ? " text-positive" : " text-negative"}`}>
+                              {c.c7 > 0 ? "+" : ""}{c.c7}%
+                            </span>
+                            <span className="pr-mob-pill-lbl">7d Change</span>
+                          </div>
+                        </div>
+
+                        {/* Row 2: Market Cap and Volume */}
+                        <div className="pr-mob-pill-row">
+                          <div className="pr-mob-pill">
+                            <span className="pr-mob-pill-val">{fmt(c.mc, eur)}</span>
+                            <span className="pr-mob-pill-lbl">Market Cap</span>
+                          </div>
+                          <div className="pr-mob-pill">
+                            <span className="pr-mob-pill-val">{fmt(c.vol, eur)}</span>
+                            <span className="pr-mob-pill-lbl">Volume (24h)</span>
+                          </div>
+                        </div>
+
+                        {/* Row 3: Circ Supply full width */}
+                        <div className="pr-mob-pill pr-mob-pill-full">
+                          <span className="pr-mob-pill-val">{fmtSup(c.cs, c.s)}</span>
+                          <span className="pr-mob-pill-lbl">Circulating Supply</span>
+                        </div>
+
+                        {/* Sparkline with gradient fill */}
+                        <div className="pr-mob-chart-box">
+                          <span className="pr-mob-chart-lbl">Last 7 Days</span>
+                          <svg className="pr-mob-chart-svg" viewBox="0 0 44 20" preserveAspectRatio="none">
+                            <defs>
+                              <linearGradient id={`mgrad-${c.s}`} x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stopColor={c.u7 ? "#00d47b" : "#ff3b4f"} stopOpacity="0.35" />
+                                <stop offset="100%" stopColor={c.u7 ? "#00d47b" : "#ff3b4f"} stopOpacity="0" />
+                              </linearGradient>
+                            </defs>
+                            <polygon points={`0,20 ${c.sp} 44,20`} fill={`url(#mgrad-${c.s})`} />
+                            <polyline points={c.sp} fill="none" stroke={c.u7 ? "#00d47b" : "#ff3b4f"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        </div>
+
+                        {/* Buy button */}
+                        <div style={{ display: "flex", justifyContent: "center" }}>
+                          <Link
+                            href="/buy"
+                            className="pr-mob-buy-btn"
+                            onClick={e => e.stopPropagation()}
+                          >
+                            <span>Buy {c.n}</span>
+                            <span className="pr-mob-buy-arrow">→</span>
+                          </Link>
+                        </div>
+
+                      </div>
+                    </div>
                   </div>
                 </div>
-
-                <div className="pr-coin-price">{fmt(c.p, eur)}</div>
-
-                <div className={`pr-chg${c.up ? " pr-chg-up" : " pr-chg-dn"}`}>
-                  {c.c > 0 ? "+" : ""}{c.c}%
-                </div>
-
-                <div className={`pr-chg-7d${c.u7 ? " text-positive" : " text-negative"}`}>
-                  {c.c7 > 0 ? "+" : ""}{c.c7}%
-                </div>
-
-                <div className="pr-coin-mc">{fmt(c.mc, eur)}</div>
-                <div className="pr-coin-vol">{fmt(c.vol, eur)}</div>
-
-                <svg className="pr-spark" viewBox="0 0 44 20">
-                  <polyline
-                    points={c.sp}
-                    fill="none"
-                    stroke={c.u7 ? "#00d47b" : "#ff3b4f"}
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                  />
-                </svg>
-
-                <button
-                  onClick={() => toggleWatch(c.s, c.n)}
-                  disabled={toggling === c.s}
-                  title={watched.has(c.s) ? "Remove from watchlist" : "Add to watchlist"}
-                  className="w-7 h-7 rounded-[7px] flex items-center justify-center transition-all duration-150 cursor-pointer disabled:opacity-40"
-                  style={watched.has(c.s)
-                    ? { color: "#ff6a00", background: "rgba(255,106,0,0.1)", border: "0.5px solid rgba(255,106,0,0.25)" }
-                    : { color: "#555", background: "transparent", border: "0.5px solid transparent" }}>
-                  <Star size={13} fill={watched.has(c.s) ? "#ff6a00" : "none"} />
-                </button>
-              </div>
-            ))}
+              );
+            })}
 
             {/* ── Pagination ─────────────────────── */}
             {totalPages > 1 && (

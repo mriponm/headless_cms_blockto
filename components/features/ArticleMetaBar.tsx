@@ -3,9 +3,10 @@ import { Clock } from "lucide-react";
 import { useI18n } from "@/components/providers/I18nProvider";
 
 export default function ArticleMetaBar({
-  authorName, dateStr,
+  authorName, avatarUrl, dateStr,
 }: {
   authorName: string;
+  avatarUrl?: string;
   dateStr: string;
 }) {
   const { t } = useI18n();
@@ -16,7 +17,7 @@ export default function ArticleMetaBar({
       <div className="flex items-center gap-3 pb-5">
         {/* Avatar */}
         <div className="relative flex-shrink-0">
-          <div className="w-[40px] h-[40px] rounded-full overflow-hidden flex-shrink-0"
+          <div className="w-[40px] h-[40px] rounded-full overflow-hidden flex-shrink-0 bg-gradient-to-br from-[#ff6a00] to-[#ff8a30] flex items-center justify-center"
             style={{ boxShadow: "0 0 10px rgba(255,106,0,0.2)" }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/Tristan.jpeg" alt={authorName} className="w-full h-full object-cover" />

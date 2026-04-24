@@ -134,15 +134,14 @@ function SignInPanel({ onSwitch, onAuthComplete, onForgot, successMessage }: { o
       )}
       <div className="grid grid-cols-3 gap-1.5 mb-5">
         {[
-          { icon: "📈", value: "+4.2%", label: "watchlist 24h" },
-          { icon: "🔖", value: "18",    label: "unread saved"  },
-          { icon: "📋", value: "3",     label: "new AI briefs" },
+          { icon: "🗞️", label: "Latest News"    },
+          { icon: "🦾", label: "Best Indicators" },
+          { icon: "👀", label: "Live Prices"     },
         ].map((s) => (
           <div key={s.label} className="auth-stat-card rounded-[12px] py-3 px-2 text-center relative overflow-hidden">
             <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none" />
-            <div className="text-lg mb-1">{s.icon}</div>
-            <div className="text-[13px] font-extrabold font-[family-name:var(--font-data)] auth-heading">{s.value}</div>
-            <div className="text-[9px] auth-sub-text font-semibold mt-0.5">{s.label}</div>
+            <div className="text-lg mb-1.5">{s.icon}</div>
+            <div className="text-[11px] font-semibold text-white leading-[1.2] font-[family-name:var(--font-display)]">{s.label}</div>
           </div>
         ))}
       </div>

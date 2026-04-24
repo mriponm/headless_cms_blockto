@@ -22,7 +22,7 @@ const POST_FIELDS = `
   date
   excerpt
   featuredImage { node { sourceUrl } }
-  author { node { name } }
+  author { node { name avatar { url } } }
   categories { nodes { name slug } }
 `;
 

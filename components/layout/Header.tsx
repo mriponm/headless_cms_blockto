@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
-import { Bell, Search, Menu, ChevronDown } from "lucide-react";
+import { Bell, Search, Menu, ChevronDown, Bookmark, Star } from "lucide-react";
 import PriceTicker from "@/components/features/PriceTicker";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import BrandLogo from "@/components/ui/BrandLogo";
@@ -10,6 +10,7 @@ import MobileDrawer from "@/components/layout/MobileDrawer";
 import SearchOverlay from "@/components/ui/SearchOverlay";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import UserButton from "@/components/ui/UserButton";
+import AuthGateLink from "@/components/ui/AuthGateLink";
 
 const NAV = [
   { label: "News",      href: "/",        active: true, hasDropdown: true },
@@ -144,6 +145,22 @@ export default function Header() {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
+          <AuthGateLink
+            href="/saved"
+            icon={<Bookmark size={16} className="text-[#888]" />}
+            label="Saved Articles"
+            popupTitle="Save articles for later"
+            popupDesc="Sign in to bookmark articles, track your reading progress, and access your saved posts anywhere."
+            className="w-10 h-10 rounded-[10px] flex items-center justify-center cursor-pointer transition-all duration-200 theme-btn hover:border-[rgba(255,106,0,0.3)] hover:text-[#ff6a00]"
+          />
+          <AuthGateLink
+            href="/watchlist"
+            icon={<Star size={16} className="text-[#888]" />}
+            label="Watchlist"
+            popupTitle="Track your coins"
+            popupDesc="Sign in to build your personal watchlist and monitor your favourite cryptocurrencies in one place."
+            className="w-10 h-10 rounded-[10px] flex items-center justify-center cursor-pointer transition-all duration-200 theme-btn hover:border-[rgba(255,106,0,0.3)] hover:text-[#ff6a00]"
+          />
           <button
             className="relative w-10 h-10 rounded-[10px] flex items-center justify-center cursor-pointer transition-all duration-200 theme-btn hover:border-[rgba(255,106,0,0.3)] hover:text-[#ff6a00]"
             aria-label="Notifications"

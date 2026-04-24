@@ -77,15 +77,13 @@ export default function MetricsView() {
   return (
     <div className="mtr-root">
 
-      {/* ── Row 1: Bitcoin hero ─────────────────── */}
-      <div className="mtr-stat glass mtr-stat-hero" style={{ marginBottom: 8 }}>
-        <div className="mtr-stat-label mtr-stat-label-hero">Bitcoin</div>
-        <div className="mtr-stat-val mtr-stat-val-hero">$84,231</div>
-        <div className="mtr-stat-sub text-positive">▲ +$1,972 (2.4%) today</div>
-      </div>
-
-      {/* ── Row 2: 4 stat cards ─────────────────── */}
+      {/* ── Row 1: 4 stat cards (BTC + 3 market stats) ── */}
       <div className="mtr-4grid">
+        <div className="mtr-stat glass" style={{ borderColor: "rgba(255,106,0,0.15)", background: "linear-gradient(135deg,rgba(255,106,0,0.06),transparent)" }}>
+          <div className="mtr-stat-label mtr-stat-label-hero">Bitcoin</div>
+          <div className="mtr-stat-val mtr-stat-val-hero">$84,231</div>
+          <div className="mtr-stat-sub text-positive">▲ +$1,972 (2.4%) today</div>
+        </div>
         {SUB_STATS.map((s) => (
           <div key={s.label} className="mtr-stat glass">
             <div className="mtr-stat-label">{s.label}</div>

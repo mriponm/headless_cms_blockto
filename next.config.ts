@@ -9,6 +9,14 @@ const nextConfig: NextConfig = {
         hostname: "cms.blockto.io",
         pathname: "/wp-content/uploads/**",
       },
+      {
+        protocol: "https",
+        hostname: "secure.gravatar.com",
+      },
+      {
+        protocol: "https",
+        hostname: "*.gravatar.com",
+      },
     ],
   },
 };

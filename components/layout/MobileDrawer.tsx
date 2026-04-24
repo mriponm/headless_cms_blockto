@@ -7,7 +7,7 @@ import {
   X, Newspaper, TrendingUp, CircleDollarSign, CreditCard,
   Calendar, BarChart2, Info, Mail, Shield,
   ChevronDown, MessageSquare, Send, Globe, Check,
-  Sun, Moon,
+  Sun, Moon, Bookmark, Star,
 } from "lucide-react";
 import BrandLogo from "@/components/ui/BrandLogo";
 import { useI18n } from "@/components/providers/I18nProvider";
@@ -121,6 +121,80 @@ function NavItem({
     <Link href={href} onClick={onClose} className={`drawer-mi flex items-center gap-3.5 px-3 py-3 rounded-xl cursor-pointer transition-all duration-200 mb-0.5 relative ${isActive ? "drawer-mi-active" : ""}`}>
       {inner}
     </Link>
+  );
+}
+
+function DrawerAuthGateItem({
+  icon: Icon, label, href, popupTitle, popupDesc, me, openModal, onClose,
+}: {
+  icon: React.ElementType; label: string; href: string;
+  popupTitle: string; popupDesc: string;
+  me: { name?: string } | null; openModal: (tab: "signin" | "signup") => void; onClose: () => void;
+}) {
+  const [popupOpen, setPopupOpen] = useState(false);
+
+  if (me) {
+    return (
+      <Link href={href} onClick={onClose}
+        className="drawer-mi flex items-center gap-3.5 px-3 py-3 rounded-xl cursor-pointer transition-all duration-200 mb-0.5 relative">
+        <span className="drawer-ic-wrap w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0">
+          <Icon size={17} className="drawer-ic-svg" strokeWidth={2} />
+        </span>
+        <span className="text-[14px] font-semibold tracking-tight drawer-item-text">{label}</span>
+      </Link>
+    );
+  }
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setPopupOpen(v => !v)}
+        className="drawer-mi w-full flex items-center gap-3.5 px-3 py-3 rounded-xl cursor-pointer transition-all duration-200 mb-0.5 text-left">
+        <span className="drawer-ic-wrap w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0">
+          <Icon size={17} className="drawer-ic-svg" strokeWidth={2} />
+        </span>
+        <span className="flex-1 text-[14px] font-semibold tracking-tight drawer-item-text">{label}</span>
+        <span className="text-[9px] font-bold px-2 py-0.5 rounded-full border border-[rgba(255,106,0,0.25)] text-[var(--color-brand)] flex-shrink-0"
+          style={{ background: "rgba(255,106,0,0.06)" }}>
+          Login
+        </span>
+      </button>
+
+      {popupOpen && (
+        <div
+          className="mx-3 mb-2 rounded-[14px] p-4 relative overflow-hidden"
+          style={{
+            background: "rgba(255,106,0,0.05)",
+            border: "0.5px solid rgba(255,106,0,0.2)",
+          }}>
+          <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(255,106,0,0.3)] to-transparent pointer-events-none" />
+          <button
+            onClick={() => setPopupOpen(false)}
+            className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full flex items-center justify-center hover:bg-[rgba(255,255,255,0.06)] transition-all cursor-pointer"
+            style={{ color: "rgba(255,255,255,0.35)" }}>
+            <X size={10} />
+          </button>
+          <p className="text-[12px] font-extrabold text-white mb-0.5 pr-5 font-[family-name:var(--font-display)]">{popupTitle}</p>
+          <p className="text-[10px] leading-[1.5] mb-3 font-[family-name:var(--font-display)]" style={{ color: "rgba(255,255,255,0.45)" }}>
+            {popupDesc}
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => { setPopupOpen(false); onClose(); openModal("signin"); }}
+              className="flex-1 py-2 rounded-[9px] text-[11px] font-extrabold text-black cursor-pointer hover:brightness-110 transition-all font-[family-name:var(--font-display)]"
+              style={{ background: "linear-gradient(135deg,#ff6a00,#ff8a30)" }}>
+              Sign in
+            </button>
+            <button
+              onClick={() => { setPopupOpen(false); onClose(); openModal("signup"); }}
+              className="flex-1 py-2 rounded-[9px] text-[11px] font-bold cursor-pointer hover:bg-[rgba(255,255,255,0.05)] transition-all font-[family-name:var(--font-display)]"
+              style={{ color: "rgba(255,255,255,0.6)", border: "0.5px solid rgba(255,255,255,0.1)" }}>
+              Register
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -341,6 +415,18 @@ export default function MobileDrawer({ open, onClose }: Props) {
             {MAIN_NAV.map((item) => (
               <NavItem key={item.label} {...item} onClose={onClose} />
             ))}
+            <DrawerAuthGateItem
+              icon={Bookmark} label="Saved Articles" href="/saved"
+              popupTitle="Save articles for later"
+              popupDesc="Sign in to bookmark articles, track your reading progress, and access your saved posts anywhere."
+              me={me} openModal={openModal} onClose={onClose}
+            />
+            <DrawerAuthGateItem
+              icon={Star} label="Watchlist" href="/watchlist"
+              popupTitle="Track your coins"
+              popupDesc="Sign in to build your personal watchlist and monitor your favourite cryptocurrencies in one place."
+              me={me} openModal={openModal} onClose={onClose}
+            />
           </div>
 
           <Divider />

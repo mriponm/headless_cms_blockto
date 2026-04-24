@@ -6,7 +6,7 @@ export interface WPPost {
   excerpt: string;
   content?: string;
   featuredImage: { node: { sourceUrl: string } } | null;
-  author: { node: { name: string } };
+  author: { node: { name: string; avatar?: { url: string } } };
   categories: { nodes: WPCategory[] };
 }
 
