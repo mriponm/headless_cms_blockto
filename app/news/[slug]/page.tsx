@@ -3,6 +3,7 @@ import AuthorAvatar from "@/components/ui/AuthorAvatar";
 import Image from "next/image";
 import Link from "next/link";
 import { getPostBySlug, getPosts, primaryCategory, relativeDate, stripExcerpt } from "@/lib/wordpress/queries";
+import { pickAuthor } from "@/lib/authors";
 import ArticleInteractive from "@/components/features/ArticleInteractive";
 import ArticleImageActions from "@/components/features/ArticleImageActions";
 import ArticleMetaBar from "@/components/features/ArticleMetaBar";
@@ -133,8 +134,7 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
             }
             metaSlot={
               <ArticleMetaBar
-                authorName={post.author.node.name}
-                avatarUrl={post.author.node.avatar?.url}
+                slug={slug}
                 dateStr={dateStr}
               />
             }
@@ -153,7 +153,7 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
             tags={post.categories.nodes}
             postTitle={post.title}
             postUrl={postUrl}
-            authorName={post.author.node.name}
+            slug={slug}
           />
 
           {/* Similar/related news — always last */}
@@ -188,8 +188,8 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
                           </p>
                         </div>
                         <div className="flex items-center gap-1.5 text-[10px] art-sub-text font-medium mt-1.5">
-                          <AuthorAvatar name={rp.author.node.name} avatarUrl={rp.author.node.avatar?.url} size={14} />
-                          {rp.author.node.name} · {relativeDate(rp.date)}
+                          <AuthorAvatar slug={rp.slug} size={14} />
+                          {pickAuthor(rp.slug).name} · {relativeDate(rp.date)}
                         </div>
                       </div>
                     </Link>

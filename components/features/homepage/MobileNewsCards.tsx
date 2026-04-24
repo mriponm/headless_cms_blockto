@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import SectionLabel from "@/components/ui/SectionLabel";
 import AuthorAvatar from "@/components/ui/AuthorAvatar";
+import { pickAuthor } from "@/lib/authors";
 import TranslatedText from "@/components/ui/TranslatedText";
 import type { WPPost } from "@/lib/wordpress/types";
 import { relativeDate, primaryCategory } from "@/lib/wordpress/queries";
@@ -45,8 +46,8 @@ function ListCard({ post }: { post: WPPost }) {
             {cat.name.toUpperCase()}
           </span>
           <span className="flex items-center gap-1 text-[10px] text-[#888] font-medium font-[family-name:var(--font-display)]">
-            <AuthorAvatar name={post.author.node.name} avatarUrl={post.author.node.avatar?.url} size={14} />
-            <span data-no-translate>{post.author.node.name}</span>
+            <AuthorAvatar slug={post.slug} size={14} />
+            <span data-no-translate>{pickAuthor(post.slug).name}</span>
           </span>
           <span className="flex items-center gap-1 text-[10px] text-[#666] font-medium font-[family-name:var(--font-display)] before:content-[''] before:w-[3px] before:h-[3px] before:bg-[#444] before:rounded-full">
             {relativeDate(post.date)}
@@ -77,8 +78,8 @@ function HScrollCard({ post, index, accentColor, accentBg, accentBorder }: {
         {cat.name.toUpperCase()}
       </span>
       <span className="flex items-center gap-1 text-[9px] text-[#666] font-medium font-[family-name:var(--font-display)]">
-        <AuthorAvatar name={post.author.node.name} avatarUrl={post.author.node.avatar?.url} size={12} />
-        <span data-no-translate>{post.author.node.name}</span> · {relativeDate(post.date)}
+        <AuthorAvatar slug={post.slug} size={12} />
+        <span data-no-translate>{pickAuthor(post.slug).name}</span> · {relativeDate(post.date)}
       </span>
     </Link>
   );

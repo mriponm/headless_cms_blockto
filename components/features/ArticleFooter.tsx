@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { Check, ExternalLink } from "lucide-react";
 import { useI18n } from "@/components/providers/I18nProvider";
+import { pickAuthor } from "@/lib/authors";
 
 function XIcon() {
   return (
@@ -38,10 +39,11 @@ interface Props {
   tags: Tag[];
   postTitle: string;
   postUrl: string;
-  authorName: string;
+  slug: string;
 }
 
-export default function ArticleFooter({ tags, postTitle, postUrl, authorName }: Props) {
+export default function ArticleFooter({ tags, postTitle, postUrl, slug }: Props) {
+  const author = pickAuthor(slug);
   const [copied, setCopied] = useState(false);
   const { t } = useI18n();
 
@@ -154,11 +156,11 @@ export default function ArticleFooter({ tags, postTitle, postUrl, authorName }: 
           <div className="w-[56px] h-[56px] rounded-full overflow-hidden flex-shrink-0"
             style={{ boxShadow: "0 0 16px rgba(255,106,0,0.3)" }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/Tristan.jpeg" alt={authorName} className="w-full h-full object-cover" />
+            <img src={author.image} alt={author.name} className="w-full h-full object-cover" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-1.5 mb-0.5">
-              <span className="text-[15px] font-extrabold art-heading font-[family-name:var(--font-display)]">{authorName}</span>
+              <span className="text-[15px] font-extrabold art-heading font-[family-name:var(--font-display)]">{author.name}</span>
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" className="flex-shrink-0">
                 <circle cx="12" cy="12" r="12" fill="#1d9bf0"/>
                 <path d="M9.5 16.5l-3-3 1.4-1.4 1.6 1.6 5.1-5.1 1.4 1.4z" fill="#fff"/>
@@ -167,7 +169,7 @@ export default function ArticleFooter({ tags, postTitle, postUrl, authorName }: 
           </div>
         </div>
         <p className="text-[12px] text-[#999] leading-[1.55] font-medium relative z-10 font-[family-name:var(--font-display)]">
-          {t("footer.authorBio")}
+          {author.bio}
         </p>
       </div>
 

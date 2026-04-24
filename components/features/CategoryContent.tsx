@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import AuthorAvatar from "@/components/ui/AuthorAvatar";
+import { pickAuthor } from "@/lib/authors";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -115,8 +116,8 @@ function FeaturedCard({ post }: { post: WPPost }) {
         </p>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-[11px] art-sub-text font-medium">
-            <AuthorAvatar name={post.author.node.name} avatarUrl={post.author.node.avatar?.url} size={22} />
-            <span data-no-translate>{post.author.node.name}</span> · {relativeDate(post.date)}
+            <AuthorAvatar slug={post.slug} size={22} />
+            <span data-no-translate>{pickAuthor(post.slug).name}</span> · {relativeDate(post.date)}
           </div>
           <div className="flex items-center gap-1.5 text-[10px] art-sub-text font-semibold px-2 py-1 rounded-[7px] art-tag-pill font-[family-name:var(--font-data)]">
             <Clock size={10} />
@@ -152,8 +153,8 @@ function ListCard({ post }: { post: WPPost }) {
           </p>
         </div>
         <div className="flex items-center gap-2 text-[10px] art-sub-text font-medium mt-1.5">
-          <AuthorAvatar name={post.author.node.name} avatarUrl={post.author.node.avatar?.url} size={16} />
-          {post.author.node.name} · {relativeDate(post.date)}
+          <AuthorAvatar slug={post.slug} size={16} />
+          {pickAuthor(post.slug).name} · {relativeDate(post.date)}
           <span className="ml-auto flex items-center gap-1 font-[family-name:var(--font-data)]">
             <Clock size={9} />3 min
           </span>

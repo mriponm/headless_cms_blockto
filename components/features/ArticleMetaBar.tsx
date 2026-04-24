@@ -1,15 +1,16 @@
 "use client";
 import { Clock } from "lucide-react";
 import { useI18n } from "@/components/providers/I18nProvider";
+import { pickAuthor } from "@/lib/authors";
 
 export default function ArticleMetaBar({
-  authorName, avatarUrl, dateStr,
+  slug, dateStr,
 }: {
-  authorName: string;
-  avatarUrl?: string;
+  slug: string;
   dateStr: string;
 }) {
   const { t } = useI18n();
+  const author = pickAuthor(slug);
 
   return (
     <div>
@@ -20,7 +21,7 @@ export default function ArticleMetaBar({
           <div className="w-[40px] h-[40px] rounded-full overflow-hidden flex-shrink-0 bg-gradient-to-br from-[#ff6a00] to-[#ff8a30] flex items-center justify-center"
             style={{ boxShadow: "0 0 10px rgba(255,106,0,0.2)" }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/Tristan.jpeg" alt={authorName} className="w-full h-full object-cover" />
+            <img src={author.image} alt={author.name} className="w-full h-full object-cover" />
           </div>
           <div className="absolute bottom-[-2px] right-[-2px] w-[15px] h-[15px] rounded-full bg-[#4a9eff] flex items-center justify-center border-[1.5px] border-black z-10">
             <svg width="7" height="7" viewBox="0 0 10 10" fill="none">
@@ -32,10 +33,10 @@ export default function ArticleMetaBar({
         {/* Author info */}
         <div className="flex-1 min-w-0">
           <span className="text-[13px] font-bold art-heading font-[family-name:var(--font-display)]">
-            {t("article.by")} <span data-no-translate>{authorName}</span>
+            {t("article.by")} <span data-no-translate>{author.name}</span>
           </span>
           <p className="text-[10px] art-author-role font-medium mt-0.5 font-[family-name:var(--font-display)]">
-            {t("article.seniorAnalyst")} · {dateStr}
+            {author.role} · {dateStr}
           </p>
         </div>
 

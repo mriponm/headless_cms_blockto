@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import SectionLabel from "@/components/ui/SectionLabel";
 import AuthorAvatar from "@/components/ui/AuthorAvatar";
+import { pickAuthor } from "@/lib/authors";
 import TranslatedText from "@/components/ui/TranslatedText";
 import type { WPPost } from "@/lib/wordpress/types";
 import { relativeDate, primaryCategory } from "@/lib/wordpress/queries";
@@ -47,8 +48,8 @@ function FeaturedCard({ post, accentColor, accentBg, accentBorder, accentGrad }:
           <TranslatedText text={post.title} />
         </h3>
         <div className="flex items-center gap-2 text-[10px] art-sub-text font-medium">
-          <AuthorAvatar name={post.author.node.name} avatarUrl={post.author.node.avatar?.url} size={20} />
-          <span data-no-translate>{post.author.node.name}</span> · {relativeDate(post.date)}
+          <AuthorAvatar slug={post.slug} size={20} />
+          <span data-no-translate>{pickAuthor(post.slug).name}</span> · {relativeDate(post.date)}
         </div>
       </div>
     </Link>
@@ -81,8 +82,8 @@ function ListCard({ post, accentColor, accentBg, accentBorder, accentGrad }: {
           <TranslatedText text={post.title} />
         </p>
         <div className="flex items-center gap-1.5 text-[10px] art-sub-text font-medium">
-          <AuthorAvatar name={post.author.node.name} avatarUrl={post.author.node.avatar?.url} size={14} />
-          <span data-no-translate>{post.author.node.name}</span> · {relativeDate(post.date)}
+          <AuthorAvatar slug={post.slug} size={14} />
+          <span data-no-translate>{pickAuthor(post.slug).name}</span> · {relativeDate(post.date)}
         </div>
       </div>
     </Link>

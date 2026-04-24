@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import SectionLabel from "@/components/ui/SectionLabel";
 import AuthorAvatar from "@/components/ui/AuthorAvatar";
+import { pickAuthor } from "@/lib/authors";
 import TranslatedText from "@/components/ui/TranslatedText";
 import type { WPPost } from "@/lib/wordpress/types";
 import { relativeDate, primaryCategory } from "@/lib/wordpress/queries";
@@ -66,8 +67,8 @@ export default function HeroSection({ posts }: { posts: WPPost[] }) {
                 <TranslatedText text={hero.title} />
               </h1>
               <div className="flex items-center gap-2 text-[12px] text-[#ccc] font-medium">
-                <AuthorAvatar name={hero.author.node.name} avatarUrl={hero.author.node.avatar?.url} size={26} />
-                <span className="text-[#ddd]" data-no-translate>{hero.author.node.name}</span>
+                <AuthorAvatar slug={hero.slug} size={26} />
+                <span className="text-[#ddd]" data-no-translate>{pickAuthor(hero.slug).name}</span>
                 <span className="text-[#555]">·</span>
                 <span className="text-[#888]">4 min read</span>
               </div>
