@@ -23,12 +23,7 @@ function openGooglePopup(onComplete: () => void) {
   popup?.focus();
 }
 
-const inputCls = [
-  "w-full px-4 py-3 rounded-[11px] text-[13px] font-medium outline-none transition-all duration-150",
-  "bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)]",
-  "text-[var(--color-text)] placeholder-[#555]",
-  "focus:border-[rgba(255,106,0,0.5)] focus:bg-[rgba(255,106,0,0.03)]",
-].join(" ");
+const inputCls = "auth-input-field w-full px-4 py-3 rounded-[11px] text-[13px] font-medium transition-all duration-150";
 
 const btnCls = "w-full flex items-center justify-center gap-2 py-[14px] px-5 rounded-[13px] text-[14px] font-extrabold text-black font-[family-name:var(--font-display)] transition-all duration-150 hover:-translate-y-0.5 relative overflow-hidden disabled:opacity-60";
 const btnStyle = { background: "linear-gradient(135deg,#ff6a00,#ff8a30)", boxShadow: "0 8px 24px rgba(255,106,0,0.3),0 2px 6px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.3)" };
@@ -141,7 +136,7 @@ function SignInPanel({ onSwitch, onAuthComplete, onForgot, successMessage }: { o
           <div key={s.label} className="auth-stat-card rounded-[12px] py-3 px-2 text-center relative overflow-hidden">
             <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none" />
             <div className="text-lg mb-1.5">{s.icon}</div>
-            <div className="text-[11px] font-semibold text-white leading-[1.2] font-[family-name:var(--font-display)]">{s.label}</div>
+            <div className="text-[11px] font-semibold auth-text leading-[1.2] font-[family-name:var(--font-display)]">{s.label}</div>
           </div>
         ))}
       </div>
@@ -336,7 +331,7 @@ export default function AuthModal() {
         <div className="flex items-center justify-between px-4 pt-4 pb-3 flex-shrink-0 gap-2">
           <BrandLogo height={28} />
           {!isForgot && (
-            <div className="flex items-center gap-1 bg-[rgba(255,255,255,0.04)] rounded-[10px] p-1 border border-[rgba(255,255,255,0.06)] flex-shrink-0">
+            <div className="auth-tab-wrap flex items-center gap-1 rounded-[10px] p-1 flex-shrink-0">
               <button onClick={() => { setMode("signin"); setShowForgot(false); }}
                 className={`px-3 py-1.5 rounded-[8px] text-[11px] font-bold transition-all duration-150 cursor-pointer whitespace-nowrap ${
                   mode === "signin" ? "bg-gradient-to-br from-[#ff6a00] to-[#ff8a30] text-black shadow-[0_0_12px_rgba(255,106,0,0.3)]" : "auth-tab-inactive"
