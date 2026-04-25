@@ -29,10 +29,10 @@ export default function HeroSection({ posts }: { posts: WPPost[] }) {
         {/* ── Hero card ── */}
         {hero && (
           <Link href={`/news/${hero.slug}`}
-            className="hero-card relative rounded-[20px] overflow-hidden cursor-pointer border border-[rgba(255,255,255,0.07)] group block">
-            {/* Full-bleed image */}
-            <div className="h-[220px] lg:h-[290px] relative overflow-hidden"
-              style={{ background: "linear-gradient(135deg, rgba(255,106,0,0.18) 0%, rgba(255,80,0,0.08) 50%, rgba(0,0,0,0.95) 100%)" }}>
+            className="hero-card relative rounded-[20px] overflow-hidden cursor-pointer border border-[rgba(255,255,255,0.07)] group block flex flex-col">
+            {/* Image */}
+            <div className="h-[220px] lg:h-[290px] relative overflow-hidden flex-shrink-0"
+              style={{ background: "linear-gradient(135deg, rgba(255,106,0,0.12) 0%, rgba(0,0,0,0.9) 100%)" }}>
               {hero.featuredImage && (
                 <Image
                   src={hero.featuredImage.node.sourceUrl}
@@ -43,34 +43,27 @@ export default function HeroSection({ posts }: { posts: WPPost[] }) {
                   priority
                 />
               )}
-              {/* Brand gradient overlay */}
-              <div className="absolute inset-0" style={{
-                background: "linear-gradient(to bottom, rgba(255,106,0,0.06) 0%, transparent 30%, rgba(10,6,2,0.6) 60%, rgba(15,8,2,0.97) 100%)"
-              }} />
+              {/* FEATURED badge */}
+              <div className="absolute top-4 left-4 z-10 text-[10px] font-extrabold text-black px-3 py-[6px] rounded-[8px] tracking-[1px] font-[family-name:var(--font-display)]"
+                style={{ background: "var(--gradient-brand)", boxShadow: "0 4px 14px rgba(255,106,0,0.4)" }}>
+                FEATURED
+              </div>
+              {/* Time badge */}
+              <div className="absolute top-4 right-4 z-10 flex items-center gap-1.5 text-[10px] font-semibold text-white bg-black/60 backdrop-blur-[10px] px-3 py-[6px] rounded-[8px] border border-white/10">
+                <span className="w-[5px] h-[5px] rounded-full bg-[#00d47b] shadow-[0_0_8px_#00d47b] pls-anim" />
+                {relativeDate(hero.date)}
+              </div>
             </div>
 
-            {/* FEATURED badge */}
-            <div className="absolute top-4 left-4 z-10 text-[10px] font-extrabold text-black px-3 py-[6px] rounded-[8px] tracking-[1px] font-[family-name:var(--font-display)]"
-              style={{ background: "var(--gradient-brand)", boxShadow: "0 4px 14px rgba(255,106,0,0.4)" }}>
-              FEATURED
-            </div>
-
-            {/* Time badge */}
-            <div className="absolute top-4 right-4 z-10 flex items-center gap-1.5 text-[10px] font-semibold text-white bg-black/60 backdrop-blur-[10px] px-3 py-[6px] rounded-[8px] border border-white/10">
-              <span className="w-[5px] h-[5px] rounded-full bg-[#00d47b] shadow-[0_0_8px_#00d47b] pls-anim" />
-              {relativeDate(hero.date)}
-            </div>
-
-            {/* Title + author overlaid at bottom */}
-            <div className="absolute bottom-0 left-0 right-0 px-5 pt-4 pb-6 lg:px-7 lg:pt-5 lg:pb-8 z-10">
-              <h1 className="text-white text-[16px] lg:text-[22px] font-extrabold tracking-[-0.5px] leading-[1.2] mb-3 font-[family-name:var(--font-display)] line-clamp-3">
+            {/* Title + author below image */}
+            <div className="flex-1 p-4 lg:p-5 hp-card hero-sec-divider" style={{ borderRadius: 0 }}>
+              <h1 className="hero-sec-title text-[16px] lg:text-[20px] font-extrabold tracking-[-0.5px] leading-[1.25] mb-3 font-[family-name:var(--font-display)] line-clamp-3">
                 <TranslatedText text={hero.title} />
               </h1>
-              <div className="flex items-center gap-2 text-[12px] text-[#ccc] font-medium">
-                <AuthorAvatar slug={hero.slug} size={26} />
-                <span className="text-[#ddd]" data-no-translate>{pickAuthor(hero.slug).name}</span>
-                <span className="text-[#555]">·</span>
-                <span className="text-[#888]">4 min read</span>
+              <div className="flex items-center gap-2 text-[12px] font-medium">
+                <AuthorAvatar slug={hero.slug} size={22} />
+                <span className="hero-sec-title font-semibold text-[12px]" data-no-translate>{pickAuthor(hero.slug).name}</span>
+                <span className="text-[#888]">· 4 min read</span>
               </div>
             </div>
           </Link>

@@ -390,6 +390,7 @@ html.light .hero-card {
 .hero-sec-title { color: #ffffff; }
 html.light .hero-sec-title { color: #0a0a0a; }
 
+
 /* Hero secondary card content divider */
 .hero-sec-divider { border-top: 0.5px solid rgba(255,255,255,0.06); }
 html.light .hero-sec-divider { border-top-color: rgba(0,0,0,0.07); }

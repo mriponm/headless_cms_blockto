@@ -75,7 +75,7 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
               </div>
             )}
             {/* Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent from-40% to-black/85 to-100%" />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent from-50% to-black/50 to-100%" />
 
             {/* Category + time — top left */}
             <div className="absolute top-4 left-4 z-10 flex items-center gap-2">
