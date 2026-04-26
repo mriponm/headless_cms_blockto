@@ -36,7 +36,7 @@ export async function getPosts(first = 10, categorySlug?: string): Promise<WPPos
       }
     }
   `);
-  return data.posts.nodes;
+  return data?.posts?.nodes ?? [];
 }
 
 export async function getPostBySlug(slug: string): Promise<WPPost | null> {
@@ -48,7 +48,7 @@ export async function getPostBySlug(slug: string): Promise<WPPost | null> {
       }
     }
   `);
-  return data.post;
+  return data?.post ?? null;
 }
 
 export async function getCategories(): Promise<WPCategory[]> {
@@ -59,7 +59,7 @@ export async function getCategories(): Promise<WPCategory[]> {
       }
     }
   `);
-  return data.categories.nodes.filter(
+  return (data?.categories?.nodes ?? []).filter(
     (c) => c.count && c.count > 0 && c.slug !== "uncategorized"
   );
 }

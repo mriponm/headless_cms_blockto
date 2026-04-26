@@ -3,24 +3,34 @@ const WP_API = process.env.NEXT_PUBLIC_WP_API as string;
 export async function fetchGraphQL<T = unknown>(
   query: string,
   variables?: Record<string, unknown>
-): Promise<T> {
-  const res = await fetch(WP_API, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ query, variables }),
-    next: { revalidate: 60 },
-  });
-
-  if (!res.ok) {
-    throw new Error(`WPGraphQL request failed: ${res.status} ${res.statusText}`);
+): Promise<T | null> {
+  if (!WP_API) {
+    console.error("[WPGraphQL] NEXT_PUBLIC_WP_API is not set");
+    return null;
   }
+  try {
+    const res = await fetch(WP_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query, variables }),
+      next: { revalidate: 60 },
+    });
 
-  const json = await res.json();
+    if (!res.ok) {
+      console.error(`[WPGraphQL] request failed: ${res.status} ${res.statusText}`);
+      return null;
+    }
 
-  if (json.errors) {
-    console.error("[WPGraphQL] errors:", json.errors);
-    throw new Error(json.errors[0]?.message ?? "GraphQL error");
+    const json = await res.json();
+
+    if (json.errors) {
+      console.error("[WPGraphQL] errors:", json.errors);
+      return null;
+    }
+
+    return json.data as T;
+  } catch (err) {
+    console.error("[WPGraphQL] fetch error:", err);
+    return null;
   }
-
-  return json.data as T;
 }
