@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getPosts, getCategories } from "@/lib/wordpress/queries";
 import CategoryContent from "@/components/features/CategoryContent";
 

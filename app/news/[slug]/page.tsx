@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { notFound } from "next/navigation";
 import AuthorAvatar from "@/components/ui/AuthorAvatar";
 import Image from "next/image";

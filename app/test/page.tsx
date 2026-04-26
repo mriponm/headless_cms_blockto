@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getPosts } from "@/lib/wordpress/queries";
 
 export const metadata = { title: "CMS Test — Blockto" };
