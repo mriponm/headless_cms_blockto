@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BASE = "https://api.coingecko.com/api/v3";
+const CG_KEY = process.env.COINGECKO_PRO_API_KEY;
+const BASE   = "https://pro-api.coingecko.com/api/v3";
 
-// CoinGecko OHLC accepts specific day values only
 const VALID_OHLC_DAYS = new Set(["1", "7", "14", "30", "90", "180", "365", "max"]);
 
 export async function GET(
@@ -16,15 +16,17 @@ export async function GET(
 
   try {
     let url: string;
-
     if (type === "ohlc") {
-      const ohlcDays = VALID_OHLC_DAYS.has(days) ? days : "1";
-      url = `${BASE}/coins/${id}/ohlc?vs_currency=usd&days=${ohlcDays}`;
+      const d = VALID_OHLC_DAYS.has(days) ? days : "1";
+      url = `${BASE}/coins/${id}/ohlc?vs_currency=usd&days=${d}`;
     } else {
-      url = `${BASE}/coins/${id}/market_chart?vs_currency=usd&days=${days}&precision=4`;
+      url = `${BASE}/coins/${id}/market_chart?vs_currency=usd&days=${days}&precision=6`;
     }
 
-    const res = await fetch(url, { next: { revalidate: 0 } });
+    const res = await fetch(url, {
+      headers: { "x-cg-pro-api-key": CG_KEY!, Accept: "application/json" },
+      next: { revalidate: 60 },
+    });
 
     if (!res.ok) {
       return NextResponse.json({ error: "Chart data unavailable" }, { status: res.status });
@@ -32,7 +34,7 @@ export async function GET(
 
     const data = await res.json();
     return NextResponse.json(data);
-  } catch {
-    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+  } catch (err) {
+    return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }

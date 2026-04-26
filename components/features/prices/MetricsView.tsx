@@ -1,8 +1,10 @@
 "use client";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import useSWR from "swr";
 import RainbowChart from "./RainbowChart";
 import { COIN_ICONS } from "./coinIcons";
+import { COIN_IDS } from "@/lib/coinIds";
 import { usePriceStore } from "@/lib/store/priceStore";
 import { formatPrice, formatDollarCompact, formatPercent } from "@/lib/utils/formatters";
 
@@ -37,11 +39,13 @@ interface MempoolData {
 }
 
 interface FuturesData {
-  longLiquidations: number;
-  shortLiquidations: number;
-  total: number;
-  largestSingle: number;
-  openInterest: number;
+  oiValueUSD:  number;
+  oiChange24h: number;
+  buyVolUSD:   number;
+  sellVolUSD:  number;
+  lsRatio:     number;
+  longPct:     number;
+  shortPct:    number;
   fundingRate: number;
 }
 
@@ -58,11 +62,22 @@ interface DefiData {
 }
 
 interface MarketCoin {
-  id: string; symbol: string; name: string;
+  id: string; symbol: string; name: string; image?: string;
   current_price: number;
   price_change_percentage_24h_in_currency?: number;
   price_change_percentage_24h: number;
   price_change_percentage_30d_in_currency?: number;
+}
+
+// Enriched gainers/losers — Binance price data + CoinGecko metadata
+interface BinanceCoin {
+  symbol:    string;
+  price:     number;
+  change24h: number;
+  volume24h: number;
+  cgId?:     string;
+  name?:     string;
+  image?:    string;
 }
 
 // ── Helpers ──────────────────────────────────────────────────
@@ -82,30 +97,45 @@ function formatCountdown(halvingDate: string, now: number) {
   return `~${d}d ${h}h`;
 }
 
-// ── Coin row ─────────────────────────────────────────────────
-function CoinRow({ coin, type }: {
-  coin: { name: string; symbol: string; price: number; chg: number };
-  type: "up" | "dn";
-}) {
-  const sym = coin.symbol.toUpperCase();
-  return (
-    <div className="mtr-coin-row">
+// ── Coin row — icon + link from pre-enriched route data ──────
+function CoinRow({ coin, type }: { coin: BinanceCoin; type: "up" | "dn" }) {
+  const sym  = coin.symbol.toUpperCase();
+  // cgId and image come from the enriched gainers route (CoinGecko top 250)
+  const icon = coin.image || (COIN_ICONS as Record<string, string>)[sym];
+  const id   = coin.cgId  || COIN_IDS[sym];
+  const href = id ? `/coins/${id}` : null;
+  const displayName = coin.name || sym;
+
+  const inner = (
+    <div className={`mtr-coin-row${href ? " hover:bg-white/[0.02] transition-colors cursor-pointer" : ""}`}>
       <div className="flex items-center gap-2.5">
         <div className="mtr-ico-wrap">
-          {COIN_ICONS[sym]
-            ? <img src={COIN_ICONS[sym]} alt={sym} width={28} height={28} className="mtr-ico-img"
-                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-            : <span className="mtr-ico" style={{ background: "rgba(255,106,0,0.1)", color: "#ff6a00" }}>{sym[0]}</span>}
+          {icon ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={icon} alt={sym} width={28} height={28} className="mtr-ico-img"
+              onError={(e) => {
+                const img = e.target as HTMLImageElement;
+                img.style.display = "none";
+                const fb = img.nextElementSibling as HTMLElement | null;
+                if (fb) fb.style.display = "flex";
+              }} />
+          ) : null}
+          <span className="mtr-ico" style={{
+            background: "rgba(255,106,0,0.1)", color: "#ff6a00",
+            display: icon ? "none" : "flex",
+          }}>{sym[0]}</span>
         </div>
         <div>
-          <div className="mtr-nm" data-no-translate>{coin.name}</div>
+          <div className="mtr-nm" data-no-translate>{displayName}</div>
           <div className="mtr-sy" data-no-translate>{sym}</div>
         </div>
       </div>
       <div className="mtr-pr">{formatPrice(coin.price)}</div>
-      <div className={`mtr-chg ${type}`}>{formatPercent(coin.chg)}</div>
+      <div className={`mtr-chg ${type}`}>{formatPercent(coin.change24h)}</div>
     </div>
   );
+
+  return href ? <Link href={href} className="block">{inner}</Link> : inner;
 }
 
 // ── Skeleton ─────────────────────────────────────────────────
@@ -133,7 +163,7 @@ export default function MetricsView() {
   const { data: gas }    = useSWR<GasData>("/api/gas", fetcher, { refreshInterval: 30_000, keepPreviousData: true });
   const { data: defi }   = useSWR<DefiData>("/api/defillama", fetcher, { refreshInterval: 3_600_000, keepPreviousData: true });
   const { data: markets }= useSWR<MarketCoin[]>("/api/markets", fetcher, { refreshInterval: 60_000, keepPreviousData: true });
-  const { data: gainersData } = useSWR<{ gainers: MarketCoin[]; losers: MarketCoin[] }>("/api/gainers", fetcher, { refreshInterval: 60_000, keepPreviousData: true });
+  const { data: gainersData } = useSWR<{ gainers: BinanceCoin[]; losers: BinanceCoin[] }>("/api/gainers", fetcher, { refreshInterval: 60_000, keepPreviousData: true });
 
   // Derived values
   const q = global?.quote?.USD;
@@ -142,17 +172,25 @@ export default function MetricsView() {
   const btcPrice  = prices["BTCUSDT"] ?? 0;
   const btcChange = changes["BTCUSDT"] ?? 0;
 
-  // Altcoin season: % of top 50 alts that outperformed BTC 30d
-  const altcoinSeason = (() => {
-    if (!markets) return null;
-    const stableSymbols = new Set(["USDT", "USDC", "BUSD", "DAI", "TUSD", "USDP", "FRAX"]);
-    const alts = markets
-      .filter((c) => c.symbol.toUpperCase() !== "BTC" && !stableSymbols.has(c.symbol.toUpperCase()))
-      .slice(0, 50);
-    const btcCoin = markets.find((c) => c.symbol.toUpperCase() === "BTC");
-    const btc30d = btcCoin?.price_change_percentage_30d_in_currency ?? 0;
-    const outperformed = alts.filter((c) => (c.price_change_percentage_30d_in_currency ?? 0) > btc30d).length;
-    return Math.round((outperformed / Math.max(alts.length, 1)) * 100);
+  // Altcoin season — computed instantly from CoinGecko 30d data (zero loading)
+  // Methodology: % of top 100 alts that outperformed BTC over 30 days
+  const { altcoinSeason, altcoinLabel, altcoinNote } = (() => {
+    if (!markets) return { altcoinSeason: null, altcoinLabel: null, altcoinNote: "" };
+    const STABLES = new Set(["USDT","USDC","BUSD","DAI","TUSD","FDUSD","USDE","USDP","FRAX"]);
+    const btc = markets.find((c) => c.symbol.toUpperCase() === "BTC");
+    const btc30d = btc?.price_change_percentage_30d_in_currency ?? 0;
+    const alts = markets.filter(
+      (c) => c.symbol.toUpperCase() !== "BTC" && !STABLES.has(c.symbol.toUpperCase())
+    ).slice(0, 100);
+    const valid = alts.filter((c) => c.price_change_percentage_30d_in_currency != null);
+    const out   = valid.filter((c) => (c.price_change_percentage_30d_in_currency ?? 0) > btc30d);
+    const idx   = valid.length > 0 ? Math.round((out.length / valid.length) * 100) : 0;
+    const label = idx >= 75 ? "Altcoin Season" : idx >= 55 ? "Altcoin Month" : idx >= 45 ? "Neutral" : idx >= 25 ? "Bitcoin Month" : "Bitcoin Season";
+    return {
+      altcoinSeason: idx,
+      altcoinLabel:  label,
+      altcoinNote:   `${out.length} of ${valid.length} alts outperformed BTC over 30 days`,
+    };
   })();
 
   const otherDom = Math.max(0, 100 - btcDom - ethDom);
@@ -315,50 +353,37 @@ export default function MetricsView() {
               <div className="mtr-as-fill" style={{ width: `${altcoinSeason ?? 0}%` }} />
             </div>
             <div className="mtr-as-lbl"><span>BTC season</span><span>Altcoin season</span></div>
-            {altcoinSeason !== null && (
+            {altcoinNote && (
               <p className="mtr-as-note" style={{ marginTop: 12 }}>
-                {altcoinSeason}% of top 50 altcoins outperformed BTC over the last 30 days.
+                {altcoinNote}
               </p>
             )}
             <div className="mtr-alt-badge">
-              {altcoinSeason === null ? "Loading…" : altcoinSeason >= 75 ? "Altcoin Season" : altcoinSeason >= 50 ? "Neutral" : "Bitcoin Season"}
+              {altcoinLabel ?? "Loading…"}
             </div>
           </div>
         </div>
 
       </div>
 
-      {/* ── Gainers / Losers — live CMC Pro ── */}
+      {/* ── Gainers / Losers — live Binance (exchange-listed only) ── */}
       <div className="mtr-sec">Market movers</div>
       <div className="mtr-duo-grid">
         <div className="glass-strong mtr-card">
           <div className="mtr-card-head">
             <span className="mtr-card-title">Top <span className="gradient-text-alt">gainers</span></span>
-            <span className="mtr-card-sub">24h</span>
+            <span className="mtr-card-sub">24h · Binance</span>
           </div>
           <div className="mtr-card-body">
             <div>
               <div className="mtr-col-head"><span>Asset</span><span className="text-right">Price</span><span className="text-right">24h</span></div>
               {gainersData?.gainers
                 ? gainersData.gainers.slice(0, 5).map((c) => (
-                    <CoinRow key={c.id} type="up" coin={{
-                      name: c.name, symbol: c.symbol,
-                      price: prices[`${c.symbol.toUpperCase()}USDT`] ?? c.current_price,
-                      chg: c.price_change_percentage_24h,
-                    }} />
+                    <CoinRow key={c.symbol} type="up"
+                      coin={{ ...c, price: prices[`${c.symbol}USDT`] ?? c.price }}
+                    />
                   ))
-                : markets
-                  ? [...markets].sort((a, b) => b.price_change_percentage_24h - a.price_change_percentage_24h)
-                      .filter((c) => c.symbol.toUpperCase() !== "BTC")
-                      .slice(0, 5)
-                      .map((c) => (
-                        <CoinRow key={c.id} type="up" coin={{
-                          name: c.name, symbol: c.symbol,
-                          price: prices[`${c.symbol.toUpperCase()}USDT`] ?? c.current_price,
-                          chg: c.price_change_percentage_24h,
-                        }} />
-                      ))
-                  : [0,1,2,3,4].map(i => <div key={i} className="mtr-coin-row"><Skeleton h={36} /></div>)
+                : [0,1,2,3,4].map(i => <div key={i} className="mtr-coin-row"><Skeleton h={36} /></div>)
               }
             </div>
           </div>
@@ -366,70 +391,61 @@ export default function MetricsView() {
         <div className="glass-strong mtr-card">
           <div className="mtr-card-head">
             <span className="mtr-card-title">Top <span className="gradient-text-alt">losers</span></span>
-            <span className="mtr-card-sub">24h</span>
+            <span className="mtr-card-sub">24h · Binance</span>
           </div>
           <div className="mtr-card-body">
             <div>
               <div className="mtr-col-head"><span>Asset</span><span className="text-right">Price</span><span className="text-right">24h</span></div>
               {gainersData?.losers
                 ? gainersData.losers.slice(0, 5).map((c) => (
-                    <CoinRow key={c.id} type="dn" coin={{
-                      name: c.name, symbol: c.symbol,
-                      price: prices[`${c.symbol.toUpperCase()}USDT`] ?? c.current_price,
-                      chg: c.price_change_percentage_24h,
-                    }} />
+                    <CoinRow key={c.symbol} type="dn"
+                      coin={{ ...c, price: prices[`${c.symbol}USDT`] ?? c.price }}
+                    />
                   ))
-                : markets
-                  ? [...markets].sort((a, b) => a.price_change_percentage_24h - b.price_change_percentage_24h)
-                      .filter((c) => c.symbol.toUpperCase() !== "BTC")
-                      .slice(0, 5)
-                      .map((c) => (
-                        <CoinRow key={c.id} type="dn" coin={{
-                          name: c.name, symbol: c.symbol,
-                          price: prices[`${c.symbol.toUpperCase()}USDT`] ?? c.current_price,
-                          chg: c.price_change_percentage_24h,
-                        }} />
-                      ))
-                  : [0,1,2,3,4].map(i => <div key={i} className="mtr-coin-row"><Skeleton h={36} /></div>)
+                : [0,1,2,3,4].map(i => <div key={i} className="mtr-coin-row"><Skeleton h={36} /></div>)
               }
             </div>
           </div>
         </div>
       </div>
 
-      {/* ── Liquidations — live Binance Futures ── */}
+      {/* ── Derivatives — live Binance Futures public API ── */}
       <div className="mtr-sec">Derivatives &amp; leverage</div>
       <div className="glass-strong mtr-card">
         <div className="mtr-card-head">
-          <span className="mtr-card-title">Liquidations <span className="gradient-text-alt">24h</span></span>
+          <span className="mtr-card-title">BTC <span className="gradient-text-alt">derivatives</span></span>
+          <span className="mtr-card-sub">24h · Binance</span>
         </div>
         <div className="mtr-card-body">
+          {/* Taker buy/sell volumes — long/short pressure */}
           <div className="mtr-liq-row">
             <div className="mtr-liq-c mtr-liq-long">
-              <div className="mtr-liq-label" style={{ color: "#00d47b" }}>Longs</div>
+              <div className="mtr-liq-label" style={{ color: "#00d47b" }}>Buy volume</div>
               <div className="mtr-liq-val" style={{ color: "#00d47b" }}>
-                {futures ? formatDollarCompact(futures.longLiquidations) : <Skeleton h={24} />}
+                {futures ? formatDollarCompact(futures.buyVolUSD) : <Skeleton h={24} />}
               </div>
             </div>
             <div className="mtr-liq-c mtr-liq-short">
-              <div className="mtr-liq-label" style={{ color: "#ff3b4f" }}>Shorts</div>
+              <div className="mtr-liq-label" style={{ color: "#ff3b4f" }}>Sell volume</div>
               <div className="mtr-liq-val" style={{ color: "#ff3b4f" }}>
-                {futures ? formatDollarCompact(futures.shortLiquidations) : <Skeleton h={24} />}
+                {futures ? formatDollarCompact(futures.sellVolUSD) : <Skeleton h={24} />}
               </div>
             </div>
           </div>
           <div className="mtr-ng-grid">
             {futures ? [
-              { k: "Largest single",  v: formatDollarCompact(futures.largestSingle), c: "#ff3b4f" },
-              { k: "Total liquidated",v: formatDollarCompact(futures.total) },
-              { k: "BTC funding",     v: `${futures.fundingRate >= 0 ? "+" : ""}${(futures.fundingRate * 100).toFixed(4)}%`, c: futures.fundingRate >= 0 ? "#00d47b" : "#ff3b4f" },
-              { k: "Open interest",   v: formatDollarCompact(futures.openInterest * (btcPrice || 1)) },
+              { k: "Open interest",    v: formatDollarCompact(futures.oiValueUSD) },
+              { k: "OI change 24h",    v: `${futures.oiChange24h >= 0 ? "+" : ""}${futures.oiChange24h.toFixed(2)}%`, c: futures.oiChange24h >= 0 ? "#00d47b" : "#ff3b4f" },
+              { k: "BTC funding rate", v: `${futures.fundingRate >= 0 ? "+" : ""}${(futures.fundingRate * 100).toFixed(4)}%`, c: futures.fundingRate >= 0 ? "#00d47b" : "#ff3b4f" },
+              { k: "Long accounts",    v: `${futures.longPct.toFixed(1)}%`, c: "#00d47b" },
+              { k: "Short accounts",   v: `${futures.shortPct.toFixed(1)}%`, c: "#ff3b4f" },
+              { k: "L/S ratio",        v: futures.lsRatio.toFixed(4), c: futures.lsRatio >= 1 ? "#00d47b" : "#ff3b4f" },
             ].map((n) => (
               <div key={n.k} className="mtr-ng-cell">
                 <div className="mtr-ng-key">{n.k}</div>
                 <div className="mtr-ng-val" style={n.c ? { color: n.c } : {}}>{n.v}</div>
               </div>
-            )) : [0,1,2,3].map(i => <div key={i} className="mtr-ng-cell"><Skeleton h={40} /></div>)}
+            )) : [0,1,2,3,4,5].map(i => <div key={i} className="mtr-ng-cell"><Skeleton h={40} /></div>)}
           </div>
         </div>
       </div>
@@ -508,7 +524,7 @@ export default function MetricsView() {
             ].map((g) => (
               <div key={g.tier} className={`mtr-gas-cell mtr-gas-${g.cls}`}>
                 <div className="mtr-gas-tier">{g.tier}</div>
-                <div className="mtr-gas-val">{g.val}</div>
+                <div className="mtr-gas-val">{typeof g.val === "number" ? g.val.toFixed(2) : g.val}</div>
                 <div className="mtr-gas-time">{g.time}</div>
               </div>
             )) : [0,1,2].map(i => <div key={i} className="mtr-gas-cell"><Skeleton h={60} /></div>)}

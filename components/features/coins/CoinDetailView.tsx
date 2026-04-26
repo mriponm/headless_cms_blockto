@@ -11,6 +11,7 @@ import { useAuthModal } from "@/components/providers/AuthModalProvider";
 import { formatPrice, formatPercent, formatDollarCompact } from "@/lib/utils/formatters";
 import type { WPPost } from "@/lib/wordpress/types";
 import CoinChart, { type HoverData } from "./CoinChart";
+import AlertModal from "@/components/features/alerts/AlertModal";
 import { TF_TO_INTERVAL, BINANCE_SYMBOLS } from "@/lib/binanceSymbols";
 import { usePriceStore } from "@/lib/store/priceStore";
 
@@ -82,7 +83,7 @@ function SparkMini({ prices, w = 90, h = 40 }: { prices: number[]; w?: number; h
   );
 }
 
-const TFS = ["1D", "1W", "1M", "3M", "1Y", "ALL"] as const;
+const TFS = ["4H", "1D", "1W", "1M", "3M", "1Y", "ALL"] as const;
 type TfLabel = typeof TFS[number];
 
 // Glass card reused throughout
@@ -119,6 +120,7 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
   const isLight = resolved === "light";
   const { openModal } = useAuthModal();
 
+  const [showChart, setShowChart]       = useState(true);
   const [chartType, setChartType]       = useState<"candles" | "line">("candles");
   const [tfLabel, setTfLabel]           = useState<TfLabel>("1D");
   const [indicators, setIndicators]     = useState<string[]>(["EMA"]);
@@ -126,14 +128,15 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
   const [inWatchlist, setInWatchlist]   = useState(false);
   const [watchLoading, setWatchLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn]     = useState(false);
+  const [alertOpen, setAlertOpen]       = useState(false);
   const [copied, setCopied]             = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
   const [chartHeight, setChartHeight]   = useState(280);
 
-  // Live price from global Binance WS store (no per-coin socket needed)
-  const binSym = BINANCE_SYMBOLS[coin.id];
-  const livePrice  = usePriceStore((s) => binSym ? s.prices[binSym] ?? null : null);
-  const priceFlash = usePriceStore((s) => binSym ? s.flash[binSym] ?? null : null);
+  // Live price — try explicit map first, then symbol-based fallback (covers any Binance-listed coin)
+  const binSym = BINANCE_SYMBOLS[coin.id] ?? `${coin.symbol.toUpperCase()}USDT`;
+  const livePrice  = usePriceStore((s) => s.prices[binSym] ?? null);
+  const priceFlash = usePriceStore((s) => s.flash[binSym] ?? null);
 
   useEffect(() => {
     const upd = () => setChartHeight(window.innerWidth >= 1024 ? 400 : 280);
@@ -145,10 +148,10 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
   // Live price comes from global Binance combined WS via priceStore — no per-coin socket needed
 
   const md       = coin.market_data;
-  const price    = livePrice ?? md.current_price.usd;
-  const change   = md.price_change_percentage_24h;
-  const change1h = md.price_change_percentage_1h_in_currency?.usd ?? 0;
-  const change7d = md.price_change_percentage_7d_in_currency?.usd ?? 0;
+  const price    = livePrice ?? md?.current_price?.usd ?? 0;
+  const change   = md?.price_change_percentage_24h ?? 0;
+  const change1h = md?.price_change_percentage_1h_in_currency?.usd ?? 0;
+  const change7d = md?.price_change_percentage_7d_in_currency?.usd ?? 0;
   const isUp     = change >= 0;
   const sym      = coin.symbol.toUpperCase();
   const description = stripHtml(coin.description?.en ?? "");
@@ -200,13 +203,13 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
   ];
 
   const marketRows = [
-    { label: "Market Cap",         val: formatDollarCompact(md.market_cap.usd),   sub: `${pct(md.market_cap_change_percentage_24h)} 24h` },
-    { label: "24h Volume",         val: formatDollarCompact(md.total_volume.usd), sub: "" },
-    { label: "FDV",                val: md.fully_diluted_valuation?.usd ? formatDollarCompact(md.fully_diluted_valuation.usd) : "∞", sub: "" },
-    { label: "Circulating Supply", val: `${(md.circulating_supply / 1e6).toFixed(2)}M ${sym}`, sub: md.max_supply ? `${((md.circulating_supply / md.max_supply) * 100).toFixed(1)}% of max` : "" },
-    { label: "Max Supply",         val: md.max_supply ? `${(md.max_supply / 1e6).toFixed(2)}M ${sym}` : "∞", sub: "" },
-    { label: "Today's High",       val: formatPrice(md.high_24h.usd),   sub: "" },
-    { label: "Today's Low",        val: formatPrice(md.low_24h.usd),    sub: "" },
+    { label: "Market Cap",         val: md?.market_cap?.usd ? formatDollarCompact(md.market_cap.usd) : "—", sub: `${pct(md?.market_cap_change_percentage_24h)} 24h` },
+    { label: "24h Volume",         val: md?.total_volume?.usd ? formatDollarCompact(md.total_volume.usd) : "—", sub: "" },
+    { label: "FDV",                val: md?.fully_diluted_valuation?.usd ? formatDollarCompact(md.fully_diluted_valuation.usd) : "∞", sub: "" },
+    { label: "Circulating Supply", val: md?.circulating_supply ? `${(md.circulating_supply / 1e6).toFixed(2)}M ${sym}` : "—", sub: md?.max_supply ? `${((md.circulating_supply / md.max_supply) * 100).toFixed(1)}% of max` : "" },
+    { label: "Max Supply",         val: md?.max_supply ? `${(md.max_supply / 1e6).toFixed(2)}M ${sym}` : "∞", sub: "" },
+    { label: "Today's High",       val: md?.high_24h?.usd ? formatPrice(md.high_24h.usd) : "—", sub: "" },
+    { label: "Today's Low",        val: md?.low_24h?.usd  ? formatPrice(md.low_24h.usd)  : "—", sub: "" },
   ];
 
   const socialLinks = [
@@ -325,6 +328,7 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
                 {inWatchlist ? "Watching" : "Watchlist"}
               </button>
               <button
+                onClick={() => setAlertOpen(true)}
                 className="flex items-center gap-1.5 px-4 py-2 rounded-[10px] text-[12px] font-extrabold border transition-all hover:bg-[rgba(255,106,0,0.08)] hover:border-[rgba(255,106,0,0.25)] hover:text-[#ff6a00] cursor-pointer font-[family-name:var(--font-display)]"
               style={{ color: "var(--color-muted)", borderColor: isLight ? "rgba(0,0,0,0.12)" : "rgba(255,255,255,0.12)", background: isLight ? "rgba(0,0,0,0.03)" : "rgba(255,255,255,0.03)" }}>
                 <Bell size={11} strokeWidth={2.2} /> Alert
@@ -344,7 +348,7 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
         <div className="flex flex-col gap-4 sm:gap-5 min-w-0">
 
           {/* Chart panel */}
-          <Card>
+          {showChart && <Card>
             <div className="p-3 sm:p-4 pb-3">
 
               {/* Chart header */}
@@ -352,7 +356,8 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
                 <div className="flex p-[3px] rounded-[10px] gap-0.5"
                   style={{ background: isLight ? "rgba(0,0,0,0.05)" : "rgba(0,0,0,0.4)", border: `0.5px solid ${isLight ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.06)"}` }}>
                   {(["candles", "line"] as const).map(t => (
-                    <button key={t} onClick={() => setChartType(t)}
+                    <button key={t}
+                      onClick={() => setChartType(t)}
                       className="flex items-center gap-1 px-2.5 py-[7px] rounded-[7px] text-[10px] font-bold cursor-pointer transition-all font-[family-name:var(--font-data)]"
                       style={chartType === t
                         ? { background: "linear-gradient(135deg,rgba(255,106,0,0.18),rgba(255,106,0,0.08))", color: "var(--color-brand)" }
@@ -400,18 +405,24 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
                     <span style={{ color: "var(--color-text)" }}>{chartHover?.value ?? formatPrice(price)}</span>
                   )}
                 </div>
-                {indicators.includes("EMA") && <span style={{ color: "#4a9eff" }}>EMA 20</span>}
+                <div className="flex items-center gap-2">
+                  {indicators.includes("EMA") && <span style={{ color: "#4a9eff", fontSize: 10, fontWeight: 700 }}>EMA 20</span>}
+                  {indicators.includes("RSI") && <span style={{ color: "#b16aff", fontSize: 10, fontWeight: 700 }}>RSI 14</span>}
+                </div>
               </div>
 
               {/* Chart */}
               <CoinChart
                 coinId={coin.id}
+                symbol={coin.symbol}
                 type={chartType}
                 interval={TF_TO_INTERVAL[tfLabel].interval}
                 limit={TF_TO_INTERVAL[tfLabel].limit}
                 isLight={isLight}
                 height={chartHeight}
                 onHoverChange={handleHover}
+                onNoChart={() => setShowChart(false)}
+                indicators={indicators}
               />
 
               {/* Timeframe bar */}
@@ -428,7 +439,7 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
                 ))}
               </div>
             </div>
-          </Card>
+          </Card>}
 
           {/* Performance */}
           <div>
@@ -450,8 +461,8 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
             {/* ATH / ATL */}
             <div className="grid grid-cols-2 gap-2 mt-2">
               {[
-                { label: "ALL-TIME HIGH", icon: <TrendingUp size={10} />, val: md.ath.usd, delta: md.ath_change_percentage.usd, date: md.ath_date.usd },
-                { label: "ALL-TIME LOW",  icon: <TrendingDown size={10} />, val: md.atl.usd, delta: md.atl_change_percentage.usd, date: md.atl_date.usd },
+                { label: "ALL-TIME HIGH", icon: <TrendingUp size={10} />, val: md?.ath?.usd ?? 0, delta: md?.ath_change_percentage?.usd ?? 0, date: md?.ath_date?.usd ?? "" },
+                { label: "ALL-TIME LOW",  icon: <TrendingDown size={10} />, val: md?.atl?.usd ?? 0, delta: md?.atl_change_percentage?.usd ?? 0, date: md?.atl_date?.usd ?? "" },
               ].map(item => (
                 <div key={item.label} className="profile-card p-3 rounded-[12px] relative overflow-hidden">
                   <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/5 to-transparent" />
@@ -644,12 +655,12 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
                   <span className="text-[8px] font-extrabold uppercase tracking-[1px] text-[#00d47b] font-[family-name:var(--font-data)]">All-Time High</span>
                 </div>
                 <p className="text-[18px] font-extrabold font-[family-name:var(--font-data)] leading-none mb-1.5" style={{ color: "var(--color-text)" }}>
-                  {formatPrice(md.ath.usd)}
+                  {md?.ath?.usd ? formatPrice(md.ath.usd) : "—"}
                 </p>
                 <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-bold font-[family-name:var(--font-data)] text-[#ff3b4f]">{pct(md.ath_change_percentage.usd)} from ATH</p>
+                  <p className="text-[10px] font-bold font-[family-name:var(--font-data)] text-[#ff3b4f]">{pct(md?.ath_change_percentage?.usd)} from ATH</p>
                   <p className="text-[9px] font-[family-name:var(--font-data)]" style={{ color: "#555" }}>
-                    {new Date(md.ath_date.usd).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                    {md?.ath_date?.usd ? new Date(md.ath_date.usd).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "—"}
                   </p>
                 </div>
               </div>
@@ -662,12 +673,12 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
                   <span className="text-[8px] font-extrabold uppercase tracking-[1px] text-[#ff3b4f] font-[family-name:var(--font-data)]">All-Time Low</span>
                 </div>
                 <p className="text-[18px] font-extrabold font-[family-name:var(--font-data)] leading-none mb-1.5" style={{ color: "var(--color-text)" }}>
-                  {formatPrice(md.atl.usd)}
+                  {md?.atl?.usd ? formatPrice(md.atl.usd) : "—"}
                 </p>
                 <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-bold font-[family-name:var(--font-data)] text-[#00d47b]">{pct(md.atl_change_percentage.usd)} from ATL</p>
+                  <p className="text-[10px] font-bold font-[family-name:var(--font-data)] text-[#00d47b]">{pct(md?.atl_change_percentage?.usd)} from ATL</p>
                   <p className="text-[9px] font-[family-name:var(--font-data)]" style={{ color: "#555" }}>
-                    {new Date(md.atl_date.usd).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}
+                    {md?.atl_date?.usd ? new Date(md.atl_date.usd).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "—"}
                   </p>
                 </div>
               </div>
@@ -701,6 +712,18 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
 
         </div>
       </div>
+
+      {alertOpen && (
+        <AlertModal
+          coinId={coin.id}
+          coinSymbol={sym}
+          coinName={coin.name}
+          currentPrice={price}
+          isLoggedIn={isLoggedIn}
+          isLight={isLight}
+          onClose={() => setAlertOpen(false)}
+        />
+      )}
     </div>
   );
 }

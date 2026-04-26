@@ -11,6 +11,7 @@ import SearchOverlay from "@/components/ui/SearchOverlay";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import UserButton from "@/components/ui/UserButton";
 import AuthGateLink from "@/components/ui/AuthGateLink";
+import AlertDropdown from "@/components/features/alerts/AlertDropdown";
 
 const NAV = [
   { label: "News",      href: "/",        active: true, hasDropdown: true },
@@ -31,10 +32,13 @@ const NEWS_CATS = [
 ];
 
 export default function Header() {
-  const [drawerOpen, setDrawerOpen]     = useState(false);
-  const [searchOpen, setSearchOpen]     = useState(false);
-  const [newsDropdown, setNewsDropdown] = useState(false);
-  const dropdownRef                     = useRef<HTMLDivElement>(null);
+  const [drawerOpen, setDrawerOpen]       = useState(false);
+  const [searchOpen, setSearchOpen]       = useState(false);
+  const [newsDropdown, setNewsDropdown]   = useState(false);
+  const [alertsOpen, setAlertsOpen]       = useState(false);
+  const [alertCount, setAlertCount]       = useState(0);
+  const dropdownRef                       = useRef<HTMLDivElement>(null);
+  const bellRef                           = useRef<HTMLDivElement>(null);
   const { resolved } = useTheme();
   const isLight = resolved === "light";
   const pathname = usePathname();
@@ -56,6 +60,15 @@ export default function Header() {
     }
     document.addEventListener("mousedown", onClickOutside);
     return () => document.removeEventListener("mousedown", onClickOutside);
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then(r => r.ok ? r.json() : null)
+      .then(me => { if (!me) return; return fetch("/api/alerts"); })
+      .then(r => r && r.ok ? r.json() : null)
+      .then(data => { if (Array.isArray(data)) setAlertCount(data.length); })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -161,13 +174,26 @@ export default function Header() {
             popupDesc="Sign in to build your personal watchlist and monitor your favourite cryptocurrencies in one place."
             className="w-10 h-10 rounded-[10px] flex items-center justify-center cursor-pointer transition-all duration-200 theme-btn hover:border-[rgba(255,106,0,0.3)] hover:text-[#ff6a00]"
           />
-          <button
-            className="relative w-10 h-10 rounded-[10px] flex items-center justify-center cursor-pointer transition-all duration-200 theme-btn hover:border-[rgba(255,106,0,0.3)] hover:text-[#ff6a00]"
-            aria-label="Notifications"
-          >
-            <Bell size={16} className="text-[#888]" />
-            <span className="absolute top-2 right-2 w-2 h-2 bg-[var(--color-brand)] rounded-full border-2 border-black shadow-[0_0_6px_var(--color-brand)]" />
-          </button>
+          <div ref={bellRef} className="relative">
+            <button
+              onClick={() => setAlertsOpen(v => !v)}
+              className="relative w-10 h-10 rounded-[10px] flex items-center justify-center cursor-pointer transition-all duration-200 theme-btn hover:border-[rgba(255,106,0,0.3)] hover:text-[#ff6a00]"
+              aria-label="Price Alerts"
+            >
+              <Bell size={16} className={alertsOpen ? "text-[#ff6a00]" : "text-[#888]"} />
+              {alertCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 min-w-[14px] h-[14px] px-[3px] bg-[var(--color-brand)] rounded-full border border-black flex items-center justify-center text-[8px] font-black text-black shadow-[0_0_6px_var(--color-brand)] font-[family-name:var(--font-data)]">
+                  {alertCount}
+                </span>
+              )}
+            </button>
+            {alertsOpen && (
+              <AlertDropdown
+                isLight={isLight}
+                onClose={() => setAlertsOpen(false)}
+              />
+            )}
+          </div>
           <ThemeToggle />
           <UserButton />
         </div>

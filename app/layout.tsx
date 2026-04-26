@@ -13,6 +13,7 @@ import AuthModal from "@/components/ui/AuthModal";
 import UserSyncProvider from "@/components/providers/UserSyncProvider";
 import CookieConsent from "@/components/ui/CookieConsent";
 import PriceProvider from "@/components/providers/PriceProvider";
+import AlertChecker from "@/components/features/alerts/AlertChecker";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -69,6 +70,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <PageTranslator />
                 <Background />
                 <PriceProvider>
+                  <AlertChecker />
                   <ConditionalShell>
                     {children}
                   </ConditionalShell>

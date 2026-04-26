@@ -7,16 +7,24 @@ import { COIN_ICONS } from "./coinIcons";
 import { COIN_IDS } from "@/lib/coinIds";
 import { usePriceStore } from "@/lib/store/priceStore";
 
+function priceAnimName(dir: "up" | "down", version: number) {
+  const ab = version % 2 === 0 ? "" : "-b";
+  return dir === "up" ? `price-flash-up${ab}` : `price-flash-dn${ab}`;
+}
+
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
 interface MarketCoin {
-  id: string; symbol: string; name: string; market_cap_rank: number;
+  id: string; symbol: string; name: string; market_cap_rank: number; image?: string;
   current_price: number; market_cap: number; total_volume: number;
   price_change_percentage_24h: number;
   price_change_percentage_1h_in_currency?: number;
   price_change_percentage_7d_in_currency?: number;
   price_change_percentage_30d_in_currency?: number;
-  circulating_supply: number;
+  circulating_supply: number; max_supply?: number | null;
+  fully_diluted_valuation?: number | null;
+  ath?: number; atl?: number;
+  high_24h?: number; low_24h?: number;
   sparkline_in_7d?: { price: number[] };
 }
 
@@ -100,24 +108,19 @@ function fmtSup(v: number, sym: string) {
   return v.toLocaleString("en-US") + " " + sym;
 }
 
-function CoinIcon({ sym }: { sym: string }) {
-  const url = COIN_ICONS[sym];
-  if (!url) return null;
+function CoinIcon({ sym, imageUrl }: { sym: string; imageUrl?: string }) {
+  const url = imageUrl || (COIN_ICONS as Record<string, string>)[sym];
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={url}
-      alt={sym}
-      width={28}
-      height={28}
-      className="pr-coin-ico"
-      onError={(e) => {
-        const img = e.target as HTMLImageElement;
-        img.style.display = "none";
-        const fb = img.nextElementSibling as HTMLElement | null;
-        if (fb) fb.style.display = "flex";
-      }}
-    />
+    <div style={{ position: "relative", width: 28, height: 28 }}>
+      {url && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={url} alt={sym} width={28} height={28} className="pr-coin-ico"
+          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+      )}
+      {!url && (
+        <span className="pr-coin-fallback" style={{ display: "flex" }}>{sym[0]}</span>
+      )}
+    </div>
   );
 }
 
@@ -128,9 +131,10 @@ export default function PricesView() {
   const [page, setPage]         = useState(1);
   const [expanded, setExpanded] = useState<string | null>(null);
 
-  const prices  = usePriceStore((s) => s.prices);
-  const changes = usePriceStore((s) => s.changes);
-  const flash   = usePriceStore((s) => s.flash);
+  const prices       = usePriceStore((s) => s.prices);
+  const changes      = usePriceStore((s) => s.changes);
+  const flash        = usePriceStore((s) => s.flash);
+  const flashVersion = usePriceStore((s) => s.flashVersion);
 
   const { data: markets } = useSWR<MarketCoin[]>("/api/markets", fetcher, { refreshInterval: 60_000, keepPreviousData: true });
   const { data: global }  = useSWR<GlobalData>("/api/global", fetcher, { refreshInterval: 60_000, keepPreviousData: true });
@@ -143,16 +147,17 @@ export default function PricesView() {
 
   // Build coin list from live markets data, overlay WS price
   const liveCoins = markets?.map((c, i) => {
-    const binSym = `${c.symbol.toUpperCase()}USDT`;
-    const livePrice = prices[binSym] ?? c.current_price;
-    const liveChange = changes[binSym] ?? c.price_change_percentage_24h;
-    const liveChange1h = changes[binSym] !== undefined
-      ? changes[binSym] / 24
-      : (c.price_change_percentage_1h_in_currency ?? 0);
+    const binSym      = `${c.symbol.toUpperCase()}USDT`;
+    const livePrice   = prices[binSym] ?? c.current_price;
+    const liveChange  = changes[binSym] ?? c.price_change_percentage_24h;
+    // Use CoinGecko 1h field — never divide 24h by 24
+    const liveChange1h = c.price_change_percentage_1h_in_currency ?? 0;
     const sp = computeSparkline(c.sparkline_in_7d?.price);
     return {
       r: c.market_cap_rank ?? i + 1,
       n: c.name, s: c.symbol.toUpperCase(),
+      cgId: c.id,          // CoinGecko ID — direct from markets API, covers all 100 coins
+      image: c.image,
       p: livePrice,
       mc: c.market_cap, vol: c.total_volume,
       c: liveChange, c1: liveChange1h,
@@ -160,9 +165,10 @@ export default function PricesView() {
       up: liveChange >= 0, u7: (c.price_change_percentage_7d_in_currency ?? 0) >= 0,
       cs: c.circulating_supply,
       sp: sp || "0,10 10,10 20,10 30,10 44,10",
-      flashDir: flash[binSym],
+      flashDir:     flash[binSym],
+      flashVersion: flashVersion[binSym] ?? 0,
     };
-  }) ?? ALL_COINS.map(c => ({ ...c, flashDir: undefined as "up" | "down" | undefined }));
+  }) ?? ALL_COINS.map(c => ({ ...c, cgId: COIN_IDS[c.s] as string | undefined, image: undefined, flashDir: undefined as "up" | "down" | undefined, flashVersion: 0 }));
 
   // Hero stats
   const mcapChg = q?.total_market_cap_yesterday_percentage_change ?? 0;
@@ -293,20 +299,22 @@ export default function PricesView() {
             {paged.length === 0 && <div className="pr-no-results">No coins found</div>}
 
             {paged.map((c) => {
-              const isOpen = expanded === c.s;
+              const isOpen  = expanded === c.s;
+              const binSym  = `${c.s}USDT`;
+              const fDir    = "flashDir" in c ? c.flashDir : undefined;
+              const fVer    = "flashVersion" in c ? (c.flashVersion as number) : 0;
               return (
                 <div key={c.s}>
                   <div
-                    className={`pr-coin-row-full${isOpen ? " pr-coin-row-open" : ""}${"flashDir" in c && c.flashDir === "up" ? " row-flash-up" : ""}${"flashDir" in c && c.flashDir === "down" ? " row-flash-dn" : ""}`}
-                    onClick={() => handleRowClick(c.s, COIN_IDS[c.s])}
+                    className={`pr-coin-row-full${isOpen ? " pr-coin-row-open" : ""}`}
+                    onClick={() => handleRowClick(c.s, ("cgId" in c ? c.cgId as string : undefined) ?? COIN_IDS[c.s])}
                     style={{ cursor: "pointer" }}
                   >
                     <span className="pr-rank">{c.r}</span>
 
                     <div className="pr-coin-info">
                       <div className="pr-coin-ico-wrap">
-                        <CoinIcon sym={c.s} />
-                        <span className="pr-coin-fallback" style={{ display: "none" }}>{c.s[0]}</span>
+                        <CoinIcon sym={c.s} imageUrl={"image" in c ? (c.image as string | undefined) : undefined} />
                       </div>
                       <div>
                         <div className="pr-coin-name" data-no-translate>
@@ -317,18 +325,30 @@ export default function PricesView() {
                       </div>
                     </div>
 
-                    <div className="pr-coin-price">{fmt(c.p, eur)}</div>
+                    {/* Price with flash animation — same as ticker */}
+                    <span
+                      key={`${binSym}-${fVer}`}
+                      className="pr-coin-price"
+                      style={{
+                        color: "var(--color-text)",
+                        animation: fDir
+                          ? `${priceAnimName(fDir, fVer)} 800ms ease-out forwards`
+                          : undefined,
+                      }}
+                    >
+                      {fmt(c.p, eur)}
+                    </span>
 
                     <div className={`pr-chg-1h${c.c1 >= 0 ? " text-positive" : " text-negative"}`}>
-                      {c.c1 > 0 ? "+" : ""}{c.c1}%
+                      {c.c1 > 0 ? "+" : ""}{c.c1.toFixed(2)}%
                     </div>
 
                     <div className={`pr-chg${c.up ? " pr-chg-up" : " pr-chg-dn"}`}>
-                      {c.c > 0 ? "+" : ""}{c.c}%
+                      {c.c > 0 ? "+" : ""}{Number(c.c).toFixed(2)}%
                     </div>
 
                     <div className={`pr-chg-7d${c.u7 ? " text-positive" : " text-negative"}`}>
-                      {c.c7 > 0 ? "+" : ""}{c.c7}%
+                      {c.c7 > 0 ? "+" : ""}{c.c7.toFixed(2)}%
                     </div>
 
                     <div className="pr-coin-mc">{fmt(c.mc, eur)}</div>
@@ -351,13 +371,13 @@ export default function PricesView() {
                         <div className="pr-mob-pill-row">
                           <div className="pr-mob-pill">
                             <span className={`pr-mob-pill-val${c.c1 >= 0 ? " text-positive" : " text-negative"}`}>
-                              {c.c1 > 0 ? "+" : ""}{c.c1}%
+                              {c.c1 > 0 ? "+" : ""}{c.c1.toFixed(2)}%
                             </span>
                             <span className="pr-mob-pill-lbl">1h Change</span>
                           </div>
                           <div className="pr-mob-pill">
                             <span className={`pr-mob-pill-val${c.u7 ? " text-positive" : " text-negative"}`}>
-                              {c.c7 > 0 ? "+" : ""}{c.c7}%
+                              {c.c7 > 0 ? "+" : ""}{c.c7.toFixed(2)}%
                             </span>
                             <span className="pr-mob-pill-lbl">7d Change</span>
                           </div>
@@ -398,8 +418,8 @@ export default function PricesView() {
 
                         {/* View Details + Buy buttons */}
                         <div style={{ display: "flex", gap: "8px", justifyContent: "center" }}>
-                          {COIN_IDS[c.s] && (
-                            <Link href={`/coins/${COIN_IDS[c.s]}`} className="pr-mob-buy-btn"
+                          {(("cgId" in c ? c.cgId : undefined) ?? COIN_IDS[c.s]) && (
+                            <Link href={`/coins/${("cgId" in c ? c.cgId : undefined) ?? COIN_IDS[c.s]}`} className="pr-mob-buy-btn"
                               onClick={e => e.stopPropagation()}
                               style={{ background: "rgba(255,106,0,0.07)", color: "var(--color-brand)", border: "0.5px solid rgba(255,106,0,0.2)" }}>
                               <span>View Details</span>
@@ -503,21 +523,32 @@ export default function PricesView() {
             </div>
             <div className="pr-card-body">
               <div className="pr-detail-grid">
-                {[
-                  { k: "Market cap",  v: fmt(1.67e12, eur) },
-                  { k: "24h volume",  v: fmt(32.1e9, eur)  },
-                  { k: "Circulating", v: "19.84M"           },
-                  { k: "Max supply",  v: "21M"              },
-                  { k: "ATH",         v: fmt(109114, eur), pos: true },
-                  { k: "ATL",         v: fmt(67.81, eur),  neg: true },
-                  { k: "FDV",         v: fmt(1.77e12, eur) },
-                  { k: "Vol / Mcap",  v: "1.92%"           },
-                ].map((d) => (
-                  <div key={d.k} className="pr-det-cell">
-                    <div className="pr-det-key">{d.k}</div>
-                    <div className={`pr-det-val${d.pos ? " text-positive" : d.neg ? " text-negative" : ""}`}>{d.v}</div>
-                  </div>
-                ))}
+                {(() => {
+                  const btcMkt = markets?.find((c) => c.symbol.toUpperCase() === "BTC");
+                  const mc   = btcMkt?.market_cap ?? 0;
+                  const vol  = btcMkt?.total_volume ?? 0;
+                  const cs   = btcMkt?.circulating_supply ?? 0;
+                  const ms   = btcMkt?.max_supply;
+                  const ath  = btcMkt?.ath ?? 0;
+                  const atl  = btcMkt?.atl ?? 0;
+                  const fdv  = btcMkt?.fully_diluted_valuation ?? 0;
+                  const volMcap = mc > 0 ? ((vol / mc) * 100).toFixed(2) + "%" : "—";
+                  return [
+                    { k: "Market cap",  v: mc  ? fmt(mc,  eur) : "—" },
+                    { k: "24h volume",  v: vol ? fmt(vol, eur) : "—" },
+                    { k: "Circulating", v: cs  ? fmtSup(cs, "BTC")   : "—" },
+                    { k: "Max supply",  v: ms  ? fmtSup(ms, "BTC")   : "21M BTC" },
+                    { k: "ATH",         v: ath ? fmt(ath, eur) : "—", pos: true },
+                    { k: "ATL",         v: atl ? fmt(atl, eur) : "—", neg: true },
+                    { k: "FDV",         v: fdv ? fmt(fdv, eur) : "—" },
+                    { k: "Vol / Mcap",  v: volMcap },
+                  ].map((d) => (
+                    <div key={d.k} className="pr-det-cell">
+                      <div className="pr-det-key">{d.k}</div>
+                      <div className={`pr-det-val${"pos" in d && d.pos ? " text-positive" : "neg" in d && d.neg ? " text-negative" : ""}`}>{d.v}</div>
+                    </div>
+                  ));
+                })()}
               </div>
             </div>
           </div>
