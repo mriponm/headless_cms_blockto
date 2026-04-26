@@ -3,6 +3,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Star, StarOff, Loader2, ArrowLeft, Plus, ArrowUpRight, ArrowDownRight, TrendingUp, ChevronRight } from "lucide-react";
 import { COIN_ICONS } from "@/components/features/prices/coinIcons";
+import { COIN_IDS } from "@/lib/coinIds";
+import { usePriceStore } from "@/lib/store/priceStore";
+import { formatPrice } from "@/lib/utils/formatters";
 
 interface WatchCoin {
   id: string;
@@ -13,15 +16,31 @@ interface WatchCoin {
 }
 
 function CoinLogo({ sym }: { sym: string }) {
-  const src = (COIN_ICONS as Record<string, string>)[sym];
-  if (src) return <img src={src} alt={sym} className="w-10 h-10 rounded-full object-cover flex-shrink-0" />;
+  const key = sym.toUpperCase();
+  const src = (COIN_ICONS as Record<string, string>)[key];
+  if (src) return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={src} alt={key} width={40} height={40}
+      className="w-10 h-10 rounded-full object-cover flex-shrink-0"
+      onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+  );
   return (
     <div className="w-10 h-10 rounded-full flex items-center justify-center text-[11px] font-extrabold text-black flex-shrink-0"
       style={{ background: "var(--gradient-brand)" }}>
-      {sym.slice(0, 2)}
+      {key.slice(0, 2)}
     </div>
   );
 }
+
+// Maps coin symbol → Binance WS symbol (uppercase)
+const SYMBOL_TO_BINANCE: Record<string, string> = {
+  BTC: "BTCUSDT", ETH: "ETHUSDT", SOL: "SOLUSDT", BNB: "BNBUSDT",
+  XRP: "XRPUSDT", DOGE: "DOGEUSDT", ADA: "ADAUSDT", AVAX: "AVAXUSDT",
+  LINK: "LINKUSDT", DOT: "DOTUSDT", LTC: "LTCUSDT", UNI: "UNIUSDT",
+  MATIC: "MATICUSDT", ATOM: "ATOMUSDT", NEAR: "NEARUSDT", TRX: "TRXUSDT",
+  SHIB: "SHIBUSDT", INJ: "INJUSDT", RENDER: "RENDERUSDT", SUI: "SUIUSDT",
+  OP: "OPUSDT", ARB: "ARBUSDT", APT: "APTUSDT", FIL: "FILUSDT",
+};
 
 export default function WatchlistClient() {
   const [watchlist, setWatchlist] = useState<WatchCoin[]>([]);
@@ -29,6 +48,8 @@ export default function WatchlistClient() {
   const [newSym, setNewSym]       = useState("");
   const [adding, setAdding]       = useState(false);
   const [error, setError]         = useState("");
+  const prices = usePriceStore((s) => s.prices);
+  const changes = usePriceStore((s) => s.changes);
 
   useEffect(() => {
     fetch("/api/watchlist")
@@ -67,8 +88,11 @@ export default function WatchlistClient() {
     await fetch(`/api/watchlist?symbol=${encodeURIComponent(sym)}`, { method: "DELETE" });
   }
 
-  const gainers = watchlist.filter(c => (c.change ?? 0) > 0).length;
-  const losers  = watchlist.filter(c => (c.change ?? 0) < 0).length;
+  const getLivePrice  = (sym: string) => { const s = sym.toUpperCase(); return prices[SYMBOL_TO_BINANCE[s]  ?? `${s}USDT`]; };
+  const getLiveChange = (sym: string) => { const s = sym.toUpperCase(); return changes[SYMBOL_TO_BINANCE[s] ?? `${s}USDT`]; };
+
+  const gainers = watchlist.filter(c => (getLiveChange(c.coin_symbol) ?? c.change ?? 0) > 0).length;
+  const losers  = watchlist.filter(c => (getLiveChange(c.coin_symbol) ?? c.change ?? 0) < 0).length;
 
   return (
     <div className="relative z-[2] max-w-[860px] mx-auto px-4 md:px-8 pt-5 pb-24">
@@ -153,54 +177,65 @@ export default function WatchlistClient() {
       ) : (
         <div className="flex flex-col gap-2">
           {watchlist.map((coin, i) => {
-            const positive = (coin.change ?? 0) >= 0;
+            const livePrice = getLivePrice(coin.coin_symbol);
+            const liveChange = getLiveChange(coin.coin_symbol);
+            const displayChange = liveChange ?? coin.change ?? 0;
+            const positive = displayChange >= 0;
+            const coinId = COIN_IDS[coin.coin_symbol.toUpperCase()];
+            const detailHref = coinId ? `/coins/${coinId}` : null;
             return (
               <div key={coin.id}
                 className="profile-card flex items-center gap-3 px-4 py-3.5 rounded-[16px] hover:border-[rgba(255,106,0,0.2)] transition-all relative overflow-hidden group">
                 <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.04] to-transparent pointer-events-none" />
 
+                {/* Full-row click overlay — sits below interactive buttons */}
+                {detailHref && (
+                  <Link href={detailHref} className="absolute inset-0 z-0" aria-label={`View ${coin.coin_name}`} />
+                )}
+
                 {/* Rank */}
-                <span className="text-[11px] font-extrabold w-5 text-center flex-shrink-0 font-[family-name:var(--font-data)]" style={{ color: "var(--color-muted)" }}>
+                <span className="relative z-10 text-[11px] font-extrabold w-5 text-center flex-shrink-0 font-[family-name:var(--font-data)]" style={{ color: "var(--color-muted)" }}>
                   {String(i + 1).padStart(2, "0")}
                 </span>
 
-                <CoinLogo sym={coin.coin_symbol} />
+                <div className="relative z-10 flex-shrink-0">
+                  <CoinLogo sym={coin.coin_symbol} />
+                </div>
 
-                <div className="flex-1 min-w-0">
-                  <div className="font-bold text-[14px] font-[family-name:var(--font-display)]" style={{ color: "var(--color-text)" }}>
-                    {coin.coin_name !== coin.coin_symbol ? coin.coin_name : coin.coin_symbol}
+                <div className="relative z-10 flex-1 min-w-0">
+                  <div className="font-bold text-[14px] font-[family-name:var(--font-display)] group-hover:text-[var(--color-brand)] transition-colors" style={{ color: "var(--color-text)" }}>
+                    {coin.coin_name !== coin.coin_symbol ? coin.coin_name : coin.coin_symbol.toUpperCase()}
                   </div>
                   <div className="text-[11px] font-semibold font-[family-name:var(--font-data)]" style={{ color: "var(--color-muted)" }}>
-                    {coin.coin_symbol}
+                    {coin.coin_symbol.toUpperCase()}
                   </div>
                 </div>
 
-                {coin.price ? (
-                  <div className="text-right flex-shrink-0">
+                <div className="relative z-10 text-right flex-shrink-0">
+                  {livePrice ? (
+                    <>
+                      <div className="font-extrabold text-[14px] font-[family-name:var(--font-data)]" style={{ color: "var(--color-text)" }}>
+                        {formatPrice(livePrice)}
+                      </div>
+                      <div className={`flex items-center justify-end gap-0.5 text-[11px] font-bold font-[family-name:var(--font-data)] ${positive ? "text-[#22c55e]" : "text-[#ef4444]"}`}>
+                        {positive ? <ArrowUpRight size={11} /> : <ArrowDownRight size={11} />}
+                        {Math.abs(displayChange).toFixed(2)}%
+                      </div>
+                    </>
+                  ) : coin.price ? (
                     <div className="font-extrabold text-[14px] font-[family-name:var(--font-data)]" style={{ color: "var(--color-text)" }}>
                       {coin.price}
                     </div>
-                    {coin.change !== undefined && (
-                      <div className={`flex items-center justify-end gap-0.5 text-[11px] font-bold font-[family-name:var(--font-data)] ${positive ? "text-[#22c55e]" : "text-[#ef4444]"}`}>
-                        {positive ? <ArrowUpRight size={11} /> : <ArrowDownRight size={11} />}
-                        {Math.abs(coin.change).toFixed(2)}%
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <Link href="/prices"
-                    className="text-[10px] font-bold px-2.5 py-1 rounded-[7px] border border-[rgba(255,106,0,0.2)] text-[var(--color-brand)] hover:bg-[rgba(255,106,0,0.06)] transition-all flex-shrink-0 font-[family-name:var(--font-display)]">
-                    See price
-                  </Link>
-                )}
+                  ) : (
+                    <span className="text-[10px] font-bold px-2.5 py-1 rounded-[7px] border border-[rgba(255,106,0,0.2)] text-[var(--color-brand)]">
+                      Live
+                    </span>
+                  )}
+                </div>
 
-                <div className="flex items-center gap-1 flex-shrink-0">
-                  <Link href="/prices"
-                    className="w-7 h-7 rounded-[7px] flex items-center justify-center transition-all hover:text-[var(--color-brand)] opacity-0 group-hover:opacity-100"
-                    style={{ color: "var(--color-muted)" }}>
-                    <ChevronRight size={13} />
-                  </Link>
-                  <button onClick={() => removeCoin(coin.coin_symbol)}
+                <div className="relative z-10 flex items-center gap-1 flex-shrink-0">
+                  <ChevronRight size={13} className="opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: "var(--color-brand)" }} />
+                  <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); removeCoin(coin.coin_symbol); }}
                     className="w-7 h-7 rounded-[7px] flex items-center justify-center transition-all hover:bg-[rgba(255,59,79,0.1)] hover:text-[#ff3b4f] cursor-pointer"
                     style={{ color: "var(--color-muted)" }}>
                     <StarOff size={13} />

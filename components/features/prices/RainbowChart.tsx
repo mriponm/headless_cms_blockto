@@ -1,57 +1,31 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import useSWR from "swr";
+import { usePriceStore } from "@/lib/store/priceStore";
 
-const MONTHS = ["May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan","Feb","Mar","Apr"];
-const PRICES = [67200,71500,63400,58900,62100,54800,48200,52400,61300,72800,78500,84231];
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
-// Band definitions: [label, fill, bandTops per month]
-const BANDS: { label: string; fill: string; solid: string; tops: number[] }[] = [
-  { label: "Fire sale",  fill: "rgba(139,0,255,0.13)",  solid: "#8b00ff", tops: [45e3,46e3,47e3,48e3,49e3,5e4,51e3,52e3,53e3,54e3,55e3,56e3] },
-  { label: "Buy",        fill: "rgba(37,99,235,0.13)",  solid: "#2563eb", tops: [52e3,53.5e3,55e3,56.5e3,58e3,59.5e3,61e3,62.5e3,64e3,65.5e3,67e3,68.5e3] },
-  { label: "Accumulate", fill: "rgba(0,200,100,0.13)",  solid: "#00c864", tops: [6e4,62e3,64e3,66e3,68e3,7e4,72e3,74e3,76e3,78e3,8e4,82e3] },
-  { label: "Hold",       fill: "rgba(255,194,51,0.13)", solid: "#ffc233", tops: [72e3,74e3,76e3,78e3,8e4,82e3,84e3,86e3,88e3,9e4,92e3,94e3] },
-  { label: "Bubble",     fill: "rgba(255,106,0,0.13)",  solid: "#ff6a00", tops: [88e3,9e4,92e3,94e3,96e3,98e3,1e5,102e3,104e3,106e3,108e3,11e4] },
-  { label: "FOMO",       fill: "rgba(255,32,32,0.13)",  solid: "#ff2020", tops: [11e4,112e3,114e3,116e3,118e3,12e4,122e3,124e3,126e3,128e3,13e4,132e3] },
+// Band definitions (Bitcoin Rainbow Chart log-regression bands)
+const BANDS: { label: string; fill: string; solid: string; minPct: number; maxPct: number }[] = [
+  { label: "Fire sale",  fill: "rgba(139,0,255,0.13)",  solid: "#8b00ff", minPct: 0,   maxPct: 10  },
+  { label: "Buy",        fill: "rgba(37,99,235,0.13)",  solid: "#2563eb", minPct: 10,  maxPct: 25  },
+  { label: "Accumulate", fill: "rgba(0,200,100,0.13)",  solid: "#00c864", minPct: 25,  maxPct: 45  },
+  { label: "Hold",       fill: "rgba(255,194,51,0.13)", solid: "#ffc233", minPct: 45,  maxPct: 65  },
+  { label: "Bubble",     fill: "rgba(255,106,0,0.13)",  solid: "#ff6a00", minPct: 65,  maxPct: 82  },
+  { label: "FOMO",       fill: "rgba(255,32,32,0.13)",  solid: "#ff2020", minPct: 82,  maxPct: 100 },
 ];
 
-// SVG dimensions
 const CX = 52, CY = 12, CW = 536, CH = 176;
-const Y_MIN = 40000, Y_MAX = 116000;
-const COL_W = CW / 12;
-const GAP = 3;
 
-function toSvgY(v: number) {
-  return CY + CH - ((v - Y_MIN) / (Y_MAX - Y_MIN)) * CH;
+function toSvgY(v: number, yMin: number, yMax: number) {
+  return CY + CH - ((v - yMin) / (yMax - yMin)) * CH;
 }
-function toSvgX(i: number) {
-  return CX + i * COL_W;
+function toSvgX(i: number, n: number) {
+  return CX + (i / Math.max(n - 1, 1)) * CW;
 }
 
-const Y_TICKS = [40000, 60000, 80000, 100000];
-
-// Build band rects for each month
-type BandRect = { x: number; y: number; h: number; fill: string };
-function buildRects(): BandRect[][] {
-  return MONTHS.map((_, mi) => {
-    let bottom = Y_MIN;
-    return BANDS.map((b) => {
-      const top = b.tops[mi];
-      const yTop = toSvgY(Math.min(top, Y_MAX));
-      const yBot = toSvgY(Math.min(bottom, Y_MAX));
-      const rect = { x: toSvgX(mi) + GAP / 2, y: yTop, h: Math.max(0, yBot - yTop), fill: b.fill };
-      bottom = top;
-      return rect;
-    });
-  });
-}
-
-// Build smooth price path
-function buildPath() {
-  const pts = PRICES.map((p, i) => ({
-    x: toSvgX(i) + COL_W / 2,
-    y: toSvgY(p),
-  }));
-  // Catmull-Rom to cubic bezier
+function buildPath(pts: { x: number; y: number }[]) {
+  if (pts.length === 0) return "";
   let d = `M ${pts[0].x} ${pts[0].y}`;
   for (let i = 0; i < pts.length - 1; i++) {
     const p0 = pts[Math.max(0, i - 1)];
@@ -64,20 +38,77 @@ function buildPath() {
     const cp2y = p2.y - (p3.y - p1.y) / 6;
     d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
   }
-  return { d, pts };
+  return d;
 }
 
-const RECTS = buildRects();
-const { d: PATH, pts: PTS } = buildPath();
-// Arrow indicator position at index 11 (current = 62%)
-const ARROW_PCT = 62;
+type TF = "1M" | "3M" | "1Y" | "All";
+const TF_DAYS: Record<TF, number> = { "1M": 30, "3M": 90, "1Y": 365, "All": 1460 };
 
 export default function RainbowChart() {
-  const [tf, setTf] = useState<"1M" | "3M" | "1Y" | "All">("1Y");
+  const [tf, setTf] = useState<TF>("All");
+  const livePrice = usePriceStore((s) => s.prices["BTCUSDT"]);
+
+  const { data: rawPrices, isLoading } = useSWR<[number, number][]>(
+    "/api/rainbow",
+    fetcher,
+    { revalidateOnFocus: false, dedupingInterval: 86_400_000 }
+  );
+
+  const { pts, yMin, yMax, labels, currentY, arrowPct } = useMemo(() => {
+    if (!Array.isArray(rawPrices) || rawPrices.length === 0) {
+      return { pts: [], yMin: 40000, yMax: 120000, labels: [], currentY: 0, arrowPct: 50 };
+    }
+
+    const days = TF_DAYS[tf];
+    const slice = rawPrices.slice(-days);
+    const prices = slice.map(([, p]) => p);
+    const currentPrice = livePrice ?? prices[prices.length - 1];
+
+    const yMin = Math.min(...prices) * 0.95;
+    const yMax = Math.max(Math.max(...prices, currentPrice)) * 1.05;
+
+    // Sample to max 60 points for performance
+    const step = Math.max(1, Math.floor(slice.length / 60));
+    const sampled = slice.filter((_, i) => i % step === 0 || i === slice.length - 1);
+
+    const pts = sampled.map(([, p], i) => ({
+      x: toSvgX(i, sampled.length),
+      y: toSvgY(p, yMin, yMax),
+    }));
+
+    // X-axis labels (month/year)
+    const labelIdxs = [0, Math.floor(sampled.length / 3), Math.floor(2 * sampled.length / 3), sampled.length - 1];
+    const labels = labelIdxs.map((idx) => {
+      const [ts] = sampled[Math.min(idx, sampled.length - 1)];
+      const d = new Date(ts);
+      return {
+        x: toSvgX(idx, sampled.length),
+        text: d.toLocaleDateString("en-US", { month: "short", year: "2-digit" }),
+      };
+    });
+
+    // Y ticks
+    const currentY = toSvgY(currentPrice, yMin, yMax);
+
+    // Arrow position on legend bar (which band is current price in)
+    const range = yMax - yMin;
+    const pct = ((currentPrice - yMin) / range) * 100;
+    const arrowPct = Math.max(2, Math.min(98, pct));
+
+    return { pts, yMin, yMax, labels, currentY, arrowPct };
+  }, [rawPrices, tf, livePrice]);
+
+  const path = buildPath(pts);
+  const lastPt = pts[pts.length - 1];
+
+  // Y ticks
+  const yTicks = useMemo(() => {
+    const step = (yMax - yMin) / 4;
+    return [0, 1, 2, 3, 4].map((i) => yMin + i * step);
+  }, [yMin, yMax]);
 
   return (
     <div className="rbc-wrap">
-      {/* Header */}
       <div className="mtr-card-head" style={{ paddingBottom: 14 }}>
         <span className="mtr-card-title">
           <span style={{ fontWeight: 800 }}>Bitcoin</span>{" "}
@@ -85,102 +116,91 @@ export default function RainbowChart() {
         </span>
         <div className="rbc-tf">
           {(["1M","3M","1Y","All"] as const).map((t) => (
-            <button
-              key={t}
-              className={`rbc-tf-btn${tf === t ? " rbc-tf-active" : ""}`}
-              onClick={() => setTf(t)}
-            >
+            <button key={t} className={`rbc-tf-btn${tf === t ? " rbc-tf-active" : ""}`} onClick={() => setTf(t)}>
               {t}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Chart */}
       <div className="rbc-chart-area">
-        <svg
-          viewBox={`0 0 ${CX + CW + 4} ${CY + CH + 36}`}
-          preserveAspectRatio="xMidYMid meet"
-          style={{ width: "100%", display: "block" }}
-        >
-          {/* Y grid lines + labels */}
-          {Y_TICKS.map((v) => {
-            const y = toSvgY(v);
-            return (
-              <g key={v}>
-                <line x1={CX} y1={y} x2={CX + CW} y2={y}
-                  stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" />
-                <text x={CX - 4} y={y + 4} textAnchor="end"
-                  fontSize="7.5" fill="#444" fontFamily="var(--font-data)">
-                  ${v / 1000}K
-                </text>
-              </g>
-            );
-          })}
+        {isLoading && pts.length === 0 ? (
+          <div className="flex items-center justify-center h-[200px]">
+            <div className="w-5 h-5 border-2 border-[var(--color-brand)] border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : (
+          <svg
+            viewBox={`0 0 ${CX + CW + 4} ${CY + CH + 36}`}
+            preserveAspectRatio="xMidYMid meet"
+            style={{ width: "100%", display: "block" }}
+          >
+            {/* Y grid + labels */}
+            {yTicks.map((v) => {
+              const y = toSvgY(v, yMin, yMax);
+              return (
+                <g key={v}>
+                  <line x1={CX} y1={y} x2={CX + CW} y2={y}
+                    stroke="rgba(255,255,255,0.04)" strokeWidth="0.5" />
+                  <text x={CX - 4} y={y + 4} textAnchor="end"
+                    fontSize="7.5" fill="#444" fontFamily="var(--font-data)">
+                    ${v >= 1000 ? `${(v / 1000).toFixed(0)}K` : v.toFixed(0)}
+                  </text>
+                </g>
+              );
+            })}
 
-          {/* Band rects per month */}
-          {RECTS.map((monthRects, mi) =>
-            monthRects.map((r, bi) =>
-              r.h > 0 ? (
-                <rect
-                  key={`${mi}-${bi}`}
-                  x={r.x} y={r.y}
-                  width={COL_W - GAP} height={r.h}
-                  fill={r.fill}
-                  rx="1"
-                />
-              ) : null
-            )
-          )}
+            {/* Band fills (full height bands based on pct zones) */}
+            {BANDS.map((b) => {
+              const yTop = CY + CH * (1 - b.maxPct / 100);
+              const yBot = CY + CH * (1 - b.minPct / 100);
+              return (
+                <rect key={b.label} x={CX} y={yTop} width={CW} height={Math.max(0, yBot - yTop)}
+                  fill={b.fill} />
+              );
+            })}
 
-          {/* Price glow line (shadow) */}
-          <path d={PATH} fill="none"
-            stroke="rgba(255,106,0,0.25)" strokeWidth="6"
-            strokeLinecap="round" strokeLinejoin="round" />
+            {/* Price glow */}
+            {path && <path d={path} fill="none" stroke="rgba(255,106,0,0.25)" strokeWidth="6"
+              strokeLinecap="round" strokeLinejoin="round" />}
 
-          {/* Price line */}
-          <path d={PATH} fill="none"
-            stroke="#ff6a00" strokeWidth="2.5"
-            strokeLinecap="round" strokeLinejoin="round" />
+            {/* Price line */}
+            {path && <path d={path} fill="none" stroke="#ff6a00" strokeWidth="2.5"
+              strokeLinecap="round" strokeLinejoin="round" />}
 
-          {/* Last price dot */}
-          <circle cx={PTS[11].x} cy={PTS[11].y} r="5"
-            fill="#ff6a00" stroke="rgba(0,0,0,0.6)" strokeWidth="2" />
+            {/* Live price dot */}
+            {lastPt && (
+              <>
+                <circle cx={lastPt.x} cy={lastPt.y} r="7" fill="rgba(255,106,0,0.2)" />
+                <circle cx={lastPt.x} cy={lastPt.y} r="4" fill="#ff6a00" stroke="rgba(0,0,0,0.6)" strokeWidth="2" />
+              </>
+            )}
 
-          {/* X labels (months) */}
-          {MONTHS.map((m, i) => (
-            <text
-              key={m}
-              x={toSvgX(i) + COL_W / 2}
-              y={CY + CH + 14}
-              textAnchor="middle"
-              fontSize="8"
-              fill="#444"
-              fontFamily="var(--font-display)"
-            >
-              {m}
-            </text>
-          ))}
-        </svg>
+            {/* Live price horizontal line */}
+            {lastPt && (
+              <line x1={CX} y1={lastPt.y} x2={CX + CW} y2={lastPt.y}
+                stroke="rgba(255,106,0,0.3)" strokeWidth="0.8" strokeDasharray="4 3" />
+            )}
+
+            {/* X labels */}
+            {labels.map((l, i) => (
+              <text key={i} x={l.x} y={CY + CH + 14} textAnchor="middle"
+                fontSize="8" fill="#444" fontFamily="var(--font-display)">
+                {l.text}
+              </text>
+            ))}
+          </svg>
+        )}
       </div>
 
-      {/* Rainbow legend */}
       <div className="rbc-legend-wrap">
-        {/* Zone labels */}
         <div className="rbc-zone-labels">
-          {BANDS.map((b) => (
-            <span key={b.label} className="rbc-zone-lbl">{b.label}</span>
-          ))}
+          {BANDS.map((b) => <span key={b.label} className="rbc-zone-lbl">{b.label}</span>)}
         </div>
-        {/* Colored bar */}
         <div className="rbc-bar">
-          {BANDS.map((b) => (
-            <div key={b.label} className="rbc-bar-seg" style={{ background: b.solid }} />
-          ))}
+          {BANDS.map((b) => <div key={b.label} className="rbc-bar-seg" style={{ background: b.solid }} />)}
         </div>
-        {/* Arrow indicator */}
         <div className="rbc-arrow-row">
-          <div className="rbc-arrow" style={{ left: `${ARROW_PCT}%` }}>▲</div>
+          <div className="rbc-arrow" style={{ left: `${arrowPct}%` }}>▲</div>
         </div>
       </div>
     </div>

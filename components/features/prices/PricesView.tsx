@@ -2,9 +2,48 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import useSWR from "swr";
 import { COIN_ICONS } from "./coinIcons";
 import { COIN_IDS } from "@/lib/coinIds";
+import { usePriceStore } from "@/lib/store/priceStore";
 
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
+
+interface MarketCoin {
+  id: string; symbol: string; name: string; market_cap_rank: number;
+  current_price: number; market_cap: number; total_volume: number;
+  price_change_percentage_24h: number;
+  price_change_percentage_1h_in_currency?: number;
+  price_change_percentage_7d_in_currency?: number;
+  price_change_percentage_30d_in_currency?: number;
+  circulating_supply: number;
+  sparkline_in_7d?: { price: number[] };
+}
+
+interface GlobalData {
+  btc_dominance?: number;
+  eth_dominance?: number;
+  quote?: { USD?: { total_market_cap?: number; total_volume_24h?: number; total_market_cap_yesterday_percentage_change?: number } };
+}
+
+interface PairData {
+  symbol: string; base: string; price: number; volume24h: number; change24h: number;
+}
+
+function computeSparkline(prices?: number[]) {
+  if (!prices?.length) return "";
+  const step = Math.max(1, Math.floor(prices.length / 8));
+  const sample = prices.filter((_, i) => i % step === 0).slice(0, 8);
+  const min = Math.min(...sample); const max = Math.max(...sample);
+  const range = max - min || 1;
+  return sample.map((p, i) => {
+    const x = (i / (sample.length - 1)) * 44;
+    const y = 20 - ((p - min) / range) * 16 - 2;
+    return `${x.toFixed(0)},${y.toFixed(0)}`;
+  }).join(" ");
+}
+
+// Keep static array for immediate render before API loads
 const ALL_COINS = [
   { r: 1,  n: "Bitcoin",          s: "BTC",  p: 84231,     mc: 1.67e12, vol: 32.1e9,  c: 2.4,   c1: 0.3,  c7: 5.8,   up: true,  u7: true,  cs: 19.84e6,   sp: "0,14 6,12 12,16 18,10 24,8 30,11 36,6 44,4",   ico: "btc"  },
   { r: 2,  n: "Ethereum",         s: "ETH",  p: 1842,      mc: 221e9,   vol: 14.2e9,  c: 1.9,   c1: 0.2,  c7: 3.2,   up: true,  u7: true,  cs: 120.2e6,   sp: "0,12 6,10 12,14 18,8 24,9 30,6 36,7 44,4",    ico: "eth"  },
@@ -38,12 +77,6 @@ const ALL_COINS = [
   { r: 30, n: "Render",           s: "RNDR", p: 7.42,      mc: 3.1e9,   vol: 0.4e9,   c: 12.1,  c1: 3.2,  c7: 18.4,  up: true,  u7: true,  cs: 418.0e6,   sp: "0,19 6,16 12,13 18,10 24,7 30,8 36,4 44,1",    ico: "rndr" },
 ];
 
-const HERO_STATS = [
-  { label: "Market cap",    val: (e: boolean) => fmt(2.87e12, e), sub: "+1.8%",  up: true  },
-  { label: "24h volume",    val: (e: boolean) => fmt(94.2e9,  e), sub: "-3.1%",  up: false },
-  { label: "BTC dominance", val: (_: boolean) => "52.4%",         sub: "+0.3%",  up: true  },
-  { label: "ETH price",     val: (e: boolean) => fmt(1842,    e), sub: "+1.9%",  up: true  },
-];
 
 const RATE = 0.92;
 const PER_PAGE = 25;
@@ -95,8 +128,65 @@ export default function PricesView() {
   const [page, setPage]         = useState(1);
   const [expanded, setExpanded] = useState<string | null>(null);
 
+  const prices  = usePriceStore((s) => s.prices);
+  const changes = usePriceStore((s) => s.changes);
+  const flash   = usePriceStore((s) => s.flash);
+
+  const { data: markets } = useSWR<MarketCoin[]>("/api/markets", fetcher, { refreshInterval: 60_000, keepPreviousData: true });
+  const { data: global }  = useSWR<GlobalData>("/api/global", fetcher, { refreshInterval: 60_000, keepPreviousData: true });
+  const { data: pairs }   = useSWR<PairData[]>("/api/pairs", fetcher, { refreshInterval: 30_000, keepPreviousData: true });
+
+  const q = global?.quote?.USD;
+  const btcDom = global?.btc_dominance ?? 0;
+  const ethPrice  = prices["ETHUSDT"] ?? 0;
+  const ethChange = changes["ETHUSDT"] ?? 0;
+
+  // Build coin list from live markets data, overlay WS price
+  const liveCoins = markets?.map((c, i) => {
+    const binSym = `${c.symbol.toUpperCase()}USDT`;
+    const livePrice = prices[binSym] ?? c.current_price;
+    const liveChange = changes[binSym] ?? c.price_change_percentage_24h;
+    const liveChange1h = changes[binSym] !== undefined
+      ? changes[binSym] / 24
+      : (c.price_change_percentage_1h_in_currency ?? 0);
+    const sp = computeSparkline(c.sparkline_in_7d?.price);
+    return {
+      r: c.market_cap_rank ?? i + 1,
+      n: c.name, s: c.symbol.toUpperCase(),
+      p: livePrice,
+      mc: c.market_cap, vol: c.total_volume,
+      c: liveChange, c1: liveChange1h,
+      c7: c.price_change_percentage_7d_in_currency ?? 0,
+      up: liveChange >= 0, u7: (c.price_change_percentage_7d_in_currency ?? 0) >= 0,
+      cs: c.circulating_supply,
+      sp: sp || "0,10 10,10 20,10 30,10 44,10",
+      flashDir: flash[binSym],
+    };
+  }) ?? ALL_COINS.map(c => ({ ...c, flashDir: undefined as "up" | "down" | undefined }));
+
+  // Hero stats
+  const mcapChg = q?.total_market_cap_yesterday_percentage_change ?? 0;
+  const heroStats = [
+    { label: "Market cap",    val: q?.total_market_cap ? fmt(q.total_market_cap, eur) : fmt(2.87e12, eur), sub: `${mcapChg >= 0 ? "+" : ""}${mcapChg.toFixed(1)}%`, up: mcapChg >= 0 },
+    { label: "24h volume",    val: q?.total_volume_24h ? fmt(q.total_volume_24h, eur) : fmt(94.2e9, eur), sub: "24h", up: true },
+    { label: "BTC dominance", val: btcDom ? `${btcDom.toFixed(1)}%` : "52.4%", sub: "dominance", up: true },
+    { label: "ETH price",     val: ethPrice ? fmt(ethPrice, eur) : fmt(1842, eur), sub: `${ethChange >= 0 ? "+" : ""}${ethChange.toFixed(1)}%`, up: ethChange >= 0 },
+  ];
+
+  // BTC market data from live coins
+  const btcLive = liveCoins.find((c) => c.s === "BTC");
+  const btcReturnData = (() => {
+    const btcMkt = markets?.find((c) => c.symbol.toUpperCase() === "BTC");
+    if (!btcMkt) return null;
+    return [
+      { k: "1 hour",   v: btcMkt.price_change_percentage_1h_in_currency ?? 0 },
+      { k: "24 hours", v: btcMkt.price_change_percentage_24h },
+      { k: "7 days",   v: btcMkt.price_change_percentage_7d_in_currency ?? 0 },
+      { k: "30 days",  v: btcMkt.price_change_percentage_30d_in_currency ?? 0 },
+    ];
+  })();
+
   function handleRowClick(sym: string, coinId: string | undefined) {
-    // Desktop (md+): navigate to coin detail. Mobile: toggle accordion.
     if (typeof window !== "undefined" && window.innerWidth >= 768 && coinId) {
       router.push(`/coins/${coinId}`);
     } else {
@@ -104,7 +194,7 @@ export default function PricesView() {
     }
   }
 
-  const filtered = ALL_COINS.filter(
+  const filtered = liveCoins.filter(
     (c) =>
       c.n.toLowerCase().includes(query.toLowerCase()) ||
       c.s.toLowerCase().includes(query.toLowerCase())
@@ -137,10 +227,10 @@ export default function PricesView() {
 
       {/* ── 4 hero stats ──────────────────────────────── */}
       <div className="mtr-4grid">
-        {HERO_STATS.map((s) => (
+        {heroStats.map((s) => (
           <div key={s.label} className="glass pr-hero-cell">
             <div className="pr-hero-label">{s.label}</div>
-            <div className="pr-hero-val">{s.val(eur)}</div>
+            <div className="pr-hero-val">{s.val}</div>
             <div className={`pr-hero-sub${s.up ? " text-positive" : " text-negative"}`}>
               {s.up ? "▲" : "▼"} {s.sub}
             </div>
@@ -207,7 +297,7 @@ export default function PricesView() {
               return (
                 <div key={c.s}>
                   <div
-                    className={`pr-coin-row-full${isOpen ? " pr-coin-row-open" : ""}`}
+                    className={`pr-coin-row-full${isOpen ? " pr-coin-row-open" : ""}${"flashDir" in c && c.flashDir === "up" ? " row-flash-up" : ""}${"flashDir" in c && c.flashDir === "down" ? " row-flash-dn" : ""}`}
                     onClick={() => handleRowClick(c.s, COIN_IDS[c.s])}
                     style={{ cursor: "pointer" }}
                   >
@@ -380,10 +470,14 @@ export default function PricesView() {
                   <div className="pr-btc-name" data-no-translate>Bitcoin</div>
                   <div className="pr-btc-sym" data-no-translate>BTC</div>
                 </div>
-                <div className="pr-chg pr-chg-up pr-btc-badge">+2.4%</div>
+                <div className={`pr-chg pr-btc-badge ${(btcLive?.up ?? true) ? "pr-chg-up" : "pr-chg-dn"}`}>
+                  {btcLive ? `${btcLive.c >= 0 ? "+" : ""}${btcLive.c.toFixed(1)}%` : "+—"}
+                </div>
               </div>
-              <div className="pr-btc-price">{fmt(84231, eur)}</div>
-              <div className="pr-btc-sub text-positive">▲ +{fmt(1972, eur)} today</div>
+              <div className="pr-btc-price">{btcLive ? fmt(btcLive.p, eur) : fmt(84231, eur)}</div>
+              <div className={`pr-btc-sub ${(btcLive?.up ?? true) ? "text-positive" : "text-negative"}`}>
+                {btcLive?.up ? "▲" : "▼"} {btcLive ? `${btcLive.c >= 0 ? "+" : ""}${btcLive.c.toFixed(2)}%` : ""} today
+              </div>
               <div className="pr-btc-spark-wrap">
                 <svg viewBox="0 0 180 48" preserveAspectRatio="none" style={{ width: "100%", height: 48 }}>
                   <defs>
@@ -428,67 +522,65 @@ export default function PricesView() {
             </div>
           </div>
 
-          {/* Performance */}
+          {/* BTC Returns — live from CoinGecko Pro */}
           <div className="glass-strong pr-card">
             <div className="pr-card-head">
               <span className="pr-card-title">BTC <span className="gradient-text-alt">returns</span></span>
             </div>
             <div className="pr-card-body">
-              {[
-                { k: "1 hour",   v: "+0.3%",  pos: true  },
-                { k: "24 hours", v: "+2.4%",  pos: true  },
-                { k: "7 days",   v: "+5.8%",  pos: true  },
-                { k: "30 days",  v: "-8.2%",  pos: false },
-                { k: "90 days",  v: "-14.1%", pos: false },
-                { k: "1 year",   v: "+31.6%", pos: true  },
-              ].map((d) => (
-                <div key={d.k} className="pr-perf-row">
-                  <span className="pr-perf-key">{d.k}</span>
-                  <div className="pr-perf-bar-wrap">
-                    <div className="pr-perf-bar-fill" style={{
-                      width: `${Math.min(Math.abs(parseFloat(d.v)) * 3, 100)}%`,
-                      background: d.pos ? "#00d47b" : "#ff3b4f",
-                      marginLeft: d.pos ? "50%" : `${50 - Math.min(Math.abs(parseFloat(d.v)) * 3, 50)}%`,
-                    }} />
-                    <div className="pr-perf-center" />
+              {(btcReturnData ?? [
+                { k: "1 hour",  v: 0 }, { k: "24 hours", v: 0 },
+                { k: "7 days",  v: 0 }, { k: "30 days",  v: 0 },
+              ]).map((d) => {
+                const pos = d.v >= 0;
+                const pct = `${pos ? "+" : ""}${d.v.toFixed(1)}%`;
+                return (
+                  <div key={d.k} className="pr-perf-row">
+                    <span className="pr-perf-key">{d.k}</span>
+                    <div className="pr-perf-bar-wrap">
+                      <div className="pr-perf-bar-fill" style={{
+                        width: `${Math.min(Math.abs(d.v) * 3, 100)}%`,
+                        background: pos ? "#00d47b" : "#ff3b4f",
+                        marginLeft: pos ? "50%" : `${50 - Math.min(Math.abs(d.v) * 3, 50)}%`,
+                      }} />
+                      <div className="pr-perf-center" />
+                    </div>
+                    <span className={`pr-perf-val${pos ? " text-positive" : " text-negative"}`}>{pct}</span>
                   </div>
-                  <span className={`pr-perf-val${d.pos ? " text-positive" : " text-negative"}`}>{d.v}</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
-          {/* Exchanges */}
+          {/* Top trading pairs — live Binance */}
           <div className="glass-strong pr-card">
             <div className="pr-card-head">
               <span className="pr-card-title">Top <span className="gradient-text-alt">trading pairs</span></span>
-              <span className="pr-card-sub">BTC vol</span>
+              <span className="pr-card-sub">24h vol</span>
             </div>
             <div className="pr-card-body">
-              {[
-                { ex: "Binance",  pair: "BTC/USDT", vol: fmt(8.4e9, eur), pct: 100 },
-                { ex: "Coinbase", pair: "BTC/USD",  vol: fmt(3.2e9, eur), pct: 38  },
-                { ex: "Bybit",    pair: "BTC/USDT", vol: fmt(2.8e9, eur), pct: 33  },
-                { ex: "OKX",      pair: "BTC/USDT", vol: fmt(2.1e9, eur), pct: 25  },
-                { ex: "Kraken",   pair: "BTC/EUR",  vol: fmt(1.4e9, eur), pct: 17  },
-              ].map((p) => (
-                <div key={p.ex} className="pr-exch-row">
-                  <div className="pr-exch-left">
-                    <span className="pr-pair-name">{p.ex}</span>
-                    <span className="pr-pair-sym">{p.pair}</span>
-                  </div>
-                  <div className="pr-exch-right">
-                    <div className="pr-exch-bar-wrap">
-                      <div className="pr-exch-bar-fill" style={{ width: `${p.pct}%` }} />
+              {(pairs ?? []).slice(0, 5).map((p, i) => {
+                const maxVol = pairs?.[0]?.volume24h ?? 1;
+                return (
+                  <div key={p.symbol} className="pr-exch-row">
+                    <div className="pr-exch-left">
+                      <span className="pr-pair-name">{p.base}</span>
+                      <span className="pr-pair-sym">{p.symbol.replace("USDT", "/USDT")}</span>
                     </div>
-                    <span className="pr-pair-vol">{p.vol}</span>
+                    <div className="pr-exch-right">
+                      <div className="pr-exch-bar-wrap">
+                        <div className="pr-exch-bar-fill" style={{ width: `${(p.volume24h / maxVol) * 100}%` }} />
+                      </div>
+                      <span className="pr-pair-vol">{fmt(p.volume24h, eur)}</span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
+              {!pairs && <div className="text-[11px] text-center py-2" style={{ color: "var(--color-muted)" }}>Loading…</div>}
             </div>
           </div>
 
-          {/* Converter */}
+          {/* Converter — live Binance WS price */}
           <div className="glass-strong pr-card">
             <div className="pr-card-head">
               <span className="pr-card-title">Crypto <span className="gradient-text-alt">converter</span></span>
@@ -497,8 +589,11 @@ export default function PricesView() {
               <div className="mtr-conv-row">
                 <div className="mtr-conv-input">1 BTC</div>
                 <span className="mtr-conv-eq">=</span>
-                <div className="mtr-conv-result">{fmt(84231, eur)}</div>
+                <div className="mtr-conv-result">
+                  {btcLive ? fmt(btcLive.p, eur) : "—"}
+                </div>
               </div>
+              <p className="mtr-conv-hint">Live · Binance</p>
             </div>
           </div>
 

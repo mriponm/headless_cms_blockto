@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Outfit, JetBrains_Mono, Lora, League_Spartan } from "next/font/google";
 import "./globals.css";
 import Background from "@/components/layout/Background";
@@ -11,6 +12,7 @@ import { AuthModalProvider } from "@/components/providers/AuthModalProvider";
 import AuthModal from "@/components/ui/AuthModal";
 import UserSyncProvider from "@/components/providers/UserSyncProvider";
 import CookieConsent from "@/components/ui/CookieConsent";
+import PriceProvider from "@/components/providers/PriceProvider";
 
 const outfit = Outfit({
   variable: "--font-outfit",
@@ -56,15 +58,8 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${outfit.variable} ${jetbrainsMono.variable} ${lora.variable} ${leagueSpartan.variable} dark`} suppressHydrationWarning>
-      <head>
-        {/* eslint-disable-next-line @next/next/no-before-interactive-script-outside-document */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `(function(){var t=localStorage.getItem('theme');if(t){document.documentElement.classList.remove('dark','light');document.documentElement.classList.add(t);}})()`,
-          }}
-        />
-      </head>
       <body className="min-h-screen flex flex-col relative" suppressHydrationWarning>
+        <Script id="theme-init" strategy="beforeInteractive">{`(function(){var t=localStorage.getItem('theme');if(t){document.documentElement.classList.remove('dark','light');document.documentElement.classList.add(t);}})()`}</Script>
         <UserSyncProvider />
         <AuthModalProvider>
           <AuthModal />
@@ -73,9 +68,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <TranslationBatcherProvider>
                 <PageTranslator />
                 <Background />
-                <ConditionalShell>
-                  {children}
-                </ConditionalShell>
+                <PriceProvider>
+                  <ConditionalShell>
+                    {children}
+                  </ConditionalShell>
+                </PriceProvider>
                 <CookieConsent />
               </TranslationBatcherProvider>
             </I18nProvider>

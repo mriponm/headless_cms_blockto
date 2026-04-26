@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -12,6 +12,7 @@ import { formatPrice, formatPercent, formatDollarCompact } from "@/lib/utils/for
 import type { WPPost } from "@/lib/wordpress/types";
 import CoinChart, { type HoverData } from "./CoinChart";
 import { TF_TO_INTERVAL, BINANCE_SYMBOLS } from "@/lib/binanceSymbols";
+import { usePriceStore } from "@/lib/store/priceStore";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -128,10 +129,11 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
   const [copied, setCopied]             = useState(false);
   const [descExpanded, setDescExpanded] = useState(false);
   const [chartHeight, setChartHeight]   = useState(280);
-  const [livePrice, setLivePrice]       = useState<number | null>(null);
-  const [priceFlash, setPriceFlash]     = useState<"up" | "down" | null>(null);
-  const prevPriceRef                    = useRef<number | null>(null);
-  const flashTimerRef                   = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Live price from global Binance WS store (no per-coin socket needed)
+  const binSym = BINANCE_SYMBOLS[coin.id];
+  const livePrice  = usePriceStore((s) => binSym ? s.prices[binSym] ?? null : null);
+  const priceFlash = usePriceStore((s) => binSym ? s.flash[binSym] ?? null : null);
 
   useEffect(() => {
     const upd = () => setChartHeight(window.innerWidth >= 1024 ? 400 : 280);
@@ -140,42 +142,7 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
     return () => window.removeEventListener("resize", upd);
   }, []);
 
-  // Binance miniTicker WebSocket for live price flash
-  useEffect(() => {
-    const binSym = BINANCE_SYMBOLS[coin.id];
-    if (!binSym) return;
-
-    let ws: WebSocket;
-    let reconnectTimer: ReturnType<typeof setTimeout>;
-
-    function connect() {
-      ws = new WebSocket(`wss://stream.binance.com:9443/ws/${binSym.toLowerCase()}@miniTicker`);
-      ws.onmessage = (e) => {
-        try {
-          const msg = JSON.parse(e.data);
-          const newPrice = parseFloat(msg.c);
-          if (isNaN(newPrice)) return;
-          if (prevPriceRef.current !== null && newPrice !== prevPriceRef.current) {
-            const dir = newPrice > prevPriceRef.current ? "up" : "down";
-            setPriceFlash(dir);
-            if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
-            flashTimerRef.current = setTimeout(() => setPriceFlash(null), 800);
-          }
-          prevPriceRef.current = newPrice;
-          setLivePrice(newPrice);
-        } catch { /* ignore */ }
-      };
-      ws.onclose = () => { reconnectTimer = setTimeout(connect, 3000); };
-      ws.onerror = () => ws.close();
-    }
-
-    connect();
-    return () => {
-      clearTimeout(reconnectTimer);
-      if (flashTimerRef.current) clearTimeout(flashTimerRef.current);
-      ws?.close();
-    };
-  }, [coin.id]);
+  // Live price comes from global Binance combined WS via priceStore — no per-coin socket needed
 
   const md       = coin.market_data;
   const price    = livePrice ?? md.current_price.usd;

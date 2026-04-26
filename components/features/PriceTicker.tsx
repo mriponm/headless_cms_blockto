@@ -1,48 +1,108 @@
 "use client";
-import { useCryptoData } from "@/lib/hooks/useCryptoData";
+import useSWR from "swr";
+import { usePriceStore } from "@/lib/store/priceStore";
 import { formatPrice, formatPercent, percentClass } from "@/lib/utils/formatters";
+import { COIN_ICONS } from "@/components/features/prices/coinIcons";
 import clsx from "clsx";
 
-const STATIC = [
-  { s: "BTC", p: "$84,231", c: "+2.4%", up: true }, { s: "ETH", p: "$1,842", c: "+1.9%", up: true },
-  { s: "SOL", p: "$134.20", c: "-0.8%", up: false }, { s: "XRP", p: "$1.33", c: "-4.1%", up: false },
-  { s: "BNB", p: "$587.40", c: "+0.6%", up: true }, { s: "ADA", p: "$0.42", c: "+3.1%", up: true },
-  { s: "DOGE", p: "$0.081", c: "-1.2%", up: false }, { s: "AVAX", p: "$28.40", c: "+4.7%", up: true },
-  { s: "LINK", p: "$14.80", c: "+2.8%", up: true }, { s: "DOT", p: "$5.12", c: "-0.4%", up: false },
+const fetcher = (url: string) => fetch(url).then((r) => r.json());
+
+interface MarketCoin {
+  id: string; symbol: string; name: string;
+  current_price: number;
+  price_change_percentage_24h: number;
+}
+
+const SYMBOLS = [
+  { symbol: "BTC",  binance: "BTCUSDT"  },
+  { symbol: "ETH",  binance: "ETHUSDT"  },
+  { symbol: "SOL",  binance: "SOLUSDT"  },
+  { symbol: "XRP",  binance: "XRPUSDT"  },
+  { symbol: "BNB",  binance: "BNBUSDT"  },
+  { symbol: "ADA",  binance: "ADAUSDT"  },
+  { symbol: "DOGE", binance: "DOGEUSDT" },
+  { symbol: "AVAX", binance: "AVAXUSDT" },
+  { symbol: "LINK", binance: "LINKUSDT" },
+  { symbol: "DOT",  binance: "DOTUSDT"  },
+  { symbol: "LTC",  binance: "LTCUSDT"  },
+  { symbol: "TRX",  binance: "TRXUSDT"  },
 ];
 
-export default function PriceTicker() {
-  const { data } = useCryptoData();
+function priceAnimName(dir: "up" | "down", version: number) {
+  const ab = version % 2 === 0 ? "" : "-b";
+  return dir === "up" ? `price-flash-up${ab}` : `price-flash-dn${ab}`;
+}
 
-  const items = data
-    ? [...data.coins, ...data.coins]
-    : [...STATIC, ...STATIC];
+export default function PriceTicker() {
+  const prices       = usePriceStore((s) => s.prices);
+  const changes      = usePriceStore((s) => s.changes);
+  const flash        = usePriceStore((s) => s.flash);
+  const flashVersion = usePriceStore((s) => s.flashVersion);
+
+  const { data: markets } = useSWR<MarketCoin[]>("/api/markets", fetcher, {
+    refreshInterval: 60_000,
+    dedupingInterval: 30_000,
+    keepPreviousData: true,
+  });
+
+  // Triple-duplicate so the seamless loop always has content visible
+  const items = [...SYMBOLS, ...SYMBOLS, ...SYMBOLS];
 
   return (
-    <div className="ticker-fade ticker-bar relative overflow-hidden py-3">
+    <div className="ticker-fade ticker-bar relative overflow-hidden py-2.5">
       <div
-        className="ticker-inner flex gap-9 w-max pl-10"
-        style={{ animation: "ticker-scroll 30s linear infinite" }}
+        className="ticker-inner flex items-center w-max"
+        style={{ animation: "ticker-scroll 65s linear infinite" }}
       >
         {items.map((item, i) => {
-          if (data) {
-            const coin = item as (typeof data.coins)[0];
-            return (
-              <span key={`${coin.id}-${i}`} className="flex items-center gap-2 text-[13px] whitespace-nowrap">
-                <span className="ticker-symbol font-bold text-[11px] text-[#888] font-[family-name:var(--font-data)] uppercase">{coin.symbol}</span>
-                <span className="ticker-price font-[family-name:var(--font-data)] font-medium text-[#e5e5e5]">{formatPrice(coin.current_price)}</span>
-                <span className={clsx("text-[11px] font-bold font-[family-name:var(--font-data)]", percentClass(coin.price_change_percentage_24h))}>
-                  {formatPercent(coin.price_change_percentage_24h)}
-                </span>
-              </span>
-            );
-          }
-          const s = item as typeof STATIC[0];
+          const meta       = markets?.find((c) => c.symbol.toUpperCase() === item.symbol);
+          const livePrice  = prices[item.binance] || meta?.current_price || 0;
+          const liveChange = changes[item.binance] ?? meta?.price_change_percentage_24h ?? 0;
+          const flashDir   = flash[item.binance];
+          const version    = flashVersion[item.binance] ?? 0;
+          const iconSrc    = (COIN_ICONS as Record<string, string>)[item.symbol];
+
           return (
-            <span key={`${s.s}-${i}`} className="flex items-center gap-2 text-[13px] whitespace-nowrap">
-              <span className="ticker-symbol font-bold text-[11px] text-[#888] font-[family-name:var(--font-data)]">{s.s}</span>
-              <span className="ticker-price font-[family-name:var(--font-data)] font-medium text-[#e5e5e5]">{s.p}</span>
-              <span className={clsx("text-[11px] font-bold font-[family-name:var(--font-data)]", s.up ? "text-positive" : "text-negative")}>{s.c}</span>
+            <span
+              key={`${item.symbol}-${i}`}
+              className="flex items-center gap-1.5 whitespace-nowrap px-5 border-r border-[rgba(255,255,255,0.06)] last:border-0"
+            >
+              {/* Coin logo */}
+              {iconSrc ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={iconSrc} alt={item.symbol} width={16} height={16}
+                  className="w-4 h-4 rounded-full flex-shrink-0"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+              ) : (
+                <span className="w-4 h-4 rounded-full flex items-center justify-center text-[7px] font-extrabold flex-shrink-0"
+                  style={{ background: "rgba(255,106,0,0.15)", color: "#ff6a00" }}>
+                  {item.symbol[0]}
+                </span>
+              )}
+
+              {/* Symbol */}
+              <span className="font-bold text-[11px] text-[#888] font-[family-name:var(--font-data)] uppercase tracking-[0.3px]">
+                {item.symbol}
+              </span>
+
+              {/* Price — white base, flash green/red on tick */}
+              <span
+                key={version}
+                className="font-[family-name:var(--font-data)] font-semibold text-[13px]"
+                style={{
+                  color: "var(--color-text)",
+                  animation: flashDir
+                    ? `${priceAnimName(flashDir, version)} 800ms ease-out forwards`
+                    : undefined,
+                }}
+              >
+                {livePrice ? formatPrice(livePrice) : "…"}
+              </span>
+
+              {/* 24h change — always green/red */}
+              <span className={clsx("text-[11px] font-bold font-[family-name:var(--font-data)]", percentClass(liveChange))}>
+                {formatPercent(liveChange)}
+              </span>
             </span>
           );
         })}

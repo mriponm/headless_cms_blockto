@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState, useMemo, memo } from "react";
 import useSWR from "swr";
 import { Loader2 } from "lucide-react";
 import { BINANCE_SYMBOLS } from "@/lib/binanceSymbols";
@@ -37,7 +37,7 @@ function fmtVol(n: number): string {
   return n.toFixed(0);
 }
 
-export default function CoinChart({
+function CoinChartInner({
   coinId,
   type,
   interval,
@@ -352,3 +352,6 @@ export default function CoinChart({
     </div>
   );
 }
+
+const CoinChart = memo(CoinChartInner);
+export default CoinChart;
