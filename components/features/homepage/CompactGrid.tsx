@@ -8,7 +8,6 @@ const CAT_STYLE: Record<string, { color: string; bg: string; border: string; sym
   bitcoin:  { color: "#ff6a00", bg: "rgba(255,106,0,0.08)",  border: "rgba(255,106,0,0.15)",  sym: "₿", symBg: "linear-gradient(135deg,#ff9a40,#ff6a00)" },
   ethereum: { color: "#4a9eff", bg: "rgba(74,158,255,0.08)", border: "rgba(74,158,255,0.2)",  sym: "Ξ", symBg: "linear-gradient(135deg,#627eea,#3c5ad6)" },
   altcoin:  { color: "#00d47b", bg: "rgba(0,212,123,0.08)",  border: "rgba(0,212,123,0.2)",   sym: "◎", symBg: "linear-gradient(135deg,#00d47b,#00a862)" },
-  nft:      { color: "#b16aff", bg: "rgba(177,106,255,0.08)",border: "rgba(177,106,255,0.2)", sym: "🎨", symBg: "linear-gradient(135deg,#b16aff,#8a3fff)" },
   news:     { color: "#ff6a00", bg: "rgba(255,106,0,0.08)",  border: "rgba(255,106,0,0.15)",  sym: "📰", symBg: "linear-gradient(135deg,#ff9a40,#ff6a00)" },
 };
 

@@ -20,7 +20,6 @@ const NEWS_SUBS = [
   { label: "Bitcoin",      href: "/category/bitcoin" },
   { label: "Ethereum",     href: "/category/ethereum" },
   { label: "Altcoins",     href: "/category/altcoins" },
-  { label: "NFTs",         href: "/category/nfts" },
   { label: "Blockchain",   href: "/category/blockchain" },
 ];
 

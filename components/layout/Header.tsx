@@ -27,7 +27,6 @@ const NEWS_CATS = [
   { label: "Bitcoin",      href: "/category/bitcoin",      emoji: "₿" },
   { label: "Ethereum",     href: "/category/ethereum",     emoji: "Ξ" },
   { label: "Altcoins",     href: "/category/altcoins",     emoji: "🪙" },
-  { label: "NFTs",         href: "/category/nfts",         emoji: "🎨" },
   { label: "Blockchain",   href: "/category/blockchain",   emoji: "⛓️" },
 ];
 

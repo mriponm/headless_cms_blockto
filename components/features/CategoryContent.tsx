@@ -7,12 +7,13 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   TrendingUp, Clock, Flame, ArrowRight, Rss,
-  Newspaper, Bitcoin, Layers, BarChart2, ImageIcon, Network,
-  LineChart, PieChart,
+  Newspaper, Bitcoin, Layers, BarChart2, Network,
+  LineChart, PieChart, X,
 } from "lucide-react";
 import type { WPPost, WPCategory } from "@/lib/wordpress/types";
 import { relativeDate, primaryCategory, stripExcerpt } from "@/lib/wordpress/queries";
 import TranslatedText from "@/components/ui/TranslatedText";
+import NewsletterForm from "@/components/ui/NewsletterForm";
 
 const BRAND = "#ff6a00";
 const BRAND_BG = "rgba(255,106,0,0.08)";
@@ -45,11 +46,6 @@ const CAT_META: Record<string, {
     label: "Altcoins",
     Icon: BarChart2,
     description: "SOL, AVAX, LINK and the broader altcoin market — price action, fundamentals and trends.",
-  },
-  "nfts": {
-    label: "NFTs",
-    Icon: ImageIcon,
-    description: "Non-fungible token markets, collections, creator economy and digital ownership trends.",
   },
   "blockchain": {
     label: "Blockchain",
@@ -166,7 +162,7 @@ function ListCard({ post }: { post: WPPost }) {
 
 const WP_TO_APP: Record<string, string> = {
   bitcoin: "bitcoin", ethereum: "ethereum", altcoin: "altcoins",
-  nft: "nfts", news: "general-news", blog: "general-news", ai: "general-news",
+  news: "general-news", blog: "general-news", ai: "general-news",
 };
 
 export default function CategoryContent({
@@ -179,6 +175,7 @@ export default function CategoryContent({
   const meta = CAT_META[slug] ?? DEFAULT_META;
   const { Icon } = meta;
   const [activeSort, setActiveSort] = useState("latest");
+  const [showNewsletter, setShowNewsletter] = useState(false);
 
   const sortedPosts = (() => {
     if (activeSort === "trending") {
@@ -358,10 +355,32 @@ export default function CategoryContent({
               <p className="text-[12px] art-sub-text font-medium mb-4 leading-[1.5]">
                 Daily summary of top {meta.label.toLowerCase()} stories, delivered every morning.
               </p>
-              <button className="w-full py-3 rounded-[11px] text-[13px] font-extrabold text-black cursor-pointer transition-all hover:brightness-110 font-[family-name:var(--font-display)]"
+              <button
+                onClick={() => setShowNewsletter(true)}
+                className="w-full py-3 rounded-[11px] text-[13px] font-extrabold text-black cursor-pointer transition-all hover:brightness-110 font-[family-name:var(--font-display)]"
                 style={{ background: `linear-gradient(135deg,${BRAND_GRAD_FROM},${BRAND_GRAD_TO})`, boxShadow: `0 6px 18px ${BRAND_GLOW}, inset 0 1px 0 rgba(255,255,255,0.2)` }}>
                 Subscribe free
               </button>
+
+              {showNewsletter && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+                  style={{ background: "rgba(0,0,0,0.72)", backdropFilter: "blur(10px)" }}
+                  onClick={e => { if (e.target === e.currentTarget) setShowNewsletter(false); }}>
+                  <div className="w-full max-w-sm rounded-[20px] p-6 relative"
+                    style={{ background: "#0e0e0e", border: "0.5px solid rgba(255,255,255,0.10)", boxShadow: "0 24px 60px rgba(0,0,0,0.5)" }}>
+                    <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(255,106,0,0.35)] to-transparent rounded-t-[20px] pointer-events-none" />
+                    <button onClick={() => setShowNewsletter(false)}
+                      className="absolute top-4 right-4 w-7 h-7 rounded-[8px] flex items-center justify-center cursor-pointer transition-all hover:bg-[rgba(255,255,255,0.06)]">
+                      <X size={13} style={{ color: "#666" }} />
+                    </button>
+                    <p className="text-[14px] font-extrabold mb-1 font-[family-name:var(--font-display)]">{meta.label} digest</p>
+                    <p className="text-[11px] mb-4 font-[family-name:var(--font-display)]" style={{ color: "#777" }}>
+                      Daily summary delivered every morning.
+                    </p>
+                    <NewsletterForm />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </motion.div>

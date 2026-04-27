@@ -9,7 +9,7 @@ import { relativeDate, primaryCategory } from "@/lib/wordpress/queries";
 
 const CAT_COLOR: Record<string, string> = {
   bitcoin:  "#ff6a00", ethereum: "#4a9eff", altcoin:  "#00d47b",
-  nft:      "#b16aff", news:     "#ff6a00", ai:       "#00d4ff",
+  news:     "#ff6a00", ai:       "#00d4ff",
   regulation: "#e06aff", etf:   "#00c48c",
 };
 

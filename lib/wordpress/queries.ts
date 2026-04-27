@@ -7,7 +7,6 @@ export const APP_SLUG_TO_WP: Record<string, string> = {
   "bitcoin":         "bitcoin",
   "ethereum":        "ethereum",
   "altcoins":        "altcoin",
-  "nfts":            "nft",
   "blockchain":      "news",
   "markets":         "markets",
   "analysis":        "analysis",

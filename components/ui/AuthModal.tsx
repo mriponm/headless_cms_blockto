@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useCallback, useState } from "react";
-import { ArrowRight, Shield, X, Eye, EyeOff, Loader2 } from "lucide-react";
+import { ArrowRight, X, Eye, EyeOff, Loader2 } from "lucide-react";
 import { useAuthModal } from "@/components/providers/AuthModalProvider";
 import BrandLogo from "@/components/ui/BrandLogo";
 
@@ -366,19 +366,6 @@ export default function AuthModal() {
               ? <SignInPanel onSwitch={() => setMode("signup")} onAuthComplete={onLoginComplete} onForgot={() => setShowForgot(true)} successMessage={registeredEmail ? `Account created! Sign in to continue.` : undefined} />
               : <SignUpPanel onSwitch={switchToSignIn} onAuthComplete={onSignUpComplete} />}
 
-          {!isForgot && (
-            <div className="flex items-center justify-center gap-4 flex-wrap pt-4 mt-2">
-              {(mode === "signin"
-                ? ["Encrypted login", "2FA ready", "GDPR compliant"]
-                : ["No credit card", "Bank-level security", "Cancel anytime"]
-              ).map((label) => (
-                <div key={label} className="flex items-center gap-1.5 text-[10px] text-[#666] font-semibold">
-                  <Shield size={10} className="text-[#555]" />
-                  {label}
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </div>
     </div>

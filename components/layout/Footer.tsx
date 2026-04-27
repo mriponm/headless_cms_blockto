@@ -5,6 +5,7 @@ import { AlertTriangle, ShieldCheck, Lock, ChevronDown, Globe } from "lucide-rea
 import { LANGUAGES, type LangCode } from "@/lib/i18n/languages";
 import { useI18n } from "@/components/providers/I18nProvider";
 import BrandLogo from "@/components/ui/BrandLogo";
+import NewsletterForm from "@/components/ui/NewsletterForm";
 
 const NAV_COLS = [
   { title: "Platform", links: [
@@ -144,6 +145,7 @@ function LanguagePicker() {
   );
 }
 
+
 export default function Footer() {
   return (
     <footer className="relative z-[2] mt-4 footer-border-top">
@@ -172,19 +174,7 @@ export default function Footer() {
               <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(255,106,0,0.35)] to-transparent" />
               <p className="text-[13px] font-bold mb-1 font-[family-name:var(--font-display)]">Daily brief</p>
               <p className="text-[11px] mb-3 font-[family-name:var(--font-display)] footer-muted">Market moves delivered every morning.</p>
-              <div className="flex gap-2" suppressHydrationWarning>
-                <input
-                  type="email"
-                  placeholder="you@example.com"
-                  className="flex-1 min-w-0 rounded-[8px] px-3 py-2 text-[12px] outline-none transition-colors font-[family-name:var(--font-display)] footer-input"
-                />
-                <button
-                  className="px-3 py-2 rounded-[8px] text-[11px] font-extrabold text-black cursor-pointer flex-shrink-0 font-[family-name:var(--font-display)] transition-all duration-150 hover:brightness-110 hover:shadow-[0_2px_12px_rgba(255,106,0,0.35)]"
-                  style={{ background: "var(--gradient-brand)", boxShadow: "0 2px 8px rgba(255,106,0,0.2)" }}
-                >
-                  Join
-                </button>
-              </div>
+              <NewsletterForm />
             </div>
           </div>
 
