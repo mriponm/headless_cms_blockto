@@ -406,7 +406,7 @@ export default function CategoryContent({
 
                   <button
                     onClick={() => goToPage(Math.min(totalPages, page + 1))}
-                    disabled={page === totalPages && !hasNextPage}
+                    disabled={page === totalPages && allLoaded}
                     className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[11px] font-bold cursor-pointer disabled:opacity-30 transition-all hover:bg-[rgba(255,255,255,0.08)] font-[family-name:var(--font-display)]"
                     style={{ color: "var(--color-text)" }}
                   >›</button>
