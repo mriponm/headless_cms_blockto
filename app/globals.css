@@ -37,6 +37,15 @@ html, body {
   overflow-x: hidden;
 }
 
+/* ─── Prevent mobile scroll restoration / overscroll bounce ──── */
+html {
+  overscroll-behavior: none;
+  scroll-behavior: auto;
+}
+body {
+  overscroll-behavior: none;
+}
+
 /* ─── Full-page gradient layer (fixed, below everything) ─────── */
 html::before {
   content: "";
