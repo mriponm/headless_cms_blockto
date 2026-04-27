@@ -13,8 +13,8 @@ import { getPosts } from "@/lib/wordpress/queries";
 
 export default async function HomePage() {
   const [latestPosts, generalPosts, bitcoinPosts, ethereumPosts, altcoinPosts] = await Promise.all([
-    getPosts(6),
-    getPosts(36, "general-news"),
+    getPosts(12),
+    getPosts(100, "general-news"),
     getPosts(9, "bitcoin"),
     getPosts(9, "ethereum"),
     getPosts(9, "altcoins"),

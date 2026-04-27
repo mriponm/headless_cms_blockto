@@ -1,17 +1,19 @@
 import { fetchGraphQL } from "./client";
 import type { PostsData, CategoriesData, SinglePostData, WPPost, WPCategory } from "./types";
 
-/** Maps the app's URL slugs to WPGraphQL category names */
+/** Maps the app's URL slugs to WPGraphQL category slugs */
 export const APP_SLUG_TO_WP: Record<string, string> = {
-  "general-news":    "news",
-  "bitcoin":         "bitcoin",
-  "ethereum":        "ethereum",
-  "altcoins":        "altcoin",
-  "blockchain":      "news",
-  "markets":         "markets",
-  "analysis":        "analysis",
-  "bitcoin-analysis":"bitcoin",
-  "altcoin-focus":   "altcoin",
+  "general-news":     "blog",
+  "bitcoin":          "bitcoin",
+  "ethereum":         "ethereum",
+  "altcoins":         "altcoin",
+  "blockchain":       "blockchain",
+  "markets":          "markets",
+  "analysis":         "analysis",
+  "bitcoin-analysis": "bitcoin-analysis",
+  "altcoin-focus":    "altcoin-focus",
+  "defi":             "defi",
+  "ai":               "ai",
 };
 
 const POST_FIELDS = `
@@ -36,6 +38,37 @@ export async function getPosts(first = 10, categorySlug?: string): Promise<WPPos
     }
   `);
   return data?.posts?.nodes ?? [];
+}
+
+export interface PostsPage {
+  posts: WPPost[];
+  hasNextPage: boolean;
+  endCursor: string | null;
+}
+
+export async function getPostsPage(
+  first = 50,
+  categorySlug?: string,
+  after?: string,
+): Promise<PostsPage> {
+  const wpCat = categorySlug ? APP_SLUG_TO_WP[categorySlug] ?? categorySlug : undefined;
+  const whereParts: string[] = [];
+  if (wpCat) whereParts.push(`categoryName: "${wpCat}"`);
+  const afterPart = after ? `, after: "${after}"` : "";
+  const wherePart = whereParts.length ? `, where: { ${whereParts.join(", ")} }` : "";
+  const data = await fetchGraphQL<{ posts: { nodes: WPPost[]; pageInfo: { hasNextPage: boolean; endCursor: string | null } } }>(`
+    {
+      posts(first: ${first}${afterPart}${wherePart}) {
+        nodes { ${POST_FIELDS} }
+        pageInfo { hasNextPage endCursor }
+      }
+    }
+  `);
+  return {
+    posts: data?.posts?.nodes ?? [],
+    hasNextPage: data?.posts?.pageInfo?.hasNextPage ?? false,
+    endCursor: data?.posts?.pageInfo?.endCursor ?? null,
+  };
 }
 
 export async function getPostBySlug(slug: string): Promise<WPPost | null> {

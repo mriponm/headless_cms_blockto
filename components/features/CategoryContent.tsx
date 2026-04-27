@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
 import AuthorAvatar from "@/components/ui/AuthorAvatar";
 import { pickAuthor } from "@/lib/authors";
@@ -11,9 +11,10 @@ import {
   LineChart, PieChart, X,
 } from "lucide-react";
 import type { WPPost, WPCategory } from "@/lib/wordpress/types";
-import { relativeDate, primaryCategory, stripExcerpt } from "@/lib/wordpress/queries";
+import { relativeDate, primaryCategory, stripExcerpt, APP_SLUG_TO_WP } from "@/lib/wordpress/queries";
 import TranslatedText from "@/components/ui/TranslatedText";
 import NewsletterForm from "@/components/ui/NewsletterForm";
+
 
 const BRAND = "#ff6a00";
 const BRAND_BG = "rgba(255,106,0,0.08)";
@@ -88,9 +89,10 @@ function FeaturedCard({ post }: { post: WPPost }) {
     <Link href={`/news/${post.slug}`}
       className="hp-card block rounded-[20px] overflow-hidden cursor-pointer card-hover relative group">
       <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/8 to-transparent pointer-events-none z-10" />
-      <div className="h-[200px] md:h-[240px] relative overflow-hidden bg-[#0a0e1a]">
+      <div className="h-[200px] md:h-[240px] relative overflow-hidden" style={{ background: "linear-gradient(135deg,#0a0e1a,#111)" }}>
+        <div className="absolute inset-0 animate-pulse" style={{ background: "linear-gradient(135deg,rgba(255,106,0,0.06),rgba(0,0,0,0))" }} />
         {post.featuredImage ? (
-          <Image src={post.featuredImage.node.sourceUrl} alt={post.title} fill
+          <Image src={post.featuredImage.node.sourceUrl} alt={post.title} fill priority
             className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width: 640px) 100vw, 50vw" />
         ) : (
           <div className="absolute inset-0" style={{ background: `linear-gradient(135deg, ${BRAND_BG}, #0a0e1a)` }} />
@@ -125,15 +127,17 @@ function FeaturedCard({ post }: { post: WPPost }) {
   );
 }
 
-function ListCard({ post }: { post: WPPost }) {
+function ListCard({ post, eager }: { post: WPPost; eager?: boolean }) {
   const cat = primaryCategory(post);
   return (
     <Link href={`/news/${post.slug}`}
       className="hp-card flex gap-3.5 p-3.5 rounded-[16px] cursor-pointer card-hover relative group block">
       <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none" />
-      <div className="w-[90px] h-[90px] md:w-[110px] md:h-[110px] rounded-[12px] overflow-hidden flex-shrink-0 img-thumb-border img-thumb-bg relative">
+      <div className="w-[90px] h-[90px] md:w-[110px] md:h-[110px] rounded-[12px] overflow-hidden flex-shrink-0 img-thumb-border relative" style={{ background: "linear-gradient(135deg,#0d1117,#111)" }}>
         {post.featuredImage ? (
-          <Image src={post.featuredImage.node.sourceUrl} alt={post.title} fill className="object-cover" sizes="110px" />
+          <Image src={post.featuredImage.node.sourceUrl} alt={post.title} fill
+            className="object-cover" sizes="110px" unoptimized
+            loading={eager ? "eager" : "lazy"} />
         ) : (
           <div className="w-full h-full" style={{ background: `linear-gradient(135deg, ${BRAND_BG}, #0a0e1a)` }} />
         )}
@@ -166,35 +170,96 @@ const WP_TO_APP: Record<string, string> = {
 };
 
 export default function CategoryContent({
-  slug, posts, allCategories,
+  slug, posts: initialPosts, allCategories, initialHasNextPage = false, initialEndCursor = null,
 }: {
   slug: string;
   posts: WPPost[];
   allCategories: WPCategory[];
+  initialHasNextPage?: boolean;
+  initialEndCursor?: string | null;
 }) {
   const meta = CAT_META[slug] ?? DEFAULT_META;
   const { Icon } = meta;
   const [activeSort, setActiveSort] = useState("latest");
   const [showNewsletter, setShowNewsletter] = useState(false);
+  const [posts, setPosts] = useState(initialPosts);
+  const [allLoaded, setAllLoaded] = useState(!initialHasNextPage);
+  const [page, setPage] = useState(1);
+  const STORIES_PER_PAGE = 10;
+  const fetchingRef = useRef(false);
 
-  const sortedPosts = (() => {
-    if (activeSort === "trending") {
-      // deterministic shuffle by id — consistent "trending" order
-      return [...posts].sort((a, b) => {
-        const ha = a.id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
-        const hb = b.id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
-        return (ha % 17) - (hb % 17);
+  // Background-fetch ALL remaining pages on mount — pagination stays instant
+  useEffect(() => {
+    if (!initialHasNextPage || fetchingRef.current) return;
+    fetchingRef.current = true;
+    let cancelled = false;
+
+    (async () => {
+      let cursor = initialEndCursor;
+      let more = true;
+      while (more && !cancelled) {
+        const params = new URLSearchParams({ slug, first: "100" });
+        if (cursor) params.set("after", cursor);
+        try {
+          const res = await fetch(`/api/posts?${params}`);
+          const data = await res.json();
+          if (cancelled) break;
+          setPosts(prev => [...prev, ...data.posts]);
+          more = data.hasNextPage;
+          cursor = data.endCursor;
+        } catch { break; }
+      }
+      if (!cancelled) setAllLoaded(true);
+    })();
+
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug]);
+
+  // Pre-compute all three sort orders — switching tabs is instant, no re-sort on every render
+  const sortedVariants = useMemo(() => {
+    const latest   = [...posts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    const trending  = [...posts].sort((a, b) => {
+      const ha = a.id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+      const hb = b.id.split("").reduce((acc, c) => acc + c.charCodeAt(0), 0);
+      return (ha % 17) - (hb % 17);
+    });
+    const top = [...posts].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    return { latest, trending, top };
+  }, [posts]);
+
+  const sortedPosts = sortedVariants[activeSort as "latest" | "trending" | "top"] ?? sortedVariants.latest;
+
+  const featured   = sortedPosts.slice(0, 2);
+  const allStories = sortedPosts.slice(2);
+  const list       = allStories.slice((page - 1) * STORIES_PER_PAGE, page * STORIES_PER_PAGE);
+  const knownPages = Math.ceil(allStories.length / STORIES_PER_PAGE);
+  const totalPages = allLoaded ? knownPages : Math.max(knownPages, page + 1);
+
+  function goToPage(p: number) {
+    setPage(p);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  // Preload: featured images for all sort variants + current + next page list images
+  useEffect(() => {
+    const urls = new Set<string>();
+    (["latest", "trending", "top"] as const).forEach(key => {
+      sortedVariants[key].slice(0, 2).forEach(p => {
+        const url = p.featuredImage?.node?.sourceUrl;
+        if (url) urls.add(url);
       });
-    }
-    if (activeSort === "top") {
-      return [...posts].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    }
-    // latest: date desc (API default)
-    return [...posts].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  })();
+    });
+    const start = (page - 1) * STORIES_PER_PAGE;
+    allStories.slice(start, start + STORIES_PER_PAGE * 2).forEach(p => {
+      const url = p.featuredImage?.node?.sourceUrl;
+      if (url) urls.add(url);
+    });
+    urls.forEach(url => { const img = new window.Image(); img.src = url; });
+  }, [sortedVariants, allStories, page]);
 
-  const featured = sortedPosts.slice(0, 2);
-  const list     = sortedPosts.slice(2);
+  const wpSlug = APP_SLUG_TO_WP[slug] ?? slug;
+  const totalCount = allCategories.find(c => c.slug === wpSlug)?.count ?? posts.length;
 
   const otherCats = allCategories
     .map((c) => ({ appSlug: WP_TO_APP[c.slug] ?? c.slug, label: c.name, count: c.count ?? 0 }))
@@ -253,12 +318,12 @@ export default function CategoryContent({
             </p>
           </div>
 
-          {/* Article count — right side stat */}
+          {/* Article count */}
           <div className="flex flex-col items-center gap-1 flex-shrink-0 px-4 md:px-6 py-3 md:py-4 rounded-[14px] md:rounded-[18px]"
             style={{ background: "rgba(255,106,0,0.07)", border: "0.5px solid rgba(255,106,0,0.18)" }}>
             <div className="text-[26px] md:text-[36px] font-black font-[family-name:var(--font-data)] tracking-[-1px] leading-none"
               style={{ color: BRAND }}>
-              {posts.length}
+              {totalCount.toLocaleString()}
             </div>
             <div className="text-[8px] md:text-[9px] art-sub-text font-bold uppercase tracking-[1.5px] whitespace-nowrap">articles</div>
           </div>
@@ -295,15 +360,58 @@ export default function CategoryContent({
             </motion.div>
           )}
 
-          {list.length > 0 && (
+          {allStories.length > 0 && (
             <>
               <motion.div {...fadeUp(0.18)} className="flex items-center gap-2.5 mb-4">
                 <span className="text-[10px] font-extrabold uppercase tracking-[2.5px] art-sub-text font-[family-name:var(--font-display)]">More stories</span>
                 <div className="flex-1 h-px bg-gradient-to-r from-[rgba(255,255,255,0.06)] to-transparent" />
               </motion.div>
               <motion.div {...fadeUp(0.22)} className="flex flex-col gap-3">
-                {list.map((p) => <ListCard key={p.id} post={p} />)}
+                {list.map((p, i) => <ListCard key={p.id} post={p} eager={i < 5} />)}
               </motion.div>
+
+              {/* Numbered pagination */}
+              {totalPages > 1 && (
+                <div className="flex items-center justify-center gap-1.5 mt-6 flex-wrap">
+                  <button
+                    onClick={() => goToPage(Math.max(1, page - 1))}
+                    disabled={page === 1}
+                    className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[11px] font-bold cursor-pointer disabled:opacity-30 transition-all hover:bg-[rgba(255,255,255,0.08)] font-[family-name:var(--font-display)]"
+                    style={{ color: "var(--color-text)" }}
+                  >‹</button>
+
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter(p => p === 1 || p === totalPages || Math.abs(p - page) <= 2)
+                    .reduce<(number | "…")[]>((acc, p, i, arr) => {
+                      if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("…");
+                      acc.push(p);
+                      return acc;
+                    }, [])
+                    .map((p, i) =>
+                      p === "…" ? (
+                        <span key={`ellipsis-${i}`} className="w-8 h-8 flex items-center justify-center text-[11px]" style={{ color: "#555" }}>…</span>
+                      ) : (
+                        <button
+                          key={p}
+                          onClick={() => goToPage(p as number)}
+                          className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[11px] font-bold cursor-pointer transition-all font-[family-name:var(--font-display)]"
+                          style={page === p
+                            ? { background: "linear-gradient(135deg,#ff6a00,#ff8a30)", color: "#000" }
+                            : { color: "var(--color-text)", background: "transparent" }
+                          }
+                        >{p}</button>
+                      )
+                    )
+                  }
+
+                  <button
+                    onClick={() => goToPage(Math.min(totalPages, page + 1))}
+                    disabled={page === totalPages && !hasNextPage}
+                    className="w-8 h-8 rounded-[8px] flex items-center justify-center text-[11px] font-bold cursor-pointer disabled:opacity-30 transition-all hover:bg-[rgba(255,255,255,0.08)] font-[family-name:var(--font-display)]"
+                    style={{ color: "var(--color-text)" }}
+                  >›</button>
+                </div>
+              )}
             </>
           )}
 
