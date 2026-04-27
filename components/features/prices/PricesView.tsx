@@ -611,23 +611,6 @@ export default function PricesView() {
             </div>
           </div>
 
-          {/* Converter — live Binance WS price */}
-          <div className="glass-strong pr-card">
-            <div className="pr-card-head">
-              <span className="pr-card-title">Crypto <span className="gradient-text-alt">converter</span></span>
-            </div>
-            <div className="pr-card-body">
-              <div className="mtr-conv-row">
-                <div className="mtr-conv-input">1 BTC</div>
-                <span className="mtr-conv-eq">=</span>
-                <div className="mtr-conv-result">
-                  {btcLive ? fmt(btcLive.p, eur) : "—"}
-                </div>
-              </div>
-              <p className="mtr-conv-hint">Live · Binance</p>
-            </div>
-          </div>
-
         </div>
       </div>
 

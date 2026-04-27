@@ -60,7 +60,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${outfit.variable} ${jetbrainsMono.variable} ${lora.variable} ${leagueSpartan.variable} dark`} suppressHydrationWarning>
       <body className="min-h-screen flex flex-col relative" suppressHydrationWarning>
-        <Script id="theme-init" strategy="beforeInteractive">{`(function(){var t=localStorage.getItem('theme');if(t){document.documentElement.classList.remove('dark','light');document.documentElement.classList.add(t);}})()`}</Script>
+        <Script id="theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: `(function(){var t=localStorage.getItem('theme');if(t){document.documentElement.classList.remove('dark','light');document.documentElement.classList.add(t);}})()` }} />
         <UserSyncProvider />
         <AuthModalProvider>
           <AuthModal />

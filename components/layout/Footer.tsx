@@ -172,7 +172,7 @@ export default function Footer() {
               <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(255,106,0,0.35)] to-transparent" />
               <p className="text-[13px] font-bold mb-1 font-[family-name:var(--font-display)]">Daily brief</p>
               <p className="text-[11px] mb-3 font-[family-name:var(--font-display)] footer-muted">Market moves delivered every morning.</p>
-              <div className="flex gap-2">
+              <div className="flex gap-2" suppressHydrationWarning>
                 <input
                   type="email"
                   placeholder="you@example.com"

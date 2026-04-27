@@ -49,13 +49,13 @@ export default function AlertModal({ coinId, coinSymbol, coinName, currentPrice,
 
   return (
     <div
-      className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-4"
+      className="fixed inset-0 z-[200] flex items-end sm:items-center justify-center p-4 pb-24 sm:pb-4"
       style={{ background: "rgba(0,0,0,0.72)", backdropFilter: "blur(10px)" }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="w-full max-w-sm rounded-[20px] p-5 relative"
         style={{
-          background: isLight ? "#fff" : "rgba(14,14,14,0.98)",
+          background: isLight ? "#fff" : "#0e0e0e",
           border: `0.5px solid ${isLight ? "rgba(0,0,0,0.10)" : "rgba(255,255,255,0.10)"}`,
           boxShadow: "0 24px 60px rgba(0,0,0,0.5)",
         }}>
