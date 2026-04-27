@@ -46,7 +46,7 @@ export default function NewsletterForm() {
           onKeyDown={e => e.key === "Enter" && submit()}
           placeholder="you@example.com"
           className="flex-1 min-w-0 rounded-[8px] px-3 py-2 text-[12px] outline-none transition-colors font-[family-name:var(--font-display)] footer-input"
-          autoFocus
+
         />
         <button
           onClick={submit}
