@@ -49,10 +49,22 @@ export const metadata: Metadata = {
     template: "%s — Blockto",
   },
   description: "Real-time crypto market analytics, news, prices, and trading data.",
+  manifest: "/manifest.webmanifest",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Blockto",
+    startupImage: "/blockto_icon.jpeg",
+  },
   icons: {
     icon: "/favicon.jpeg",
-    apple: "/favicon.jpeg",
+    apple: "/blockto_icon.jpeg",
     shortcut: "/favicon.jpeg",
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
+    "msapplication-TileColor": "#ff6a00",
+    "msapplication-TileImage": "/blockto_icon.jpeg",
   },
 };
 
@@ -65,6 +77,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-screen flex flex-col relative" suppressHydrationWarning>
         <Script id="theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: `(function(){var t=localStorage.getItem('theme');if(t){document.documentElement.classList.remove('dark','light');document.documentElement.classList.add(t);}})()` }} />
+        <Script id="sw-register" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js')}` }} />
         <UserSyncProvider />
         <AuthModalProvider>
           <AuthModal />
