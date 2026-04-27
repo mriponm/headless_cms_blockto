@@ -88,9 +88,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <Background />
                 <PriceProvider>
                   <AlertChecker />
-                  <ConditionalShell>
-                    {children}
-                  </ConditionalShell>
+                  <div className="flex flex-col flex-1 min-h-screen">
+                    <ConditionalShell>
+                      {children}
+                    </ConditionalShell>
+                  </div>
                 </PriceProvider>
                 <CookieConsent />
               </TranslationBatcherProvider>

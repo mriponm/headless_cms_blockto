@@ -17,7 +17,7 @@ export default function ConditionalShell({ children }: { children: React.ReactNo
   return (
     <>
       <Header />
-      <main className="flex-1 relative z-[2] pb-20 md:pb-0">{children}</main>
+      <main className="flex-1 relative z-[2] pb-20 md:pb-0 min-h-screen">{children}</main>
       <Footer />
       <BottomNav />
     </>
