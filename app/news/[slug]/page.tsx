@@ -1,4 +1,5 @@
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
 import { notFound } from "next/navigation";
 import AuthorAvatar from "@/components/ui/AuthorAvatar";

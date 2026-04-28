@@ -1,4 +1,5 @@
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
 import { getPostsPage, getCategories } from "@/lib/wordpress/queries";
 import CategoryContent from "@/components/features/CategoryContent";

@@ -9,7 +9,8 @@ export async function fetchGraphQL<T = unknown>(
     return null;
   }
   try {
-    const res = await fetch(WP_API, {
+    const url = `${WP_API}?_=${Date.now()}`;
+    const res = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
