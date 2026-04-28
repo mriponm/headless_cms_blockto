@@ -577,7 +577,7 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
                           dangerouslySetInnerHTML={{ __html: post.title }} />
                         <p className="text-[9px] font-semibold font-[family-name:var(--font-data)]" style={{ color: "#555" }}>
                           <span style={{ color: "#aaa" }}>{post.author?.node?.name}</span>
-                          {" · "}{new Date(post.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                          {" · "}{new Date(post.dateGmt ? `${post.dateGmt}Z` : post.date).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" })}
                         </p>
                       </div>
                     </Card>

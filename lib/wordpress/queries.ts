@@ -64,7 +64,7 @@ function mergePosts(results: WPPost[][], limit: number): WPPost[] {
   return results
     .flat()
     .filter((p) => (seen.has(p.slug) ? false : (seen.add(p.slug), true)))
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .sort((a, b) => new Date(b.dateGmt ?? b.date).getTime() - new Date(a.dateGmt ?? a.date).getTime())
     .slice(0, limit);
 }
 

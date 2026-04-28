@@ -31,7 +31,7 @@ export default async function HomePage() {
   const mergedGeneralPosts = [
     ...generalPosts,
     ...latestPosts.filter(p => !generalPostSlugs.has(p.slug)),
-  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+  ].sort((a, b) => new Date(b.dateGmt ?? b.date).getTime() - new Date(a.dateGmt ?? a.date).getTime())
    .slice(0, 100);
 
   return (

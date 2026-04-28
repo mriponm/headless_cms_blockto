@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       description,
       url,
       images: [{ url: image, alt: post.title }],
-      publishedTime: post.date,
+      publishedTime: post.dateGmt ? `${post.dateGmt}Z` : post.date,
       siteName: "Blockto",
     },
     twitter: {
@@ -60,7 +60,8 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
   const cat = primaryCategory(post);
   const relatedPosts = related.filter((p) => p.slug !== slug).slice(0, 3);
   const postUrl = `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://blockto.news"}/news/${slug}`;
-  const dateStr = new Date(post.date).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  const utcDate = new Date(post.dateGmt ? `${post.dateGmt}Z` : post.date);
+  const dateStr = utcDate.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
 
   return (
     <>
