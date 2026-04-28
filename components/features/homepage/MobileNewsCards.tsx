@@ -1,5 +1,5 @@
-import RelativeTime from "@/components/ui/RelativeTime";
 "use client";
+import RelativeTime from "@/components/ui/RelativeTime";
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";

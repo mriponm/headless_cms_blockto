@@ -1,5 +1,5 @@
-import RelativeTime from "@/components/ui/RelativeTime";
 "use client";
+import RelativeTime from "@/components/ui/RelativeTime";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
 import AuthorAvatar from "@/components/ui/AuthorAvatar";
