@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Outfit, JetBrains_Mono, Lora, League_Spartan } from "next/font/google";
 import "./globals.css";
 import Background from "@/components/layout/Background";
@@ -74,8 +75,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link rel="preconnect" href="https://cms.blockto.io" />
         <link rel="dns-prefetch" href="https://cms.blockto.io" />
-        {/* Blocking theme init — must run before first paint to avoid flash */}
-        <script dangerouslySetInnerHTML={{ __html: `(function(){var t=localStorage.getItem('theme');if(t){document.documentElement.classList.remove('dark','light');document.documentElement.classList.add(t);}if('scrollRestoration' in history){history.scrollRestoration='manual';}window.scrollTo(0,0);})()` }} />
+        <Script src="/theme-init.js" strategy="beforeInteractive" />
       </head>
       <body className="min-h-screen flex flex-col relative" suppressHydrationWarning>
         <SwRegister />
