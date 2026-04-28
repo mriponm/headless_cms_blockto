@@ -177,6 +177,22 @@ export function stripExcerpt(html: string): string {
   return html.replace(/<[^>]+>/g, "").replace(/\[&hellip;\]|&#8230;/g, "…").trim();
 }
 
+const HTML_ENTITIES: Record<string, string> = {
+  "&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": '"', "&#039;": "'",
+  "&nbsp;": " ", "&#8217;": "'", "&#8216;": "'", "&#8220;": '"', "&#8221;": '"',
+};
+
+/** Extract first full paragraph from WP post content — no trailing ellipsis */
+export function firstParagraph(content: string): string {
+  const match = content.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
+  if (!match) return "";
+  return match[1]
+    .replace(/<[^>]+>/g, "")
+    .replace(/&[a-z#0-9]+;/gi, (e) => HTML_ENTITIES[e] ?? "")
+    .replace(/\[&hellip;\]|&#8230;|…/g, "")
+    .trim();
+}
+
 /** Format WP date to relative string */
 export function relativeDate(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();

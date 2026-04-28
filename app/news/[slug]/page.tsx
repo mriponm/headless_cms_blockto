@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import AuthorAvatar from "@/components/ui/AuthorAvatar";
 import Image from "next/image";
 import Link from "next/link";
-import { getPostBySlug, getPosts, primaryCategory, relativeDate, stripExcerpt } from "@/lib/wordpress/queries";
+import { getPostBySlug, getPosts, primaryCategory, relativeDate, stripExcerpt, firstParagraph } from "@/lib/wordpress/queries";
 import RelativeTime from "@/components/ui/RelativeTime";
 import { pickAuthor } from "@/lib/authors";
 import ArticleInteractive from "@/components/features/ArticleInteractive";
@@ -142,7 +142,7 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
           {/* Translated title + excerpt + meta + takeaways + body */}
           <ArticleTranslatedBody
             title={post.title}
-            excerpt={stripExcerpt(post.excerpt)}
+            excerpt={firstParagraph(post.content ?? "") || stripExcerpt(post.excerpt)}
             content={post.content ?? `<p>${stripExcerpt(post.excerpt)}</p>`}
             takeaways={
               stripExcerpt(post.excerpt)
