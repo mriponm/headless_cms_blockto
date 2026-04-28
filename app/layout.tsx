@@ -84,7 +84,8 @@ export const metadata: Metadata = {
   },
   other: {
     "mobile-web-app-capable": "yes",
-    "msapplication-TileColor": "#ff6a00",
+    "theme-color": "#0a0a0a",
+    "msapplication-TileColor": "#0a0a0a",
     "msapplication-TileImage": "/favicon_updated.jpeg",
   },
 };
