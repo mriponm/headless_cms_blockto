@@ -21,9 +21,18 @@ export default async function HomePage() {
     getPosts(9, "altcoins"),
   ]);
 
-  const heroPosts    = latestPosts.slice(0, 3);
+  const heroPosts     = latestPosts.slice(0, 3);
   const trendingPosts = latestPosts.slice(0, 5);
-  const breakingPost = latestPosts[0] ?? null;
+  const breakingPost  = latestPosts[0] ?? null;
+
+  // Merge latestPosts into generalPosts so uncategorized posts still appear
+  // in General News (dedup by slug, keep date order)
+  const generalPostSlugs = new Set(generalPosts.map(p => p.slug));
+  const mergedGeneralPosts = [
+    ...generalPosts,
+    ...latestPosts.filter(p => !generalPostSlugs.has(p.slug)),
+  ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+   .slice(0, 100);
 
   return (
     <div className="relative z-[2] max-w-[1440px] mx-auto px-3 md:px-10 pt-4">
@@ -40,7 +49,7 @@ export default async function HomePage() {
             <FadeIn delay={0.2}><HeroSection posts={heroPosts} /></FadeIn>
 
             <FadeIn delay={0.26}>
-              <NewsGrid posts={generalPosts} title="General news" />
+              <NewsGrid posts={mergedGeneralPosts} title="General news" />
             </FadeIn>
 
             <FadeIn delay={0.3}>
@@ -88,7 +97,7 @@ export default async function HomePage() {
             <FadeIn delay={0.18}><HeroSection posts={heroPosts} /></FadeIn>
             <FadeIn delay={0.22}>
               <MobileNewsCards
-                posts={generalPosts}
+                posts={mergedGeneralPosts}
                 title="General news"
                 variant="list"
                 paginate
