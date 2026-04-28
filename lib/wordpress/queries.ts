@@ -1,9 +1,9 @@
 import { fetchGraphQL } from "./client";
 import type { PostsData, CategoriesData, SinglePostData, WPPost, WPCategory } from "./types";
 
-/** Maps the app's URL slugs to WPGraphQL category slugs */
-export const APP_SLUG_TO_WP: Record<string, string> = {
-  "general-news":     "blog",
+/** Maps app URL slugs to WPGraphQL category slug(s). Array = match any. */
+export const APP_SLUG_TO_WP: Record<string, string | string[]> = {
+  "general-news":     ["blog", "news"],
   "bitcoin":          "bitcoin",
   "ethereum":         "ethereum",
   "altcoins":         "altcoin",
@@ -27,10 +27,19 @@ const POST_FIELDS = `
   categories { nodes { name slug } }
 `;
 
+function buildCatFilter(categorySlug?: string): string {
+  if (!categorySlug) return "";
+  const mapped = APP_SLUG_TO_WP[categorySlug] ?? categorySlug;
+  const slugs = Array.isArray(mapped) ? mapped : [mapped];
+  if (slugs.length === 1) return `categoryName: "${slugs[0]}"`;
+  const terms = slugs.map((s) => `"${s}"`).join(", ");
+  return `taxQuery: { taxArray: [{ taxonomy: CATEGORY, operator: IN, terms: [${terms}], field: SLUG }] }`;
+}
+
 export async function getPosts(first = 10, categorySlug?: string): Promise<WPPost[]> {
-  const wpCat = categorySlug ? APP_SLUG_TO_WP[categorySlug] ?? categorySlug : undefined;
+  const catFilter = buildCatFilter(categorySlug);
   const whereParts = [`orderby: { field: DATE, order: DESC }`];
-  if (wpCat) whereParts.push(`categoryName: "${wpCat}"`);
+  if (catFilter) whereParts.push(catFilter);
   const data = await fetchGraphQL<PostsData>(`
     {
       posts(first: ${first}, where: { ${whereParts.join(", ")} }) {
@@ -52,9 +61,9 @@ export async function getPostsPage(
   categorySlug?: string,
   after?: string,
 ): Promise<PostsPage> {
-  const wpCat = categorySlug ? APP_SLUG_TO_WP[categorySlug] ?? categorySlug : undefined;
+  const catFilter = buildCatFilter(categorySlug);
   const whereParts: string[] = [`orderby: { field: DATE, order: DESC }`];
-  if (wpCat) whereParts.push(`categoryName: "${wpCat}"`);
+  if (catFilter) whereParts.push(catFilter);
   const afterPart = after ? `, after: "${after}"` : "";
   const wherePart = `, where: { ${whereParts.join(", ")} }`;
   const data = await fetchGraphQL<{ posts: { nodes: WPPost[]; pageInfo: { hasNextPage: boolean; endCursor: string | null } } }>(`
