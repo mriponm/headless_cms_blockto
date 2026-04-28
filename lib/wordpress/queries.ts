@@ -27,27 +27,73 @@ const POST_FIELDS = `
   categories { nodes { name slug } }
 `;
 
-function buildCatFilter(categorySlug?: string): string {
-  if (!categorySlug) return "";
+function resolveSlugs(categorySlug?: string): string[] {
+  if (!categorySlug) return [];
   const mapped = APP_SLUG_TO_WP[categorySlug] ?? categorySlug;
-  const slugs = Array.isArray(mapped) ? mapped : [mapped];
-  if (slugs.length === 1) return `categoryName: "${slugs[0]}"`;
-  const terms = slugs.map((s) => `"${s}"`).join(", ");
-  return `taxQuery: { taxArray: [{ taxonomy: CATEGORY, operator: IN, terms: [${terms}], field: SLUG }] }`;
+  return Array.isArray(mapped) ? mapped : [mapped];
 }
 
-export async function getPosts(first = 10, categorySlug?: string): Promise<WPPost[]> {
-  const catFilter = buildCatFilter(categorySlug);
+async function fetchPostsForSlug(
+  first: number,
+  catSlug?: string,
+  after?: string,
+): Promise<{ nodes: WPPost[]; hasNextPage: boolean; endCursor: string | null }> {
   const whereParts = [`orderby: { field: DATE, order: DESC }`];
-  if (catFilter) whereParts.push(catFilter);
-  const data = await fetchGraphQL<PostsData>(`
+  if (catSlug) whereParts.push(`categoryName: "${catSlug}"`);
+  const afterPart = after ? `, after: "${after}"` : "";
+  const data = await fetchGraphQL<{
+    posts: { nodes: WPPost[]; pageInfo: { hasNextPage: boolean; endCursor: string | null } };
+  }>(`
     {
-      posts(first: ${first}, where: { ${whereParts.join(", ")} }) {
+      posts(first: ${first}${afterPart}, where: { ${whereParts.join(", ")} }) {
         nodes { ${POST_FIELDS} }
+        pageInfo { hasNextPage endCursor }
       }
     }
   `);
-  return data?.posts?.nodes ?? [];
+  return {
+    nodes: data?.posts?.nodes ?? [],
+    hasNextPage: data?.posts?.pageInfo?.hasNextPage ?? false,
+    endCursor: data?.posts?.pageInfo?.endCursor ?? null,
+  };
+}
+
+function mergePosts(results: WPPost[][], limit: number): WPPost[] {
+  const seen = new Set<string>();
+  return results
+    .flat()
+    .filter((p) => (seen.has(p.slug) ? false : (seen.add(p.slug), true)))
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, limit);
+}
+
+// Composite cursor: base64-encoded JSON used when merging multiple category streams
+interface CompositeCursor {
+  v: 1;
+  cursors: (string | null)[];
+  hasMore: boolean[];
+}
+
+function encodeCompositeCursor(cursors: (string | null)[], hasMore: boolean[]): string {
+  return Buffer.from(JSON.stringify({ v: 1, cursors, hasMore } satisfies CompositeCursor)).toString("base64");
+}
+
+function decodeCompositeCursor(s: string): CompositeCursor | null {
+  try {
+    const obj = JSON.parse(Buffer.from(s, "base64").toString("utf8"));
+    if (obj?.v === 1) return obj as CompositeCursor;
+  } catch {}
+  return null;
+}
+
+export async function getPosts(first = 10, categorySlug?: string): Promise<WPPost[]> {
+  const slugs = resolveSlugs(categorySlug);
+  if (slugs.length <= 1) {
+    const r = await fetchPostsForSlug(first, slugs[0]);
+    return r.nodes;
+  }
+  const results = await Promise.all(slugs.map((s) => fetchPostsForSlug(first, s).then((r) => r.nodes)));
+  return mergePosts(results, first);
 }
 
 export interface PostsPage {
@@ -61,23 +107,43 @@ export async function getPostsPage(
   categorySlug?: string,
   after?: string,
 ): Promise<PostsPage> {
-  const catFilter = buildCatFilter(categorySlug);
-  const whereParts: string[] = [`orderby: { field: DATE, order: DESC }`];
-  if (catFilter) whereParts.push(catFilter);
-  const afterPart = after ? `, after: "${after}"` : "";
-  const wherePart = `, where: { ${whereParts.join(", ")} }`;
-  const data = await fetchGraphQL<{ posts: { nodes: WPPost[]; pageInfo: { hasNextPage: boolean; endCursor: string | null } } }>(`
-    {
-      posts(first: ${first}${afterPart}${wherePart}) {
-        nodes { ${POST_FIELDS} }
-        pageInfo { hasNextPage endCursor }
-      }
+  const slugs = resolveSlugs(categorySlug);
+
+  // Single category — simple cursor-based query
+  if (slugs.length <= 1) {
+    const r = await fetchPostsForSlug(first, slugs[0], after);
+    return { posts: r.nodes, hasNextPage: r.hasNextPage, endCursor: r.endCursor };
+  }
+
+  // Multiple categories — parallel queries with composite cursor
+  let cursors: (string | null)[] = slugs.map(() => null);
+  let activeIdx = slugs.map((_, i) => i);
+
+  if (after) {
+    const comp = decodeCompositeCursor(after);
+    if (comp) {
+      cursors = comp.cursors;
+      activeIdx = comp.hasMore.map((m, i) => (m ? i : -1)).filter((i) => i >= 0);
     }
-  `);
+  }
+
+  const results = await Promise.all(
+    slugs.map((slug, i) =>
+      activeIdx.includes(i)
+        ? fetchPostsForSlug(first, slug, cursors[i] ?? undefined)
+        : Promise.resolve({ nodes: [] as WPPost[], hasNextPage: false, endCursor: null })
+    )
+  );
+
+  const merged = mergePosts(results.map((r) => r.nodes), first);
+  const newCursors = results.map((r) => r.endCursor);
+  const newHasMore = results.map((r) => r.hasNextPage);
+  const anyMore = newHasMore.some(Boolean);
+
   return {
-    posts: data?.posts?.nodes ?? [],
-    hasNextPage: data?.posts?.pageInfo?.hasNextPage ?? false,
-    endCursor: data?.posts?.pageInfo?.endCursor ?? null,
+    posts: merged,
+    hasNextPage: anyMore,
+    endCursor: anyMore ? encodeCompositeCursor(newCursors, newHasMore) : null,
   };
 }
 
