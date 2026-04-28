@@ -359,7 +359,7 @@ export default function Sidebar({ trendingPosts }: { trendingPosts: WPPost[] }) 
         style={{ background: "linear-gradient(135deg, rgba(255,106,0,0.1), rgba(255,106,0,0.02))", border: "0.5px solid rgba(255,106,0,0.2)" }}>
         <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(255,106,0,0.4)] to-transparent" />
         <span className="absolute top-[-30%] right-[-20%] w-[70%] h-[80%] bg-[radial-gradient(circle,rgba(255,106,0,0.15),transparent_70%)] blur-[30px] pointer-events-none" />
-        <div className="relative z-10">
+        <div className="relative z-10" suppressHydrationWarning>
           <h3 className="text-[17px] font-extrabold tracking-[-0.3px] mb-1.5 font-[family-name:var(--font-display)]">Get the daily brief</h3>
           <p className="text-[12px] text-[#aaa] font-medium leading-[1.5] mb-3.5 font-[family-name:var(--font-display)]">
             Market moves, breaking news & signals delivered every morning.
