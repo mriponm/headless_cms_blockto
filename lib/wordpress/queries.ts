@@ -182,6 +182,23 @@ const HTML_ENTITIES: Record<string, string> = {
   "&nbsp;": " ", "&#8217;": "'", "&#8216;": "'", "&#8220;": '"', "&#8221;": '"',
 };
 
+/** Extract up to `count` complete sentences from WP post content for key takeaways */
+export function extractTakeaways(content: string, count = 3): string[] {
+  const text = content
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&[a-z#0-9]+;/gi, (e) => HTML_ENTITIES[e] ?? " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  // Split keeping the terminal punctuation attached to the sentence
+  const sentences = text
+    .split(/(?<=[.!?])\s+/)
+    .map(s => s.trim())
+    .filter(s => s.length > 40 && /[.!?]$/.test(s));
+
+  return sentences.slice(0, count);
+}
+
 /** Extract first full paragraph from WP post content — no trailing ellipsis */
 export function firstParagraph(content: string): string {
   const match = content.match(/<p[^>]*>([\s\S]*?)<\/p>/i);
