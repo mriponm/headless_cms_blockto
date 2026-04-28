@@ -14,7 +14,7 @@ import ArticleFooter from "@/components/features/ArticleFooter";
 import ArticleTranslatedBody from "@/components/features/ArticleTranslatedBody";
 import TranslatedLabel from "@/components/ui/TranslatedLabel";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://blockto.io";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://blockto.news";
 const FALLBACK_OG = `${SITE_URL}/Blockto_SEO.jpeg`;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {

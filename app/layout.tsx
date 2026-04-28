@@ -44,7 +44,7 @@ const leagueSpartan = League_Spartan({
   weight: ["400", "500", "600", "700", "800", "900"],
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://blockto.io";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://blockto.news";
 const OG_IMAGE = `${SITE_URL}/Blockto_SEO.jpeg`;
 
 export const metadata: Metadata = {
