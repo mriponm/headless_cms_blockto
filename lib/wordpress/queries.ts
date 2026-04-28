@@ -29,10 +29,11 @@ const POST_FIELDS = `
 
 export async function getPosts(first = 10, categorySlug?: string): Promise<WPPost[]> {
   const wpCat = categorySlug ? APP_SLUG_TO_WP[categorySlug] ?? categorySlug : undefined;
-  const where = wpCat ? `, where: { categoryName: "${wpCat}" }` : "";
+  const whereParts = [`orderby: { field: DATE, order: DESC }`];
+  if (wpCat) whereParts.push(`categoryName: "${wpCat}"`);
   const data = await fetchGraphQL<PostsData>(`
     {
-      posts(first: ${first}${where}) {
+      posts(first: ${first}, where: { ${whereParts.join(", ")} }) {
         nodes { ${POST_FIELDS} }
       }
     }
@@ -52,10 +53,10 @@ export async function getPostsPage(
   after?: string,
 ): Promise<PostsPage> {
   const wpCat = categorySlug ? APP_SLUG_TO_WP[categorySlug] ?? categorySlug : undefined;
-  const whereParts: string[] = [];
+  const whereParts: string[] = [`orderby: { field: DATE, order: DESC }`];
   if (wpCat) whereParts.push(`categoryName: "${wpCat}"`);
   const afterPart = after ? `, after: "${after}"` : "";
-  const wherePart = whereParts.length ? `, where: { ${whereParts.join(", ")} }` : "";
+  const wherePart = `, where: { ${whereParts.join(", ")} }`;
   const data = await fetchGraphQL<{ posts: { nodes: WPPost[]; pageInfo: { hasNextPage: boolean; endCursor: string | null } } }>(`
     {
       posts(first: ${first}${afterPart}${wherePart}) {

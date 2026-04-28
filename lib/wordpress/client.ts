@@ -13,7 +13,7 @@ export async function fetchGraphQL<T = unknown>(
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query, variables }),
-      next: { revalidate: 60 },
+      cache: "no-store",
     });
 
     if (!res.ok) {
