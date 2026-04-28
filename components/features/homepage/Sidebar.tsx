@@ -368,6 +368,7 @@ export default function Sidebar({ trendingPosts }: { trendingPosts: WPPost[] }) 
             data-lpignore="true"
             data-form-type="other"
             autoComplete="off"
+            suppressHydrationWarning
             className="w-full bg-black/40 border border-[rgba(255,255,255,0.08)] rounded-[10px] px-3.5 py-[11px] text-[13px] text-[#f5f5f5] placeholder:text-[#555] outline-none mb-2 focus:border-[rgba(255,106,0,0.4)] transition-all font-[family-name:var(--font-display)]" />
           <button className="w-full py-[11px] rounded-[10px] text-[13px] font-extrabold text-black cursor-pointer font-[family-name:var(--font-display)]"
             style={{ background: "var(--gradient-brand)", boxShadow: "0 4px 14px rgba(255,106,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2)" }}>
