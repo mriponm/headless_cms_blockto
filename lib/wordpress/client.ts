@@ -2,24 +2,26 @@ const WP_API = process.env.NEXT_PUBLIC_WP_API as string;
 
 export async function fetchGraphQL<T = unknown>(
   query: string,
-  variables?: Record<string, unknown>
+  variables?: Record<string, unknown>,
+  revalidate?: number | false,
 ): Promise<T | null> {
   if (!WP_API) {
     console.error("[WPGraphQL] NEXT_PUBLIC_WP_API is not set");
     return null;
   }
   try {
-    const url = `${WP_API}?_=${Date.now()}`;
-    const res = await fetch(url, {
+    const url = WP_API;
+    const fetchOptions: RequestInit = {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "no-cache, no-store, must-revalidate",
-        "Pragma": "no-cache",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query, variables }),
-      cache: "no-store",
-    });
+    };
+    if (revalidate === false || revalidate === undefined) {
+      fetchOptions.cache = "no-store";
+    } else {
+      fetchOptions.next = { revalidate };
+    }
+    const res = await fetch(url, fetchOptions);
 
     if (!res.ok) {
       console.error(`[WPGraphQL] request failed: ${res.status} ${res.statusText}`);

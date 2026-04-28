@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
 import { Outfit, JetBrains_Mono, Lora, League_Spartan } from "next/font/google";
 import "./globals.css";
@@ -47,6 +47,13 @@ const leagueSpartan = League_Spartan({
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://blockto.news";
 const OG_IMAGE = `${SITE_URL}/Blockto_SEO.jpeg`;
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#0a0a0a",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
@@ -84,7 +91,6 @@ export const metadata: Metadata = {
   },
   other: {
     "mobile-web-app-capable": "yes",
-    "theme-color": "#0a0a0a",
     "msapplication-TileColor": "#0a0a0a",
     "msapplication-TileImage": "/favicon_updated.jpeg",
   },

@@ -29,7 +29,7 @@ function FeaturedCard({ post, accentColor, accentBg, accentBorder, accentGrad }:
       <div className="h-[200px] relative overflow-hidden bg-[#0a0e1a]">
         {post.featuredImage ? (
           <Image src={post.featuredImage.node.sourceUrl} alt={post.title} fill
-            className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width:640px) 100vw,33vw" />
+            className="object-cover group-hover:scale-105 transition-transform duration-500" sizes="(max-width:640px) calc(100vw - 24px),33vw" />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-[60px] font-black opacity-10"
             style={{ background: `linear-gradient(135deg,${accentBg},#0a0e1a)`, color: accentColor }}>

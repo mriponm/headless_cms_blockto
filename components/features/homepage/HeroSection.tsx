@@ -40,7 +40,7 @@ export default function HeroSection({ posts }: { posts: WPPost[] }) {
                   alt={hero.title}
                   fill
                   className="object-cover group-hover:scale-[1.03] transition-transform duration-700"
-                  sizes="(max-width: 1024px) 100vw, 60vw"
+                  sizes="(max-width: 640px) calc(100vw - 24px), (max-width: 1024px) calc(100vw - 80px), 60vw"
                   priority
                 />
               )}
@@ -87,7 +87,7 @@ export default function HeroSection({ posts }: { posts: WPPost[] }) {
                       alt={post!.title}
                       fill
                       className="object-cover group-hover:scale-[1.04] transition-transform duration-700"
-                      sizes="(max-width: 1024px) 50vw, 40vw"
+                      sizes="(max-width: 640px) calc((100vw - 36px) / 2), (max-width: 1024px) calc((100vw - 80px) / 2), 40vw"
                     />
                   )}
                   <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/60" />

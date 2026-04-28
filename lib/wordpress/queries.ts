@@ -51,7 +51,7 @@ async function fetchPostsForSlug(
         pageInfo { hasNextPage endCursor }
       }
     }
-  `);
+  `, undefined, 60);
   return {
     nodes: data?.posts?.nodes ?? [],
     hasNextPage: data?.posts?.pageInfo?.hasNextPage ?? false,
@@ -156,7 +156,7 @@ export async function getPostBySlug(slug: string): Promise<WPPost | null> {
         content
       }
     }
-  `);
+  `, undefined, 300);
   return data?.post ?? null;
 }
 
@@ -167,7 +167,7 @@ export async function getCategories(): Promise<WPCategory[]> {
         nodes { name slug count }
       }
     }
-  `);
+  `, undefined, 3600);
   return (data?.categories?.nodes ?? []).filter(
     (c) => c.count && c.count > 0 && c.slug !== "uncategorized"
   );

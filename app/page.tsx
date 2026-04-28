@@ -1,5 +1,4 @@
-export const dynamic = "force-dynamic";
-export const fetchCache = "force-no-store";
+export const revalidate = 60;
 
 import FadeIn from "@/components/ui/FadeIn";
 import BreakingBanner from "@/components/features/BreakingBanner";

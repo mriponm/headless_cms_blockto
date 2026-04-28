@@ -46,7 +46,7 @@ export default function NewsGrid({ posts, title = "General news", viewAllHref }:
                     alt={post.title}
                     fill
                     className="object-cover"
-                    sizes="(max-width: 640px) 100vw, 33vw"
+                    sizes="(max-width: 640px) calc(100vw - 24px), 33vw"
                   />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center"
@@ -81,7 +81,7 @@ export default function NewsGrid({ posts, title = "General news", viewAllHref }:
               <button
                 key={i}
                 onClick={() => setPage(i)}
-                className={`w-7 h-7 rounded-[7px] text-[11px] font-bold transition-all duration-150 ${
+                className={`w-11 h-11 rounded-[7px] text-[11px] font-bold transition-all duration-150 ${
                   i === page ? "text-black" : "glass hover:brightness-125 text-[#888]"
                 }`}
                 style={i === page ? { background: "var(--gradient-brand)" } : {}}
@@ -109,7 +109,7 @@ export default function NewsGrid({ posts, title = "General news", viewAllHref }:
           <button
             onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
             disabled={page === totalPages - 1}
-            className="w-7 h-7 rounded-[7px] text-[11px] font-bold transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed glass hover:brightness-125 text-[#888]"
+            className="w-11 h-11 rounded-[7px] text-[11px] font-bold transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed glass hover:brightness-125 text-[#888]"
           >
             &rsaquo;
           </button>
