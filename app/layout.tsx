@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Script from "next/script";
 import { Outfit, JetBrains_Mono, Lora, League_Spartan } from "next/font/google";
 import "./globals.css";
 import Background from "@/components/layout/Background";
@@ -12,6 +11,7 @@ import { AuthModalProvider } from "@/components/providers/AuthModalProvider";
 import AuthModal from "@/components/ui/AuthModal";
 import UserSyncProvider from "@/components/providers/UserSyncProvider";
 import CookieConsent from "@/components/ui/CookieConsent";
+import SwRegister from "@/components/layout/SwRegister";
 import PriceProvider from "@/components/providers/PriceProvider";
 import AlertChecker from "@/components/features/alerts/AlertChecker";
 
@@ -74,10 +74,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <link rel="preconnect" href="https://cms.blockto.io" />
         <link rel="dns-prefetch" href="https://cms.blockto.io" />
+        {/* Blocking theme init — must run before first paint to avoid flash */}
+        <script dangerouslySetInnerHTML={{ __html: `(function(){var t=localStorage.getItem('theme');if(t){document.documentElement.classList.remove('dark','light');document.documentElement.classList.add(t);}if('scrollRestoration' in history){history.scrollRestoration='manual';}window.scrollTo(0,0);})()` }} />
       </head>
       <body className="min-h-screen flex flex-col relative" suppressHydrationWarning>
-        <Script id="theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: `(function(){var t=localStorage.getItem('theme');if(t){document.documentElement.classList.remove('dark','light');document.documentElement.classList.add(t);}if('scrollRestoration' in history){history.scrollRestoration='manual';}window.scrollTo(0,0);})()` }} />
-        <Script id="sw-register" strategy="afterInteractive" dangerouslySetInnerHTML={{ __html: `if('serviceWorker' in navigator){navigator.serviceWorker.register('/sw.js')}` }} />
+        <SwRegister />
         <UserSyncProvider />
         <AuthModalProvider>
           <AuthModal />
