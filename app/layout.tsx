@@ -54,17 +54,17 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "Blockto",
-    startupImage: "/blockto_icon.jpeg",
+    startupImage: "/favicon_updated.jpeg",
   },
   icons: {
-    icon: "/favicon.jpeg",
-    apple: "/blockto_icon.jpeg",
-    shortcut: "/favicon.jpeg",
+    icon: "/favicon_updated.jpeg",
+    apple: "/favicon_updated.jpeg",
+    shortcut: "/favicon_updated.jpeg",
   },
   other: {
     "mobile-web-app-capable": "yes",
     "msapplication-TileColor": "#ff6a00",
-    "msapplication-TileImage": "/blockto_icon.jpeg",
+    "msapplication-TileImage": "/favicon_updated.jpeg",
   },
 };
 

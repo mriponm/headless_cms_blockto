@@ -13,13 +13,13 @@ export default function manifest(): MetadataRoute.Manifest {
     categories: ["finance", "news"],
     icons: [
       {
-        src: "/blockto_icon.jpeg",
+        src: "/favicon_updated.jpeg",
         sizes: "192x192",
         type: "image/jpeg",
         purpose: "any",
       },
       {
-        src: "/blockto_icon.jpeg",
+        src: "/favicon_updated.jpeg",
         sizes: "512x512",
         type: "image/jpeg",
         purpose: "maskable",
