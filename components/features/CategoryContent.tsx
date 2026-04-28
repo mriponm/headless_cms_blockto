@@ -1,3 +1,4 @@
+import RelativeTime from "@/components/ui/RelativeTime";
 "use client";
 import { useState, useEffect, useRef, useMemo } from "react";
 import { motion } from "framer-motion";
@@ -115,7 +116,7 @@ function FeaturedCard({ post }: { post: WPPost }) {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 text-[11px] art-sub-text font-medium">
             <AuthorAvatar slug={post.slug} size={22} />
-            <span data-no-translate>{pickAuthor(post.slug).name}</span> · {relativeDate(post.date)}
+            <span data-no-translate>{pickAuthor(post.slug).name}</span> · <RelativeTime date={post.date} />
           </div>
           <div className="flex items-center gap-1.5 text-[10px] art-sub-text font-semibold px-2 py-1 rounded-[7px] art-tag-pill font-[family-name:var(--font-data)]">
             <Clock size={10} />
@@ -154,7 +155,7 @@ function ListCard({ post, eager }: { post: WPPost; eager?: boolean }) {
         </div>
         <div className="flex items-center gap-2 text-[10px] art-sub-text font-medium mt-1.5">
           <AuthorAvatar slug={post.slug} size={16} />
-          {pickAuthor(post.slug).name} · {relativeDate(post.date)}
+          {pickAuthor(post.slug).name} · <RelativeTime date={post.date} />
           <span className="ml-auto flex items-center gap-1 font-[family-name:var(--font-data)]">
             <Clock size={9} />3 min
           </span>

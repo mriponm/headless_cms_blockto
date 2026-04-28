@@ -1,3 +1,4 @@
+import RelativeTime from "@/components/ui/RelativeTime";
 import Link from "next/link";
 import Image from "next/image";
 import SectionLabel from "@/components/ui/SectionLabel";
@@ -48,7 +49,7 @@ export default function CompactGrid({ posts }: { posts: WPPost[] }) {
                   {post.title}
                 </p>
                 <p className="text-[10px] text-[#666] font-medium font-[family-name:var(--font-display)]">
-                  {relativeDate(post.date)}
+                  <RelativeTime date={post.date} />
                 </p>
               </div>
             </Link>

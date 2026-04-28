@@ -5,6 +5,7 @@ import AuthorAvatar from "@/components/ui/AuthorAvatar";
 import Image from "next/image";
 import Link from "next/link";
 import { getPostBySlug, getPosts, primaryCategory, relativeDate, stripExcerpt } from "@/lib/wordpress/queries";
+import RelativeTime from "@/components/ui/RelativeTime";
 import { pickAuthor } from "@/lib/authors";
 import ArticleInteractive from "@/components/features/ArticleInteractive";
 import ArticleImageActions from "@/components/features/ArticleImageActions";
@@ -103,7 +104,7 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
               </span>
               <span className="text-[10px] font-bold text-white bg-black/50 backdrop-blur-[10px] px-3 py-[6px] rounded-[7px] border border-white/10 flex items-center gap-1.5">
                 <span className="w-[5px] h-[5px] bg-[var(--color-positive)] rounded-full shadow-[0_0_6px_var(--color-positive)] pls-anim" />
-                {relativeDate(post.date)}
+                <RelativeTime date={post.date} />
               </span>
             </div>
 
@@ -207,7 +208,7 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
                         </div>
                         <div className="flex items-center gap-1.5 text-[10px] art-sub-text font-medium mt-1.5">
                           <AuthorAvatar slug={rp.slug} size={14} />
-                          {pickAuthor(rp.slug).name} · {relativeDate(rp.date)}
+                          {pickAuthor(rp.slug).name} · <RelativeTime date={rp.date} />
                         </div>
                       </div>
                     </Link>

@@ -1,3 +1,4 @@
+import RelativeTime from "@/components/ui/RelativeTime";
 "use client";
 import { useState } from "react";
 import Link from "next/link";
@@ -64,7 +65,7 @@ export default function NewsGrid({ posts, title = "General news", viewAllHref }:
                 </p>
                 <div className="flex items-center gap-1.5 text-[10px] text-[#666] font-medium">
                   <AuthorAvatar slug={post.slug} size={18} />
-                  <span data-no-translate>{pickAuthor(post.slug).name}</span> · {relativeDate(post.date)}
+                  <span data-no-translate>{pickAuthor(post.slug).name}</span> · <RelativeTime date={post.date} />
                 </div>
               </div>
             </Link>

@@ -1,3 +1,4 @@
+import RelativeTime from "@/components/ui/RelativeTime";
 import Link from "next/link";
 import Image from "next/image";
 import SectionLabel from "@/components/ui/SectionLabel";
@@ -31,7 +32,7 @@ export default function TrendingSection({ posts }: { posts: WPPost[] }) {
                   {post.title}
                 </p>
                 <span className="text-[10px] font-semibold art-sub-text font-[family-name:var(--font-display)]">
-                  {cat.name} · {relativeDate(post.date)}
+                  {cat.name} · <RelativeTime date={post.date} />
                 </span>
               </div>
             </Link>
