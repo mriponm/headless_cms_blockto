@@ -49,7 +49,7 @@ export default function CompactGrid({ posts }: { posts: WPPost[] }) {
                   {post.title}
                 </p>
                 <p className="text-[10px] text-[#666] font-medium font-[family-name:var(--font-display)]">
-                  <RelativeTime date={post.date} />
+                  <RelativeTime date={post.dateGmt ?? post.date} />
                 </p>
               </div>
             </Link>

@@ -52,7 +52,7 @@ export default function HeroSection({ posts }: { posts: WPPost[] }) {
               {/* Time badge */}
               <div className="absolute top-4 right-4 z-10 flex items-center gap-1.5 text-[10px] font-semibold text-white bg-black/60 backdrop-blur-[10px] px-3 py-[6px] rounded-[8px] border border-white/10">
                 <span className="w-[5px] h-[5px] rounded-full bg-[#00d47b] shadow-[0_0_8px_#00d47b] pls-anim" />
-                <RelativeTime date={hero.date} />
+                <RelativeTime date={hero.dateGmt ?? hero.date} />
               </div>
             </div>
 
@@ -105,7 +105,7 @@ export default function HeroSection({ posts }: { posts: WPPost[] }) {
                   </p>
                   <p className="text-[10px] text-[#777] font-medium font-[family-name:var(--font-display)] flex items-center gap-1.5">
                     <span className="w-[6px] h-[6px] rounded-full bg-[#00d47b] inline-block flex-shrink-0" />
-                    <RelativeTime date={post!.date} />
+                    <RelativeTime date={post!.dateGmt ?? post!.date} />
                   </p>
                 </div>
               </Link>

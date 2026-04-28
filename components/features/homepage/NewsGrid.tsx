@@ -65,7 +65,7 @@ export default function NewsGrid({ posts, title = "General news", viewAllHref }:
                 </p>
                 <div className="flex items-center gap-1.5 text-[10px] text-[#666] font-medium">
                   <AuthorAvatar slug={post.slug} size={18} />
-                  <span data-no-translate>{pickAuthor(post.slug).name}</span> · <RelativeTime date={post.date} />
+                  <span data-no-translate>{pickAuthor(post.slug).name}</span> · <RelativeTime date={post.dateGmt ?? post.date} />
                 </div>
               </div>
             </Link>

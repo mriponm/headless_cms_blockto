@@ -32,7 +32,7 @@ export default function TrendingSection({ posts }: { posts: WPPost[] }) {
                   {post.title}
                 </p>
                 <span className="text-[10px] font-semibold art-sub-text font-[family-name:var(--font-display)]">
-                  {cat.name} · <RelativeTime date={post.date} />
+                  {cat.name} · <RelativeTime date={post.dateGmt ?? post.date} />
                 </span>
               </div>
             </Link>

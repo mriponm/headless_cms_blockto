@@ -4,9 +4,14 @@ import { relativeDate } from "@/lib/wordpress/queries";
 
 const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
+// Force UTC parsing — WP dateGmt has no Z suffix but is UTC
+function toUtcIso(iso: string): string {
+  return iso.endsWith("Z") || /[+-]\d{2}:?\d{2}$/.test(iso) ? iso : `${iso}Z`;
+}
+
 function stableDate(iso: string): string {
-  const d = new Date(iso);
-  return `${MONTHS[d.getMonth()]} ${d.getDate()}`;
+  const d = new Date(toUtcIso(iso));
+  return `${MONTHS[d.getUTCMonth()]} ${d.getUTCDate()}`;
 }
 
 export default function RelativeTime({ date }: { date: string }) {
@@ -18,7 +23,5 @@ export default function RelativeTime({ date }: { date: string }) {
     return () => clearInterval(id);
   }, [date]);
 
-  // Server and initial client render: stable date string — no hydration mismatch
-  // After mount: useEffect updates to relative time
   return <time dateTime={date}>{text ?? stableDate(date)}</time>;
 }

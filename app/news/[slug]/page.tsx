@@ -105,7 +105,7 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
               </span>
               <span className="text-[10px] font-bold text-white bg-black/50 backdrop-blur-[10px] px-3 py-[6px] rounded-[7px] border border-white/10 flex items-center gap-1.5">
                 <span className="w-[5px] h-[5px] bg-[var(--color-positive)] rounded-full shadow-[0_0_6px_var(--color-positive)] pls-anim" />
-                <RelativeTime date={post.date} />
+                <RelativeTime date={post.dateGmt ?? post.date} />
               </span>
             </div>
 
@@ -203,7 +203,7 @@ export default async function NewsArticlePage({ params }: { params: Promise<{ sl
                         </div>
                         <div className="flex items-center gap-1.5 text-[10px] art-sub-text font-medium mt-1.5">
                           <AuthorAvatar slug={rp.slug} size={14} />
-                          {pickAuthor(rp.slug).name} · <RelativeTime date={rp.date} />
+                          {pickAuthor(rp.slug).name} · <RelativeTime date={rp.dateGmt ?? rp.date} />
                         </div>
                       </div>
                     </Link>

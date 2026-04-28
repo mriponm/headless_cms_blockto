@@ -21,6 +21,7 @@ const POST_FIELDS = `
   title
   slug
   date
+  dateGmt
   excerpt
   featuredImage { node { sourceUrl } }
   author { node { name avatar { url } } }
@@ -210,9 +211,10 @@ export function firstParagraph(content: string): string {
     .trim();
 }
 
-/** Format WP date to relative string */
+/** Format WP date to relative string — always parse as UTC */
 export function relativeDate(iso: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
+  const utcIso = iso.endsWith("Z") || /[+-]\d{2}:?\d{2}$/.test(iso) ? iso : `${iso}Z`;
+  const diff = Date.now() - new Date(utcIso).getTime();
   const m = Math.floor(diff / 60000);
   if (m < 60) return `${m}m ago`;
   const h = Math.floor(m / 60);

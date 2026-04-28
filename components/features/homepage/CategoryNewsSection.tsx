@@ -50,7 +50,7 @@ function FeaturedCard({ post, accentColor, accentBg, accentBorder, accentGrad }:
         </h3>
         <div className="flex items-center gap-2 text-[10px] art-sub-text font-medium">
           <AuthorAvatar slug={post.slug} size={20} />
-          <span data-no-translate>{pickAuthor(post.slug).name}</span> · <RelativeTime date={post.date} />
+          <span data-no-translate>{pickAuthor(post.slug).name}</span> · <RelativeTime date={post.dateGmt ?? post.date} />
         </div>
       </div>
     </Link>
@@ -84,7 +84,7 @@ function ListCard({ post, accentColor, accentBg, accentBorder, accentGrad }: {
         </p>
         <div className="flex items-center gap-1.5 text-[10px] art-sub-text font-medium">
           <AuthorAvatar slug={post.slug} size={14} />
-          <span data-no-translate>{pickAuthor(post.slug).name}</span> · <RelativeTime date={post.date} />
+          <span data-no-translate>{pickAuthor(post.slug).name}</span> · <RelativeTime date={post.dateGmt ?? post.date} />
         </div>
       </div>
     </Link>

@@ -51,7 +51,7 @@ function ListCard({ post }: { post: WPPost }) {
             <span data-no-translate>{pickAuthor(post.slug).name}</span>
           </span>
           <span className="flex items-center gap-1 text-[10px] text-[#666] font-medium font-[family-name:var(--font-display)] before:content-[''] before:w-[3px] before:h-[3px] before:bg-[#444] before:rounded-full">
-            <RelativeTime date={post.date} />
+            <RelativeTime date={post.dateGmt ?? post.date} />
           </span>
         </div>
       </div>
@@ -80,7 +80,7 @@ function HScrollCard({ post, index, accentColor, accentBg, accentBorder }: {
       </span>
       <span className="flex items-center gap-1 text-[9px] text-[#666] font-medium font-[family-name:var(--font-display)]">
         <AuthorAvatar slug={post.slug} size={12} />
-        <span data-no-translate>{pickAuthor(post.slug).name}</span> · <RelativeTime date={post.date} />
+        <span data-no-translate>{pickAuthor(post.slug).name}</span> · <RelativeTime date={post.dateGmt ?? post.date} />
       </span>
     </Link>
   );

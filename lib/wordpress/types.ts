@@ -3,6 +3,7 @@ export interface WPPost {
   title: string;
   slug: string;
   date: string;
+  dateGmt: string;
   excerpt: string;
   content?: string;
   featuredImage: { node: { sourceUrl: string } } | null;
