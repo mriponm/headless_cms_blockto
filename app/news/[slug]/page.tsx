@@ -14,17 +14,33 @@ import ArticleFooter from "@/components/features/ArticleFooter";
 import ArticleTranslatedBody from "@/components/features/ArticleTranslatedBody";
 import TranslatedLabel from "@/components/ui/TranslatedLabel";
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://blockto.io";
+const FALLBACK_OG = `${SITE_URL}/Blockto_SEO.jpeg`;
+
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const post = await getPostBySlug(slug);
   if (!post) return { title: "Not Found" };
+  const description = stripExcerpt(post.excerpt);
+  const image = post.featuredImage?.node.sourceUrl ?? FALLBACK_OG;
+  const url = `${SITE_URL}/news/${slug}`;
   return {
     title: `${post.title} — Blockto`,
-    description: stripExcerpt(post.excerpt),
+    description,
     openGraph: {
+      type: "article",
       title: post.title,
-      description: stripExcerpt(post.excerpt),
-      images: post.featuredImage ? [post.featuredImage.node.sourceUrl] : [],
+      description,
+      url,
+      images: [{ url: image, alt: post.title }],
+      publishedTime: post.date,
+      siteName: "Blockto",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description,
+      images: [image],
     },
   };
 }

@@ -44,13 +44,33 @@ const leagueSpartan = League_Spartan({
   weight: ["400", "500", "600", "700", "800", "900"],
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://blockto.io";
+const OG_IMAGE = `${SITE_URL}/Blockto_SEO.jpeg`;
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "Blockto — Crypto Terminal",
     template: "%s — Blockto",
   },
   description: "Real-time crypto market analytics, news, prices, and trading data.",
+  keywords: ["crypto", "bitcoin", "ethereum", "blockchain", "crypto news", "crypto prices", "defi", "market analytics"],
   manifest: "/manifest.webmanifest",
+  openGraph: {
+    type: "website",
+    siteName: "Blockto",
+    title: "Blockto — Crypto Terminal",
+    description: "Real-time crypto market analytics, news, prices, and trading data.",
+    url: SITE_URL,
+    images: [{ url: OG_IMAGE, width: 945, height: 2048, alt: "Blockto — Crypto Terminal" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@blockto_io",
+    title: "Blockto — Crypto Terminal",
+    description: "Real-time crypto market analytics, news, prices, and trading data.",
+    images: [OG_IMAGE],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
