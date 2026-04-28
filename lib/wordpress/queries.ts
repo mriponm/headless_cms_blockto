@@ -3,7 +3,7 @@ import type { PostsData, CategoriesData, SinglePostData, WPPost, WPCategory } fr
 
 /** Maps app URL slugs to WPGraphQL category slug(s). Array = match any. */
 export const APP_SLUG_TO_WP: Record<string, string | string[]> = {
-  "general-news":     ["general-news", "news"],
+  "general-news":     "general-news",
   "bitcoin":          "bitcoin",
   "ethereum":         "ethereum",
   "altcoins":         "altcoin",

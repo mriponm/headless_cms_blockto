@@ -24,6 +24,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       : stored;
     setResolved(r as "dark" | "light");
     applyTheme(r as "dark" | "light");
+    document.cookie = `theme=${r}; path=/; max-age=31536000; SameSite=Lax`;
     setMounted(true);
   }, []);
 
@@ -48,6 +49,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       : t;
     setResolved(r as "dark" | "light");
     applyTheme(r as "dark" | "light");
+    document.cookie = `theme=${r}; path=/; max-age=31536000; SameSite=Lax`;
   };
 
   // Keep legacy toggle for ThemeToggle component

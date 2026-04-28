@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Script from "next/script";
+import { cookies } from "next/headers";
 import { Outfit, JetBrains_Mono, Lora, League_Spartan } from "next/font/google";
 import "./globals.css";
 import Background from "@/components/layout/Background";
@@ -69,13 +69,14 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const jar = await cookies();
+  const themeCls = jar.get("theme")?.value === "light" ? "light" : "dark";
   return (
-    <html lang="en" className={`${outfit.variable} ${jetbrainsMono.variable} ${lora.variable} ${leagueSpartan.variable} dark`} suppressHydrationWarning>
+    <html lang="en" className={`${outfit.variable} ${jetbrainsMono.variable} ${lora.variable} ${leagueSpartan.variable} ${themeCls}`} suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://cms.blockto.io" />
         <link rel="dns-prefetch" href="https://cms.blockto.io" />
-        <Script src="/theme-init.js" strategy="beforeInteractive" />
       </head>
       <body className="min-h-screen flex flex-col relative" suppressHydrationWarning>
         <SwRegister />
