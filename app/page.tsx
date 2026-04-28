@@ -34,7 +34,7 @@ export default async function HomePage() {
       {/* Main grid: content + sidebar */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-7">
         <div>
-          {/* ── Desktop layout ── */}
+          {/* -- Desktop layout -- */}
           <div className="hidden md:block">
             <FadeIn delay={0.2}><HeroSection posts={heroPosts} /></FadeIn>
 
@@ -82,7 +82,7 @@ export default async function HomePage() {
             </FadeIn>
           </div>
 
-          {/* ── Mobile layout ── */}
+          {/* -- Mobile layout -- */}
           <div className="md:hidden">
             <FadeIn delay={0.18}><HeroSection posts={heroPosts} /></FadeIn>
             <FadeIn delay={0.22}>

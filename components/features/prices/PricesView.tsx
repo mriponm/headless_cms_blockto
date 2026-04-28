@@ -231,7 +231,7 @@ export default function PricesView() {
   return (
     <div className="pr-root">
 
-      {/* ── 4 hero stats ──────────────────────────────── */}
+      {/* -- 4 hero stats -------------------------------- */}
       <div className="mtr-4grid">
         {heroStats.map((s) => (
           <div key={s.label} className="glass pr-hero-cell">
@@ -244,7 +244,7 @@ export default function PricesView() {
         ))}
       </div>
 
-      {/* ── Toolbar ───────────────────────────────────── */}
+      {/* -- Toolbar ------------------------------------- */}
       <div className="pr-toolbar">
         <div className="pr-search-wrap">
           <svg className="pr-search-icon" viewBox="0 0 20 20" fill="none">
@@ -265,7 +265,7 @@ export default function PricesView() {
         </div>
       </div>
 
-      {/* ── Main 2-col layout ─────────────────────────── */}
+      {/* -- Main 2-col layout --------------------------- */}
       <div className="pr-main-grid">
 
         {/* LEFT: Coin table */}
@@ -439,7 +439,7 @@ export default function PricesView() {
               );
             })}
 
-            {/* ── Pagination ─────────────────────── */}
+            {/* -- Pagination ----------------------- */}
             {totalPages > 1 && (
               <div className="pr-pagination">
                 <button

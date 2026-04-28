@@ -19,7 +19,7 @@ const Ctx = createContext<StoreCtx>({
 
 export const useTranslationBatcher = () => useContext(Ctx);
 
-// ── session cache ────────────────────────────────────────────────
+// -- session cache ------------------------------------------------
 function sKey(text: string, lang: string) {
   return `tx3:${lang}:${text.slice(0, 80)}`;
 }

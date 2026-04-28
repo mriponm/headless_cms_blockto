@@ -123,7 +123,7 @@ export default function ArticleTranslatedBody({ title, excerpt, content, takeawa
   return (
     <div dir={isRTL ? "rtl" : "ltr"}>
 
-      {/* ── Translation status bar ── */}
+      {/* -- Translation status bar -- */}
       {lang !== "en" && (
         <div className="flex items-center gap-2 mb-4 px-3 py-2 rounded-[10px] text-[11px] font-semibold font-[family-name:var(--font-display)]"
           style={{ background: "rgba(255,106,0,0.06)", border: "0.5px solid rgba(255,106,0,0.18)" }}>
@@ -162,20 +162,20 @@ export default function ArticleTranslatedBody({ title, excerpt, content, takeawa
         </div>
       )}
 
-      {/* ── Title ── */}
+      {/* -- Title -- */}
       <h1 className="text-[22px] md:text-[27px] font-medium tracking-[-1.2px] leading-[1.1] mb-3 art-heading font-[family-name:var(--font-display)]">
         {displayTitle}
       </h1>
 
-      {/* ── Lead / excerpt ── */}
+      {/* -- Lead / excerpt -- */}
       <p className="text-[14px] md:text-[15px] art-lead-text leading-[1.55] font-medium font-[family-name:var(--font-display)]">
         {displayExcerpt}
       </p>
 
-      {/* ── Meta bar slot (author, date, save) ── */}
+      {/* -- Meta bar slot (author, date, save) -- */}
       {metaSlot}
 
-      {/* ── Key takeaways ── */}
+      {/* -- Key takeaways -- */}
       {displayTakeaways.length > 0 && (
         <div className="art-takeaways rounded-[16px] p-[18px_20px] mb-6 mt-4 relative overflow-hidden">
           <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(255,106,0,0.35)] to-transparent pointer-events-none" />
@@ -203,7 +203,7 @@ export default function ArticleTranslatedBody({ title, excerpt, content, takeawa
         </div>
       )}
 
-      {/* ── Article body ── */}
+      {/* -- Article body -- */}
       <div
         className={`mb-4 prose-wp art-body transition-opacity duration-300 ${loading ? "opacity-40 pointer-events-none" : ""}`}
         dangerouslySetInnerHTML={{ __html: typeof window !== "undefined" ? DOMPurify.sanitize(displayContent, { USE_PROFILES: { html: true } }) : displayContent }}

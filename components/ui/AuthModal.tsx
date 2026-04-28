@@ -39,7 +39,7 @@ function GoogleSvg() {
   );
 }
 
-/* ─── Forgot Password panel ─── */
+/* --- Forgot Password panel --- */
 function ForgotPanel({ onBack }: { onBack: () => void }) {
   const [email, setEmail]     = useState("");
   const [loading, setLoading] = useState(false);
@@ -94,7 +94,7 @@ function ForgotPanel({ onBack }: { onBack: () => void }) {
   );
 }
 
-/* ─── Sign In panel ─── */
+/* --- Sign In panel --- */
 function SignInPanel({ onSwitch, onAuthComplete, onForgot, successMessage }: { onSwitch: () => void; onAuthComplete: () => void; onForgot: () => void; successMessage?: string }) {
   const [email, setEmail]       = useState("");
   const [password, setPassword] = useState("");
@@ -184,7 +184,7 @@ function SignInPanel({ onSwitch, onAuthComplete, onForgot, successMessage }: { o
   );
 }
 
-/* ─── Sign Up panel ─── */
+/* --- Sign Up panel --- */
 function SignUpPanel({ onSwitch, onAuthComplete }: { onSwitch: (email?: string) => void; onAuthComplete: () => void }) {
   const [name, setName]         = useState("");
   const [email, setEmail]       = useState("");
@@ -275,7 +275,7 @@ function SignUpPanel({ onSwitch, onAuthComplete }: { onSwitch: (email?: string) 
   );
 }
 
-/* ─── Main modal ─── */
+/* --- Main modal --- */
 export default function AuthModal() {
   const { open, mode, onSuccess, closeModal, setMode } = useAuthModal();
   const [showForgot, setShowForgot]         = useState(false);

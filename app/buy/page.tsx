@@ -8,12 +8,12 @@ export const metadata: Metadata = {
     "Hand-picked crypto exchanges vetted for security, low fees, and deep liquidity. Start trading with exclusive Blockto bonuses.",
 };
 
-/* ─── Brand constants ────────────────────────────────────────── */
+/* --- Brand constants ------------------------------------------ */
 const BRAND        = "#ff6a00";
 const BRAND_BORDER = "rgba(255,106,0,0.2)";
 const BRAND_GLOW   = "rgba(255,106,0,0.15)";
 
-/* ─── Types ──────────────────────────────────────────────────── */
+/* --- Types ---------------------------------------------------- */
 
 type RankStyle = "gold" | "silver" | "bronze";
 
@@ -50,7 +50,7 @@ function Hl({ children }: { children: React.ReactNode }) {
   );
 }
 
-/* ─── Data ───────────────────────────────────────────────────── */
+/* --- Data ----------------------------------------------------- */
 
 const EXCHANGES: Exchange[] = [
   {
@@ -155,7 +155,7 @@ const RANK_BADGE: Record<RankStyle, { bg: string; shadow: string }> = {
   bronze: { bg: "linear-gradient(135deg,#cd7f32,#e0a570)", shadow: "0 0 14px rgba(205,127,50,0.3),-4px 4px 16px rgba(0,0,0,0.4)" },
 };
 
-/* ─── Star rating ────────────────────────────────────────────── */
+/* --- Star rating ---------------------------------------------- */
 
 function StarRating({ count, score }: { count: number; score: string }) {
   return (
@@ -179,7 +179,7 @@ function StarRating({ count, score }: { count: number; score: string }) {
   );
 }
 
-/* ─── Exchange card ──────────────────────────────────────────── */
+/* --- Exchange card -------------------------------------------- */
 
 function ExchangeCard({ ex }: { ex: Exchange }) {
   const badge = RANK_BADGE[ex.rankStyle];
@@ -339,13 +339,13 @@ function ExchangeCard({ ex }: { ex: Exchange }) {
   );
 }
 
-/* ─── Page ───────────────────────────────────────────────────── */
+/* --- Page ----------------------------------------------------- */
 
 export default function BuyPage() {
   return (
     <div className="relative z-[2] max-w-[1440px] mx-auto px-3 md:px-10 pt-4">
 
-      {/* ── Hero ─────────────────────────────────────────────── */}
+      {/* -- Hero ----------------------------------------------- */}
       <FadeIn delay={0}>
         <section
           className="relative rounded-[22px] overflow-hidden mb-[14px] text-center px-5 py-[26px] md:py-[36px]"
@@ -382,7 +382,7 @@ export default function BuyPage() {
         </section>
       </FadeIn>
 
-      {/* ── Stats ────────────────────────────────────────────── */}
+      {/* -- Stats ---------------------------------------------- */}
       <FadeIn delay={0.05}>
         <div className="grid grid-cols-3 gap-2 md:gap-3 mb-4">
           {[
@@ -404,7 +404,7 @@ export default function BuyPage() {
         </div>
       </FadeIn>
 
-      {/* ── Section label ────────────────────────────────────── */}
+      {/* -- Section label -------------------------------------- */}
       <div className="flex items-center gap-2.5 mb-[14px] mt-[22px] px-1">
         <span
           className="text-[10px] font-extrabold uppercase tracking-[2.5px] gradient-text-alt font-[family-name:var(--font-display)]"
@@ -415,7 +415,7 @@ export default function BuyPage() {
         <span className="flex-1 h-px" style={{ background: "linear-gradient(90deg,rgba(255,106,0,0.2),transparent)" }} />
       </div>
 
-      {/* ── Cards — stacked full-width, desktop inner split ──── */}
+      {/* -- Cards — stacked full-width, desktop inner split ---- */}
       <FadeIn delay={0.1}>
         <div className="flex flex-col gap-[14px]">
           {EXCHANGES.map((ex) => (
@@ -424,7 +424,7 @@ export default function BuyPage() {
         </div>
       </FadeIn>
 
-      {/* ── Disclosure ───────────────────────────────────────── */}
+      {/* -- Disclosure ----------------------------------------- */}
       <div
         className="rounded-[12px] p-[14px] flex gap-2.5 items-start mt-[18px] mb-[10px]"
         style={{ background: "rgba(255,106,0,0.04)", border: "0.5px solid rgba(255,106,0,0.1)" }}

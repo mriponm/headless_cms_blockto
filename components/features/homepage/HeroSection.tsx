@@ -26,7 +26,7 @@ export default function HeroSection({ posts }: { posts: WPPost[] }) {
       <SectionLabel title="Latest news" live />
       <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-3 lg:gap-[18px] mb-6">
 
-        {/* ── Hero card ── */}
+        {/* -- Hero card -- */}
         {hero && (
           <Link href={`/news/${hero.slug}`}
             className="hero-card relative rounded-[20px] overflow-hidden cursor-pointer border border-[rgba(255,255,255,0.07)] group block flex flex-col">
@@ -69,7 +69,7 @@ export default function HeroSection({ posts }: { posts: WPPost[] }) {
           </Link>
         )}
 
-        {/* ── Two secondary cards ── */}
+        {/* -- Two secondary cards -- */}
         <div className="grid grid-cols-2 lg:grid-cols-1 lg:grid-rows-2 gap-3 lg:gap-[18px]">
           {[sec1, sec2].filter(Boolean).map((post) => {
             const color = catColor(post!);

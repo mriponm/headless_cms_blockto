@@ -57,7 +57,7 @@ export default function ProfileClient({ initialUser }: { initialUser: Me }) {
   return (
     <div className="relative z-[2] max-w-[680px] mx-auto px-4 md:px-6 pt-6 pb-28">
 
-      {/* ── Hero banner card ── */}
+      {/* -- Hero banner card -- */}
       <div className="profile-card rounded-[24px] overflow-hidden mb-5 relative">
         {/* Banner gradient */}
         <div className="h-[100px] relative overflow-hidden"
@@ -136,7 +136,7 @@ export default function ProfileClient({ initialUser }: { initialUser: Me }) {
         </div>
       </div>
 
-      {/* ── Account Settings ── */}
+      {/* -- Account Settings -- */}
       <div className="profile-card rounded-[24px] overflow-hidden relative">
         <span className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/[0.05] to-transparent pointer-events-none" />
 

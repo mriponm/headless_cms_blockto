@@ -10,7 +10,7 @@ import { formatPrice, formatDollarCompact, formatPercent } from "@/lib/utils/for
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json());
 
-// ── Types ────────────────────────────────────────────────────
+// -- Types ----------------------------------------------------
 interface GlobalData {
   btc_dominance?: number;
   eth_dominance?: number;
@@ -80,7 +80,7 @@ interface BinanceCoin {
   image?:    string;
 }
 
-// ── Helpers ──────────────────────────────────────────────────
+// -- Helpers --------------------------------------------------
 function fgColor(v: number) {
   if (v < 25) return "#8b5cf6";
   if (v < 45) return "#ef4444";
@@ -97,7 +97,7 @@ function formatCountdown(halvingDate: string, now: number) {
   return `~${d}d ${h}h`;
 }
 
-// ── Coin row — icon + link from pre-enriched route data ──────
+// -- Coin row — icon + link from pre-enriched route data ------
 function CoinRow({ coin, type }: { coin: BinanceCoin; type: "up" | "dn" }) {
   const sym  = coin.symbol.toUpperCase();
   // cgId and image come from the enriched gainers route (CoinGecko top 250)
@@ -138,12 +138,12 @@ function CoinRow({ coin, type }: { coin: BinanceCoin; type: "up" | "dn" }) {
   return href ? <Link href={href} className="block">{inner}</Link> : inner;
 }
 
-// ── Skeleton ─────────────────────────────────────────────────
+// -- Skeleton -------------------------------------------------
 function Skeleton({ h = 20 }: { h?: number }) {
   return <div className="animate-pulse rounded-[6px] bg-white/[0.05]" style={{ height: h }} />;
 }
 
-// ── Main Component ────────────────────────────────────────────
+// -- Main Component --------------------------------------------
 export default function MetricsView() {
   const prices = usePriceStore((s) => s.prices);
   const changes = usePriceStore((s) => s.changes);
@@ -209,7 +209,7 @@ export default function MetricsView() {
   return (
     <div className="mtr-root">
 
-      {/* ── Row 1: Hero BTC + 3 market stats ── */}
+      {/* -- Row 1: Hero BTC + 3 market stats -- */}
       <div className="mtr-4grid">
         <div className="mtr-stat glass" style={{ borderColor: "rgba(255,106,0,0.15)", background: "linear-gradient(135deg,rgba(255,106,0,0.06),transparent)" }}>
           <div className="mtr-stat-label mtr-stat-label-hero">Bitcoin</div>
@@ -252,7 +252,7 @@ export default function MetricsView() {
         ))}
       </div>
 
-      {/* ── Charts & Indicators ── */}
+      {/* -- Charts & Indicators -- */}
       <div className="mtr-sec">Charts &amp; indicators</div>
       <div className="mtr-quad-grid">
 
@@ -366,7 +366,7 @@ export default function MetricsView() {
 
       </div>
 
-      {/* ── Gainers / Losers — live Binance (exchange-listed only) ── */}
+      {/* -- Gainers / Losers — live Binance (exchange-listed only) -- */}
       <div className="mtr-sec">Market movers</div>
       <div className="mtr-duo-grid">
         <div className="glass-strong mtr-card">
@@ -409,7 +409,7 @@ export default function MetricsView() {
         </div>
       </div>
 
-      {/* ── Derivatives — live Binance Futures public API ── */}
+      {/* -- Derivatives — live Binance Futures public API -- */}
       <div className="mtr-sec">Derivatives &amp; leverage</div>
       <div className="glass-strong mtr-card">
         <div className="mtr-card-head">
@@ -450,7 +450,7 @@ export default function MetricsView() {
         </div>
       </div>
 
-      {/* ── Dominance — live CMC Pro ── */}
+      {/* -- Dominance — live CMC Pro -- */}
       <div className="mtr-sec">Dominance &amp; supply</div>
       <div className="glass-strong mtr-card">
         <div className="mtr-card-head">
@@ -483,7 +483,7 @@ export default function MetricsView() {
         </div>
       </div>
 
-      {/* ── Stablecoin Supply — live DefiLlama ── */}
+      {/* -- Stablecoin Supply — live DefiLlama -- */}
       <div className="glass-strong mtr-card">
         <div className="mtr-card-head">
           <span className="mtr-card-title">Stablecoin <span className="gradient-text-alt">supply</span></span>
@@ -508,7 +508,7 @@ export default function MetricsView() {
         </div>
       </div>
 
-      {/* ── Gas Tracker — live Etherscan ── */}
+      {/* -- Gas Tracker — live Etherscan -- */}
       <div className="mtr-sec">Network &amp; gas</div>
       <div className="glass-strong mtr-card">
         <div className="mtr-card-head">
@@ -532,7 +532,7 @@ export default function MetricsView() {
         </div>
       </div>
 
-      {/* ── Network Stats — live Mempool.space ── */}
+      {/* -- Network Stats — live Mempool.space -- */}
       <div className="glass-strong mtr-card">
         <div className="mtr-card-head">
           <span className="mtr-card-title">Network <span className="gradient-text-alt">stats</span></span>
@@ -556,7 +556,7 @@ export default function MetricsView() {
         </div>
       </div>
 
-      {/* ── Converter — live Binance WS prices ── */}
+      {/* -- Converter — live Binance WS prices -- */}
       <div className="mtr-sec">Tools</div>
       <div className="glass-strong mtr-card">
         <div className="mtr-card-head">

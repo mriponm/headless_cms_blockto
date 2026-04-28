@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     "Join the official Blockto Trading Telegram channel. Real-time setups, institutional-grade analysis, and trade alongside 4,000+ members.",
 };
 
-/* ─── Telegram SVG ───────────────────────────────────────────── */
+/* --- Telegram SVG --------------------------------------------- */
 function TelegramIcon({ size = 18, color = "#fff" }: { size?: number; color?: string }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill={color}>
@@ -21,7 +21,7 @@ function TelegramIcon({ size = 18, color = "#fff" }: { size?: number; color?: st
   );
 }
 
-/* ─── Features ───────────────────────────────────────────────── */
+/* --- Features ------------------------------------------------- */
 const FEATURES = [
   { Icon: Zap,      title: "Real-time signals",   desc: "Instant notifications for entry prices, stop losses, and take profit targets based on technical and on-chain analysis." },
   { Icon: Shield,   title: "Risk management",     desc: "We don't just give levels. We teach position sizing, leverage management, and capital preservation strategies." },
@@ -37,7 +37,7 @@ const CHECKLIST = [
   "Weekly market outlook",
 ];
 
-/* ─── Feed messages ──────────────────────────────────────────── */
+/* --- Feed messages -------------------------------------------- */
 type SignalMsg = {
   kind: "signal";
   id: string;
@@ -72,7 +72,7 @@ const FEED: FeedMsg[] = [
   { kind: "closed", id: "m8", pair: "BTCUSDT",  result: "+29%", note: "TP2 hit",            views: 2100, time: "2 days ago" },
 ];
 
-/* ─── Single feed message render ────────────────────────────── */
+/* --- Single feed message render ------------------------------ */
 function SignalBubble({ msg }: { msg: FeedMsg }) {
   if (msg.kind === "closed") {
     return (
@@ -185,7 +185,7 @@ function SignalBubble({ msg }: { msg: FeedMsg }) {
   );
 }
 
-/* ─── Animated signal feed ───────────────────────────────────── */
+/* --- Animated signal feed ------------------------------------- */
 function SignalFeed() {
   const doubled = [...FEED, ...FEED];
 
@@ -238,13 +238,13 @@ function SignalFeed() {
   );
 }
 
-/* ─── Page ───────────────────────────────────────────────────── */
+/* --- Page ----------------------------------------------------- */
 
 export default function TradingPage() {
   return (
     <div className="relative z-[2] max-w-[1440px] mx-auto px-3 md:px-10 pt-4">
 
-      {/* ── Hero ─────────────────────────────────────────────── */}
+      {/* -- Hero ----------------------------------------------- */}
       <FadeIn delay={0}>
         <section
           className="relative rounded-[22px] overflow-hidden mb-[14px] text-center px-5 py-[28px] md:py-[40px]"
@@ -307,7 +307,7 @@ export default function TradingPage() {
         </section>
       </FadeIn>
 
-      {/* ── Stats ────────────────────────────────────────────── */}
+      {/* -- Stats ---------------------------------------------- */}
       <FadeIn delay={0.05}>
         <div className="grid grid-cols-3 gap-2 md:gap-3 mb-4">
           {[
@@ -330,7 +330,7 @@ export default function TradingPage() {
         </div>
       </FadeIn>
 
-      {/* ── Why join us ──────────────────────────────────────── */}
+      {/* -- Why join us ---------------------------------------- */}
       <div className="flex items-center gap-2.5 mb-3 mt-[22px] px-1">
         <span className="text-[10px] font-extrabold uppercase tracking-[2.5px] gradient-text-alt font-[family-name:var(--font-display)]">Why join us</span>
         <span className="flex-1 h-px" style={{ background: "linear-gradient(90deg,rgba(255,106,0,0.2),transparent)" }} />
@@ -351,7 +351,7 @@ export default function TradingPage() {
         </div>
       </FadeIn>
 
-      {/* ── Checklist + Live feed ─────────────────────────────── */}
+      {/* -- Checklist + Live feed ------------------------------- */}
       <div className="flex items-center gap-2.5 mb-3 mt-[22px] px-1">
         <span className="text-[10px] font-extrabold uppercase tracking-[2.5px] gradient-text-alt font-[family-name:var(--font-display)]">What you get inside</span>
         <span className="flex-1 h-px" style={{ background: "linear-gradient(90deg,rgba(255,106,0,0.2),transparent)" }} />
@@ -395,7 +395,7 @@ export default function TradingPage() {
         </div>
       </FadeIn>
 
-      {/* ── Final CTA ────────────────────────────────────────── */}
+      {/* -- Final CTA ------------------------------------------ */}
       <FadeIn delay={0.2}>
         <div className="trading-final-cta relative rounded-[20px] overflow-hidden py-[28px] px-5 text-center mt-[20px] mb-[10px]">
           <span className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[rgba(255,106,0,0.4)] to-transparent" />

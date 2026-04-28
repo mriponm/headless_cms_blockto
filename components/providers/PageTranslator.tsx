@@ -2,7 +2,7 @@
 import { useEffect, useRef } from "react";
 import { useI18n } from "@/components/providers/I18nProvider";
 
-// ── Skip rules ────────────────────────────────────────────────────
+// -- Skip rules ----------------------------------------------------
 const SKIP_TAGS = new Set([
   "SCRIPT","STYLE","CODE","PRE","INPUT","TEXTAREA",
   "SELECT","OPTION","KBD","TIME","NOSCRIPT","CANVAS","VIDEO","AUDIO",
@@ -22,10 +22,10 @@ const COIN_SYMS = new Set([
 ]);
 const COIN_PRICE_RE = /^[\d.,]+[KkMmBbTt]?$|^\$[\d.,]+|^[+-]?\d+\.?\d*%$/;
 
-// ── Google lang-code overrides ────────────────────────────────────
+// -- Google lang-code overrides ------------------------------------
 const LANG_MAP: Record<string,string> = { zh:"zh-CN", pt:"pt-BR" };
 
-// ── localStorage cache ───────────────────────────────────────────
+// -- localStorage cache -------------------------------------------
 const CACHE_VER = "ptx:v3";
 function cacheKey(lang: string)  { return `${CACHE_VER}:${lang}`; }
 function loadCache(lang: string): Map<string,string> {
@@ -42,7 +42,7 @@ function saveCache(lang: string, map: Map<string,string>) {
   } catch {}
 }
 
-// ── DOM collection ───────────────────────────────────────────────
+// -- DOM collection -----------------------------------------------
 interface Entry { node: Text; original: string }
 
 function collect(): Entry[] {
@@ -65,7 +65,7 @@ function collect(): Entry[] {
   return out;
 }
 
-// ── Direct browser → Google Translate (no server hop) ────────────
+// -- Direct browser → Google Translate (no server hop) ------------
 // Calls /translate_a/single for each text in parallel batches
 async function gTranslate(texts: string[], tl: string): Promise<string[]> {
   const mapped = LANG_MAP[tl] ?? tl;
@@ -93,7 +93,7 @@ async function gTranslate(texts: string[], tl: string): Promise<string[]> {
   return out;
 }
 
-// ── Component ─────────────────────────────────────────────────────
+// -- Component -----------------------------------------------------
 export default function PageTranslator() {
   const { lang }  = useI18n();
   const langRef   = useRef("en");
@@ -183,13 +183,13 @@ export default function PageTranslator() {
     }
   }
 
-  // ── Lang-change effect ─────────────────────────────────────────
+  // -- Lang-change effect -----------------------------------------
   useEffect(() => {
     translatePage(lang);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lang]);
 
-  // ── MutationObserver: re-translate new/reverted nodes ─────────
+  // -- MutationObserver: re-translate new/reverted nodes ---------
   useEffect(() => {
     let debounce: ReturnType<typeof setTimeout>;
 

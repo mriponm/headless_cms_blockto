@@ -28,7 +28,7 @@ interface FGResponse {
   history?: Array<{ value: number; value_classification: string }>;
 }
 
-/* ─── Coin icon (real image, falls back to initials) ─────────── */
+/* --- Coin icon (real image, falls back to initials) ----------- */
 function CoinIcon({ sym, size = 30 }: { sym: string; size?: number }) {
   const src = (COIN_ICONS as Record<string, string>)[sym.toUpperCase()];
   if (src) return (
@@ -46,7 +46,7 @@ function CoinIcon({ sym, size = 30 }: { sym: string; size?: number }) {
   );
 }
 
-/* ─── Add-coin modal ─────────────────────────────────────────── */
+/* --- Add-coin modal ------------------------------------------- */
 function WatchlistAddModal({ coins, current, onSave, onClose }: {
   coins: MarketCoin[];
   current: string[];
@@ -145,7 +145,7 @@ function WatchlistAddModal({ coins, current, onSave, onClose }: {
   );
 }
 
-/* ─── Section title ──────────────────────────────────────────── */
+/* --- Section title -------------------------------------------- */
 function SbTitle({ label, Icon, action }: {
   label: string;
   Icon: React.ComponentType<{ size: number; className?: string }>;
@@ -163,7 +163,7 @@ function SbTitle({ label, Icon, action }: {
   );
 }
 
-/* ─── Sidebar ────────────────────────────────────────────────── */
+/* --- Sidebar -------------------------------------------------- */
 export default function Sidebar({ trendingPosts }: { trendingPosts: WPPost[] }) {
   const { openModal } = useAuthModal();
   const prices  = usePriceStore((s) => s.prices);

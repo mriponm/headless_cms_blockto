@@ -130,7 +130,7 @@ function CoinChartInner({
   // Non-Binance, non-stable coins fall back to CoinGecko OHLC/market_chart
   const useCoinGecko = !binanceSymbol && !isStable;
 
-  // ── REST data ─────────────────────────────────────────────────────────────
+  // -- REST data -------------------------------------------------------------
   // Stablecoins:       CG market_chart (line)
   // Binance coins:     Binance klines (candles/line + WebSocket)
   // Other coins:       CG ohlc (candles) or CG market_chart (line)
@@ -196,7 +196,7 @@ function CoinChartInner({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rawKlines, isStable, binanceSymbol]);
 
-  // ── Helper: load klines into chart series ────────────────────────────────
+  // -- Helper: load klines into chart series --------------------------------
   function loadKlines(data: KlineBar[], chartType: "candles" | "line") {
     if (!priceRef.current || !volRef.current || !data.length) return;
     try {
@@ -224,7 +224,7 @@ function CoinChartInner({
     } catch { /* chart removed mid-load */ }
   }
 
-  // ── Chart init ────────────────────────────────────────────────────────────
+  // -- Chart init ------------------------------------------------------------
   useEffect(() => {
     if (!containerRef.current) return;
 
@@ -279,7 +279,7 @@ function CoinChartInner({
 
       chartRef.current = chart;
 
-      // ── Price series ──
+      // -- Price series --
       if (type === "candles") {
         priceRef.current = chart.addSeries(lw.CandlestickSeries, {
           upColor:         "#00d47b",
@@ -301,7 +301,7 @@ function CoinChartInner({
         });
       }
 
-      // ── Volume histogram (v5 API) ──
+      // -- Volume histogram (v5 API) --
       volRef.current = chart.addSeries(lw.HistogramSeries, {
         priceFormat:  { type: "volume" },
         priceScaleId: "vol",
@@ -311,7 +311,7 @@ function CoinChartInner({
         scaleMargins: { top: 0.82, bottom: 0 },
       });
 
-      // ── EMA 20 line (hidden by default if not in indicators) ──
+      // -- EMA 20 line (hidden by default if not in indicators) --
       emaRef.current = chart.addSeries(lw.LineSeries, {
         color:                  "#4a9eff",
         lineWidth:              1,
@@ -323,7 +323,7 @@ function CoinChartInner({
       // Apply initial VOL visibility
       volRef.current?.applyOptions({ visible: indicators.includes("VOL") });
 
-      // ── RSI 14 — separate price scale (bottom 20% of chart) ──
+      // -- RSI 14 — separate price scale (bottom 20% of chart) --
       rsiRef.current = chart.addSeries(lw.LineSeries, {
         color:                  "#b16aff",
         lineWidth:              1,
@@ -338,7 +338,7 @@ function CoinChartInner({
         visible:      false,  // hide RSI axis labels to keep chart clean
       });
 
-      // ── Crosshair hover ──
+      // -- Crosshair hover --
       chart.subscribeCrosshairMove((param: any) => {
         if (!param.time || !priceRef.current) { onHoverRef.current?.(null); return; }
         const priceData = param.seriesData.get(priceRef.current);
@@ -372,7 +372,7 @@ function CoinChartInner({
         }
       });
 
-      // ── Resize observer ──
+      // -- Resize observer --
       ro = new ResizeObserver(entries => {
         for (const e of entries) {
           if (e.contentRect.width > 0) {
@@ -403,14 +403,14 @@ function CoinChartInner({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [type, isLight, height]);
 
-  // ── Load REST data when klines update (also handles initial load fallback) ─
+  // -- Load REST data when klines update (also handles initial load fallback) -
   useEffect(() => {
     if (!chartReady || !klines.length) return;
     loadKlines(klines, type);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chartReady, klines, type]);
 
-  // ── Toggle indicators visibility ──────────────────────────────────────────
+  // -- Toggle indicators visibility ------------------------------------------
   useEffect(() => {
     if (!chartReady) return;
     try {
@@ -420,7 +420,7 @@ function CoinChartInner({
     } catch { /* chart may be reiniting */ }
   }, [chartReady, indicators]);
 
-  // ── WebSocket live updates ────────────────────────────────────────────────
+  // -- WebSocket live updates ------------------------------------------------
   useEffect(() => {
     if (!chartReady || !binanceSymbol) return;
 
@@ -481,7 +481,7 @@ function CoinChartInner({
     };
   }, [chartReady, binanceSymbol, interval, type]);
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  // -- Render ----------------------------------------------------------------
   return (
     <div className="relative">
       {/* Live indicator */}

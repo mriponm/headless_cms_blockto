@@ -5,7 +5,7 @@ import { Filter, Star, Bitcoin, Calendar, ChevronDown, Clock, ExternalLink } fro
 import FadeIn from "@/components/ui/FadeIn";
 import type { Impact, MacroEvent, CryptoEvent, AnyEvent, DayData } from "./types";
 
-/* ─── Countdown hook ─────────────────────────────────────────── */
+/* --- Countdown hook ------------------------------------------- */
 function useCountdown(eventTime: string, eventDate: Date) {
   const [display, setDisplay] = useState<string | null>(null);
 
@@ -30,7 +30,7 @@ function useCountdown(eventTime: string, eventDate: Date) {
   return display;
 }
 
-/* ─── Event status helper ────────────────────────────────────── */
+/* --- Event status helper -------------------------------------- */
 function getStatus(time: string, dayDate: Date): "upcoming" | "live" | "past" | "other" {
   const now = new Date();
   const today = new Date(); today.setHours(0, 0, 0, 0);
@@ -44,7 +44,7 @@ function getStatus(time: string, dayDate: Date): "upcoming" | "live" | "past" | 
   return "past";
 }
 
-/* ─── Impact bars ────────────────────────────────────────────── */
+/* --- Impact bars ---------------------------------------------- */
 function ImpactBars({ level }: { level: Impact }) {
   const color = level === "high" ? "#ff3b4f" : level === "med" ? "#ff6a00" : "#00d47b";
   const glow  = level === "high" ? "rgba(255,59,79,0.4)" : level === "med" ? "rgba(255,106,0,0.4)" : "rgba(0,212,123,0.35)";
@@ -58,7 +58,7 @@ function ImpactBars({ level }: { level: Impact }) {
   );
 }
 
-/* ─── Country flags via flagcdn.com ─────────────────────────── */
+/* --- Country flags via flagcdn.com --------------------------- */
 function CountryFlag({ code }: { code: string }) {
   const lower = code.toLowerCase();
   return (
@@ -74,7 +74,7 @@ function CountryFlag({ code }: { code: string }) {
   );
 }
 
-/* ─── Status badge ───────────────────────────────────────────── */
+/* --- Status badge --------------------------------------------- */
 function StatusBadge({ status, countdown }: { status: "upcoming" | "live" | "past" | "other"; countdown: string | null }) {
   if (status === "live") return (
     <span style={{ fontSize: 8, fontWeight: 800, color: "#00d47b", background: "rgba(0,212,123,0.1)", border: "0.5px solid rgba(0,212,123,0.3)", padding: "2px 7px", borderRadius: 5, letterSpacing: "0.8px", textTransform: "uppercase", fontFamily: "var(--font-jetbrains-mono,monospace)", display: "inline-flex", alignItems: "center", gap: 4 }}>
@@ -96,7 +96,7 @@ function StatusBadge({ status, countdown }: { status: "upcoming" | "live" | "pas
   return null;
 }
 
-/* ─── Expanded detail section ────────────────────────────────── */
+/* --- Expanded detail section ---------------------------------- */
 function ExpandedDetail({ ev, isOpen }: { ev: AnyEvent; isOpen: boolean }) {
   return (
     <div style={{ display: "grid", gridTemplateRows: isOpen ? "1fr" : "0fr", transition: "grid-template-rows 0.28s ease" }}>
@@ -162,7 +162,7 @@ function ExpandedDetail({ ev, isOpen }: { ev: AnyEvent; isOpen: boolean }) {
   );
 }
 
-/* ─── Macro card ─────────────────────────────────────────────── */
+/* --- Macro card ----------------------------------------------- */
 function MacroCard({ ev, dayDate, expanded, onToggle }: { ev: MacroEvent; dayDate: Date; expanded: boolean; onToggle: () => void }) {
   const status    = getStatus(ev.time, dayDate);
   const countdown = useCountdown(ev.time, dayDate);
@@ -254,7 +254,7 @@ function MacroCard({ ev, dayDate, expanded, onToggle }: { ev: MacroEvent; dayDat
   );
 }
 
-/* ─── Crypto card ────────────────────────────────────────────── */
+/* --- Crypto card ---------------------------------------------- */
 function CryptoCard({ ev, dayDate, expanded, onToggle }: { ev: CryptoEvent; dayDate: Date; expanded: boolean; onToggle: () => void }) {
   const status    = getStatus(ev.time, dayDate);
   const countdown = useCountdown(ev.time, dayDate);
@@ -298,7 +298,7 @@ function CryptoCard({ ev, dayDate, expanded, onToggle }: { ev: CryptoEvent; dayD
   );
 }
 
-/* ─── Page ───────────────────────────────────────────────────── */
+/* --- Page ----------------------------------------------------- */
 export default function EventsClient({ days, todayIdx }: { days: DayData[]; todayIdx: number }) {
   const [selectedIdx, setSelectedIdx]   = useState(todayIdx);
   const [activeFilter, setActiveFilter] = useState<"all" | "important" | "high">("all");
@@ -356,7 +356,7 @@ export default function EventsClient({ days, todayIdx }: { days: DayData[]; toda
   return (
     <div className="relative z-[2] max-w-[1440px] mx-auto px-3 md:px-10 pt-4">
 
-      {/* ── Hero ─────────────────────────────────────────────── */}
+      {/* -- Hero ----------------------------------------------- */}
       <FadeIn delay={0}>
         <section className="relative rounded-[20px] overflow-hidden mb-[14px] px-5 py-[24px]"
           style={{ background: "linear-gradient(135deg,rgba(255,106,0,0.12),rgba(255,106,0,0.02) 40%,rgba(0,0,0,0))", border: "0.5px solid rgba(255,106,0,0.15)" }}>
@@ -378,7 +378,7 @@ export default function EventsClient({ days, todayIdx }: { days: DayData[]; toda
         </section>
       </FadeIn>
 
-      {/* ── Stats ────────────────────────────────────────────── */}
+      {/* -- Stats ---------------------------------------------- */}
       <FadeIn delay={0.04}>
         <div className="grid grid-cols-4 gap-2 mb-[14px]">
           {[
@@ -397,7 +397,7 @@ export default function EventsClient({ days, todayIdx }: { days: DayData[]; toda
         </div>
       </FadeIn>
 
-      {/* ── Filter chips ─────────────────────────────────────── */}
+      {/* -- Filter chips --------------------------------------- */}
       <FadeIn delay={0.06}>
         <div className="flex items-center gap-2 mb-[12px]">
           {([
@@ -421,7 +421,7 @@ export default function EventsClient({ days, todayIdx }: { days: DayData[]; toda
         </div>
       </FadeIn>
 
-      {/* ── Date scrubber ────────────────────────────────────── */}
+      {/* -- Date scrubber -------------------------------------- */}
       <FadeIn delay={0.08}>
         <div className="flex gap-[6px] overflow-x-auto pb-1 mb-[16px]" style={{ scrollbarWidth: "none" }}>
           {days.map((d: DayData, i: number) => {
@@ -439,14 +439,14 @@ export default function EventsClient({ days, todayIdx }: { days: DayData[]; toda
         </div>
       </FadeIn>
 
-      {/* ── Day header ───────────────────────────────────────── */}
+      {/* -- Day header ----------------------------------------- */}
       <div className="flex items-center gap-2.5 px-1 mb-3">
         <span className="text-[11px] font-extrabold uppercase tracking-[2px] gradient-text-alt font-[family-name:var(--font-display)]">{day.fullLabel}</span>
         <span className="flex-1 h-px" style={{ background: "linear-gradient(90deg,rgba(255,106,0,0.2),transparent)" }} />
         <span className="text-[9px] font-extrabold tracking-[1px] font-[family-name:var(--font-data)]" style={{ color: "#444" }}>{activeEvents.length} EVENTS</span>
       </div>
 
-      {/* ── Past events toggle (today only) ──────────────────── */}
+      {/* -- Past events toggle (today only) -------------------- */}
       {isToday && pastCount > 0 && (
         <button
           onClick={() => { setShowPast((p) => !p); setLimit(10); }}
@@ -457,7 +457,7 @@ export default function EventsClient({ days, todayIdx }: { days: DayData[]; toda
         </button>
       )}
 
-      {/* ── Event list ───────────────────────────────────────── */}
+      {/* -- Event list ----------------------------------------- */}
       {activeEvents.length === 0 ? (
         <FadeIn delay={0}>
           <div className="glass rounded-[16px] py-12 text-center">

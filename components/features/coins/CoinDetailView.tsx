@@ -15,7 +15,7 @@ import AlertModal from "@/components/features/alerts/AlertModal";
 import { TF_TO_INTERVAL, BINANCE_SYMBOLS } from "@/lib/binanceSymbols";
 import { usePriceStore } from "@/lib/store/priceStore";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// -- Types ---------------------------------------------------------------------
 
 interface CoinDetail {
   id: string; symbol: string; name: string; market_cap_rank: number;
@@ -40,7 +40,7 @@ interface CoinDetail {
   };
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// -- Helpers -------------------------------------------------------------------
 
 function pct(n: number | null | undefined) {
   if (n == null || isNaN(n)) return "—";
@@ -113,7 +113,7 @@ function SidebarSectionLabel({ children }: { children: React.ReactNode }) {
   );
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
+// -- Main component ------------------------------------------------------------
 
 export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news: WPPost[] }) {
   const { resolved } = useTheme();
@@ -219,7 +219,7 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
     explorer && { label: "Explorer", href: explorer, icon: <ExternalLink size={11} /> },
   ].filter(Boolean) as { label: string; href: string; icon: React.ReactNode }[];
 
-  // ── Render ───────────────────────────────────────────────────────────────────
+  // -- Render -------------------------------------------------------------------
 
   return (
     <div className="relative z-[2] max-w-[1440px] mx-auto px-3 sm:px-5 md:px-8 lg:px-10 pt-3 pb-20">
@@ -344,7 +344,7 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
       ══════════════════════════════════════════════════ */}
       <div className="grid lg:grid-cols-[1fr_360px] gap-4 lg:gap-5 items-start">
 
-        {/* ── LEFT COLUMN ── */}
+        {/* -- LEFT COLUMN -- */}
         <div className="flex flex-col gap-4 sm:gap-5 min-w-0">
 
           {/* Chart panel */}
@@ -588,7 +588,7 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
           )}
         </div>
 
-        {/* ── RIGHT SIDEBAR — desktop only ── */}
+        {/* -- RIGHT SIDEBAR — desktop only -- */}
         <div className="hidden lg:flex flex-col gap-4 sticky top-[76px]">
 
           {/* Market Data */}
