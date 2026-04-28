@@ -45,6 +45,9 @@ export default function NewsletterForm() {
           onChange={e => { setEmail(e.target.value); setStatus("idle"); }}
           onKeyDown={e => e.key === "Enter" && submit()}
           placeholder="you@example.com"
+          data-lpignore="true"
+          data-form-type="other"
+          autoComplete="off"
           className="flex-1 min-w-0 rounded-[8px] px-3 py-2 text-[12px] outline-none transition-colors font-[family-name:var(--font-display)] footer-input"
 
         />
