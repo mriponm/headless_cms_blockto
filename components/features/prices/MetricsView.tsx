@@ -13,6 +13,7 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json());
 // -- Types ----------------------------------------------------
 interface GlobalData {
   btc_dominance?: number;
+  btc_dominance_24h_percentage_change?: number;
   eth_dominance?: number;
   quote?: {
     USD?: {
@@ -168,6 +169,7 @@ export default function MetricsView() {
   // Derived values
   const q = global?.quote?.USD;
   const btcDom = global?.btc_dominance ?? 0;
+  const btcDomChange = global?.btc_dominance_24h_percentage_change ?? null;
   const ethDom = global?.eth_dominance ?? 0;
   const btcPrice  = prices["BTCUSDT"] ?? 0;
   const btcChange = changes["BTCUSDT"] ?? 0;
@@ -236,8 +238,8 @@ export default function MetricsView() {
           {
             label: "BTC dominance",
             value: btcDom ? `${btcDom.toFixed(1)}%` : null,
-            sub: "+CMC",
-            up: true,
+            sub: btcDomChange !== null ? `${btcDomChange >= 0 ? "+" : ""}${btcDomChange.toFixed(2)}%` : null,
+            up: (btcDomChange ?? 0) >= 0,
           },
         ].map((s) => (
           <div key={s.label} className="mtr-stat glass">
@@ -245,7 +247,7 @@ export default function MetricsView() {
             <div className="mtr-stat-val">{s.value ?? <Skeleton h={24} />}</div>
             {s.sub && (
               <div className={`mtr-stat-sub${s.up ? " text-positive" : " text-negative"}`}>
-                {s.sub !== "24h" && s.sub !== "+CMC" && (s.up ? "▲" : "▼")} {s.sub}
+                {s.sub !== "24h" && (s.up ? "▲" : "▼")} {s.sub}
               </div>
             )}
           </div>
