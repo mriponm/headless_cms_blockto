@@ -21,6 +21,9 @@ const PROTECTED_PATHS = [
   "/api/sync-user",
 ];
 
+// Public API routes that never need auth — skip Supabase session overhead
+const PUBLIC_API_PREFIX = /^\/api\/(global|markets|fear-greed|mempool|futures|gas|defillama|gainers|pairs|markets|rainbow|returns|stablecoins|altcoin-season|binance|crypto|events|tv-events|halving|search|converter|news)/;
+
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const method = req.method;
@@ -37,6 +40,11 @@ export async function proxy(req: NextRequest) {
         );
       }
     }
+  }
+
+  // Skip Supabase session refresh for public data routes — saves ~10-30ms per call
+  if (PUBLIC_API_PREFIX.test(pathname)) {
+    return NextResponse.next();
   }
 
   const res = NextResponse.next();
