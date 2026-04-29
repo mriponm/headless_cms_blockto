@@ -238,7 +238,7 @@ export default function MetricsView() {
           {
             label: "BTC dominance",
             value: btcDom ? `${btcDom.toFixed(1)}%` : null,
-            sub: btcDomChange !== null ? `${btcDomChange >= 0 ? "+" : ""}${btcDomChange.toFixed(2)}%` : null,
+            sub: btcDomChange !== null ? `${btcDomChange >= 0 ? "+" : ""}${btcDomChange.toFixed(2)}%` : "24h",
             up: (btcDomChange ?? 0) >= 0,
           },
         ].map((s) => (
