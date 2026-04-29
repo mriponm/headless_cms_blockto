@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/ssr";
 import { supabase } from "@/lib/supabase/server";
+import { rateLimit, rateLimitResponse } from "@/lib/rateLimit";
+
+function getIP(req: NextRequest) {
+  return req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? req.headers.get("x-real-ip") ?? "unknown";
+}
 
 async function getProfileId(userId: string, email?: string) {
   const { data: existing } = await supabase.from("profiles").select("id").eq("auth0_id", userId).single();
@@ -37,6 +42,8 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  if (!rateLimit(`watchlist:${getIP(req)}`, 60, 60 * 1000)) return rateLimitResponse();
+
   const user = await getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -44,7 +51,9 @@ export async function POST(req: NextRequest) {
   if (!profileId) return NextResponse.json({ error: "Profile not found" }, { status: 404 });
 
   const { coin_symbol, coin_name } = await req.json();
-  if (!coin_symbol) return NextResponse.json({ error: "coin_symbol required" }, { status: 400 });
+  if (!coin_symbol || typeof coin_symbol !== "string" || coin_symbol.length > 20) {
+    return NextResponse.json({ error: "coin_symbol required (max 20 chars)" }, { status: 400 });
+  }
 
   const { data, error } = await supabase
     .from("watchlist")

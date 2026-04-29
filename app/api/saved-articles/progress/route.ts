@@ -18,14 +18,18 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { slug, percent } = await req.json();
-  if (!slug || percent === undefined) return NextResponse.json({ error: "slug and percent required" }, { status: 400 });
+  if (!slug || typeof slug !== "string" || slug.length > 255 || percent === undefined) {
+    return NextResponse.json({ error: "slug and percent required" }, { status: 400 });
+  }
+  const safePercent = Math.min(100, Math.max(0, Math.round(Number(percent))));
+  if (isNaN(safePercent)) return NextResponse.json({ error: "percent must be a number" }, { status: 400 });
 
   const profileId = await getProfileId(user.id, user.email);
   if (!profileId) return NextResponse.json({ error: "Profile not found" }, { status: 404 });
 
   const { error } = await supabase
     .from("saved_articles")
-    .update({ read_percent: Math.round(percent) })
+    .update({ read_percent: safePercent })
     .eq("user_id", profileId)
     .eq("article_slug", slug);
 

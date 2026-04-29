@@ -46,7 +46,12 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json();
   const { article_slug, article_title, article_excerpt, article_category, article_image, article_date } = body;
-  if (!article_slug) return NextResponse.json({ error: "article_slug required" }, { status: 400 });
+  if (!article_slug || typeof article_slug !== "string" || article_slug.length > 255) {
+    return NextResponse.json({ error: "article_slug required (max 255 chars)" }, { status: 400 });
+  }
+  if (article_title && article_title.length > 500) return NextResponse.json({ error: "title too long" }, { status: 400 });
+  if (article_excerpt && article_excerpt.length > 2000) return NextResponse.json({ error: "excerpt too long" }, { status: 400 });
+  if (article_image && article_image.length > 1000) return NextResponse.json({ error: "image url too long" }, { status: 400 });
 
   const { data, error } = await supabase
     .from("saved_articles")
