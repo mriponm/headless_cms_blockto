@@ -11,10 +11,13 @@ export async function fetchGraphQL<T = unknown>(
   }
   try {
     const url = WP_API;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8_000);
     const fetchOptions: RequestInit = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query, variables }),
+      signal: controller.signal,
     };
     if (revalidate === false || revalidate === undefined) {
       fetchOptions.cache = "no-store";
@@ -22,6 +25,7 @@ export async function fetchGraphQL<T = unknown>(
       fetchOptions.next = { revalidate };
     }
     const res = await fetch(url, fetchOptions);
+    clearTimeout(timer);
 
     if (!res.ok) {
       console.error(`[WPGraphQL] request failed: ${res.status} ${res.statusText}`);
