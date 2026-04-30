@@ -163,6 +163,10 @@ body::before {
   0%   { color: #ff3b4f; text-shadow: 0 0 8px rgba(255,59,79,0.5); }
   100% { color: inherit; text-shadow: none; }
 }
+@-webkit-keyframes ticker-scroll {
+  0%   { -webkit-transform: translateX(0); transform: translateX(0); }
+  100% { -webkit-transform: translateX(-33.333333%); transform: translateX(-33.333333%); }
+}
 @keyframes ticker-scroll {
   0%   { transform: translateX(0); }
   100% { transform: translateX(-33.333333%); }
@@ -644,9 +648,14 @@ html.light ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.25); }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
 
 /* ─── Reduced motion ─────────────────────────────────────────── */
+.ticker-inner {
+  will-change: transform;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
 @media (prefers-reduced-motion: reduce) {
   .bg-orb, .pulse-anim, .pls-anim { animation: none !important; }
-  .ticker-inner { animation: none !important; }
+  .ticker-inner { animation: none !important; -webkit-animation: none !important; }
 }
 
 /* ─── Mobile: tone down orange glow ─────────────────────────── */
@@ -790,6 +799,10 @@ body.drawer-open .bottom-nav { display: none; }
   background: rgba(0,0,0,0.4);
   border-top: 0.5px solid rgba(255,255,255,0.06);
   border-bottom: 0.5px solid rgba(255,255,255,0.06);
+  overflow: hidden;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  isolation: isolate;
 }
 html.light .ticker-bar {
   background: rgba(255,255,255,0.85);

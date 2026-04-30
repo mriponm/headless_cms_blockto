@@ -52,7 +52,7 @@ export default function PriceTicker() {
     <div className="ticker-fade ticker-bar relative overflow-hidden py-2.5">
       <div
         className="ticker-inner flex items-center w-max"
-        style={{ animation: "ticker-scroll 65s linear infinite" }}
+        style={{ animation: "ticker-scroll 65s linear infinite", WebkitAnimation: "ticker-scroll 65s linear infinite" }}
       >
         {items.map((item, i) => {
           const meta       = markets?.find((c) => c.symbol.toUpperCase() === item.symbol);
