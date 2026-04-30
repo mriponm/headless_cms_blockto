@@ -104,6 +104,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <head>
         <link rel="preconnect" href="https://cms.blockto.io" />
         <link rel="dns-prefetch" href="https://cms.blockto.io" />
+        {/* Critical CSS: header visibility must survive CSS-load lag on slow mobile */}
+        <style dangerouslySetInnerHTML={{ __html: `
+          .desktop-only{display:none}
+          @media(min-width:768px){.desktop-only{display:flex}.mobile-only{display:none}}
+          .ticker-bar{overflow:hidden;-webkit-transform:translateZ(0);transform:translateZ(0)}
+          .ticker-inner{-webkit-transform:translateZ(0);transform:translateZ(0)}
+        ` }} />
       </head>
       <body className="min-h-screen flex flex-col relative" suppressHydrationWarning>
         <SwRegister />

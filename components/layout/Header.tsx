@@ -84,7 +84,7 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50">
       {/* -- Desktop topbar ----------------------------------- */}
-      <div className="glass-nav topbar-shimmer relative hidden md:flex items-center gap-6 px-10 py-3">
+      <div className="desktop-only glass-nav topbar-shimmer relative hidden md:flex items-center gap-6 px-10 py-3">
         {/* Brand */}
         <Link href="/" className="flex-shrink-0 nav-brand-link">
           <BrandLogo height={36} />
@@ -199,7 +199,7 @@ export default function Header() {
       </div>
 
       {/* -- Mobile topbar ------------------------------------ */}
-      <div className="glass-nav flex md:hidden items-center gap-3 px-3 py-3">
+      <div className="mobile-only glass-nav flex md:hidden items-center gap-3 px-3 py-3">
         <Link href="/">
           <BrandLogo height={32} />
         </Link>
