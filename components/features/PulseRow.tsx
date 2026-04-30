@@ -14,6 +14,7 @@ interface MarketCoin {
 // CMC global-metrics/quotes/latest — btc_dominance is at top level, not inside quote.USD
 interface GlobalData {
   btc_dominance?: number;
+  btc_dominance_24h_percentage_change?: number;
   eth_dominance?: number;
   quote?: {
     USD?: {
@@ -51,7 +52,8 @@ export default function PulseRow() {
   const ethChange = changes["ETHUSDT"] ?? ethMeta?.price_change_percentage_24h ?? 0;
 
   const q          = global?.quote?.USD;
-  const btcDom     = global?.btc_dominance ?? 0;
+  const btcDom       = global?.btc_dominance ?? 0;
+  const btcDomChange = global?.btc_dominance_24h_percentage_change ?? null;
   const marketCap  = q?.total_market_cap ?? 0;
   const vol24h     = q?.total_volume_24h ?? 0;
   const mcapChg    = q?.total_market_cap_yesterday_percentage_change ?? 0;
@@ -97,8 +99,8 @@ export default function PulseRow() {
     {
       label: "BTC dominance",
       value: btcDom ? `${btcDom.toFixed(1)}%` : "—",
-      change: "dominance",
-      up: true,
+      change: btcDomChange !== null ? `${btcDomChange >= 0 ? "+" : ""}${btcDomChange.toFixed(2)}%` : "24h",
+      up: (btcDomChange ?? 0) >= 0,
       href: "/metrics",
     },
   ];

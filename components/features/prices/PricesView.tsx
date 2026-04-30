@@ -30,6 +30,7 @@ interface MarketCoin {
 
 interface GlobalData {
   btc_dominance?: number;
+  btc_dominance_24h_percentage_change?: number;
   eth_dominance?: number;
   quote?: { USD?: { total_market_cap?: number; total_volume_24h?: number; total_market_cap_yesterday_percentage_change?: number } };
 }
@@ -142,6 +143,7 @@ export default function PricesView() {
 
   const q = global?.quote?.USD;
   const btcDom = global?.btc_dominance ?? 0;
+  const btcDomChange = global?.btc_dominance_24h_percentage_change ?? null;
   const ethPrice  = prices["ETHUSDT"] ?? 0;
   const ethChange = changes["ETHUSDT"] ?? 0;
 
@@ -175,7 +177,7 @@ export default function PricesView() {
   const heroStats = [
     { label: "Market cap",    val: q?.total_market_cap ? fmt(q.total_market_cap, eur) : fmt(2.87e12, eur), sub: `${mcapChg >= 0 ? "+" : ""}${mcapChg.toFixed(1)}%`, up: mcapChg >= 0 },
     { label: "24h volume",    val: q?.total_volume_24h ? fmt(q.total_volume_24h, eur) : fmt(94.2e9, eur), sub: "24h", up: true },
-    { label: "BTC dominance", val: btcDom ? `${btcDom.toFixed(1)}%` : "52.4%", sub: "dominance", up: true },
+    { label: "BTC dominance", val: btcDom ? `${btcDom.toFixed(1)}%` : "52.4%", sub: btcDomChange !== null ? `${btcDomChange >= 0 ? "+" : ""}${btcDomChange.toFixed(2)}%` : "24h", up: (btcDomChange ?? 0) >= 0 },
     { label: "ETH price",     val: ethPrice ? fmt(ethPrice, eur) : fmt(1842, eur), sub: `${ethChange >= 0 ? "+" : ""}${ethChange.toFixed(1)}%`, up: ethChange >= 0 },
   ];
 
