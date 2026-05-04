@@ -1,4 +1,4 @@
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 import FadeIn from "@/components/ui/FadeIn";
 import BreakingBanner from "@/components/features/BreakingBanner";

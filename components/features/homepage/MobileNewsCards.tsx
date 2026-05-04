@@ -143,7 +143,7 @@ export default function MobileNewsCards({
     const listPosts   = visible.slice(3);
     return (
       <div className="md:hidden mb-5">
-        <SectionLabel title={title} count={unique.length} viewAllHref={viewAllHref} />
+        <SectionLabel title={title} viewAllHref={viewAllHref} />
         <div className="flex gap-2.5 overflow-x-auto pb-2 mb-3 scrollbar-hide -mx-3 px-3">
           {scrollPosts.map((post, i) => (
             <HScrollCard key={post.id} post={post} index={i}
@@ -160,7 +160,7 @@ export default function MobileNewsCards({
 
   return (
     <div className="md:hidden mb-5">
-      <SectionLabel title={title} count={unique.length} viewAllHref={viewAllHref} />
+      <SectionLabel title={title} viewAllHref={viewAllHref} />
       {visible.map((post) => (
         <ListCard key={post.id} post={post} />
       ))}

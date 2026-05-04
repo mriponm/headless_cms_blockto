@@ -98,7 +98,7 @@ export default function CategoryNewsSection({ posts, title, viewAllHref, accentC
 
   return (
     <div className="mb-8">
-      <SectionLabel title={title} count={posts.length} viewAllHref={viewAllHref} />
+      <SectionLabel title={title} viewAllHref={viewAllHref} />
 
       {/* Featured 3-col grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">

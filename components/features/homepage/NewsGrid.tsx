@@ -31,7 +31,7 @@ export default function NewsGrid({ posts, title = "General news", viewAllHref }:
 
   return (
     <>
-      <SectionLabel title={title} count={posts.length} viewAllHref={viewAllHref} />
+      <SectionLabel title={title} viewAllHref={viewAllHref} />
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-[18px] mb-5">
         {visible.map((post) => {
           const cat = primaryCategory(post);
