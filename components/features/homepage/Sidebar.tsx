@@ -165,9 +165,12 @@ function SbTitle({ label, Icon, action }: {
 
 /* --- Newsletter widget --------------------------------------- */
 function NewsletterWidget() {
-  const inputRef            = useRef<HTMLInputElement>(null);
-  const [status, setStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
-  const [errMsg, setErrMsg] = useState("");
+  const inputRef              = useRef<HTMLInputElement>(null);
+  const [mounted, setMounted] = useState(false);
+  const [status, setStatus]   = useState<"idle" | "loading" | "ok" | "error">("idle");
+  const [errMsg, setErrMsg]   = useState("");
+
+  useEffect(() => { setMounted(true); }, []);
 
   async function submit() {
     const trimmed = (inputRef.current?.value ?? "").trim();
@@ -203,7 +206,12 @@ function NewsletterWidget() {
           Market moves, breaking news &amp; signals delivered every morning.
         </p>
 
-        {status === "ok" ? (
+        {!mounted ? (
+          <>
+            <div className="w-full h-[46px] rounded-[10px] mb-2 bg-black/40 border border-[rgba(255,255,255,0.08)]" />
+            <div className="w-full h-[46px] rounded-[10px]" style={{ background: "var(--gradient-brand)" }} />
+          </>
+        ) : status === "ok" ? (
           <p className="text-[13px] font-bold text-[#00d47b] font-[family-name:var(--font-display)]">✓ You&apos;re subscribed!</p>
         ) : (
           <>
@@ -219,8 +227,8 @@ function NewsletterWidget() {
             <button
               onClick={submit}
               disabled={status === "loading"}
-              className="w-full py-[11px] rounded-[10px] text-[13px] font-extrabold text-black cursor-pointer font-[family-name:var(--font-display)] disabled:opacity-60 transition-opacity"
-              style={{ background: "var(--gradient-brand)", boxShadow: "0 4px 14px rgba(255,106,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2)" }}
+              className="w-full py-[11px] rounded-[10px] text-[13px] font-extrabold text-black cursor-pointer font-[family-name:var(--font-display)] transition-opacity"
+              style={{ background: "var(--gradient-brand)", boxShadow: "0 4px 14px rgba(255,106,0,0.2), inset 0 1px 0 rgba(255,255,255,0.2)", opacity: status === "loading" ? 0.6 : 1 }}
             >
               {status === "loading" ? "Subscribing…" : "Subscribe"}
             </button>
