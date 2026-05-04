@@ -2,7 +2,7 @@
 import { Star, Flame, Clock, Plus, X, Check, Search } from "lucide-react";
 import TranslatedText from "@/components/ui/TranslatedText";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import useSWR from "swr";
 import { usePriceStore } from "@/lib/store/priceStore";
 import { formatPrice, formatPercent } from "@/lib/utils/formatters";
@@ -165,12 +165,12 @@ function SbTitle({ label, Icon, action }: {
 
 /* --- Newsletter widget --------------------------------------- */
 function NewsletterWidget() {
-  const [email, setEmail]   = useState("");
+  const inputRef            = useRef<HTMLInputElement>(null);
   const [status, setStatus] = useState<"idle" | "loading" | "ok" | "error">("idle");
   const [errMsg, setErrMsg] = useState("");
 
   async function submit() {
-    const trimmed = email.trim();
+    const trimmed = (inputRef.current?.value ?? "").trim();
     if (!trimmed || status === "loading") return;
     setStatus("loading");
     try {
@@ -208,9 +208,9 @@ function NewsletterWidget() {
         ) : (
           <>
             <input
+              ref={inputRef}
               type="email"
-              value={email}
-              onChange={e => { setEmail(e.target.value); if (status === "error") setStatus("idle"); }}
+              onChange={() => { if (status === "error") setStatus("idle"); }}
               onKeyDown={e => e.key === "Enter" && submit()}
               placeholder="you@example.com"
               autoComplete="email"
