@@ -105,7 +105,7 @@ const EXCHANGES: Exchange[] = [
     taker: "0.06%",
     kyc: "Required",
     kycAccent: false,
-    bonus: "+$300 bonus",
+    bonus: "+$100 bonus",
     featureGroups: [
       {
         label: "Key features",
@@ -116,8 +116,8 @@ const EXCHANGES: Exchange[] = [
         ],
       },
     ],
-    signupUrl: "#",
-    websiteUrl: "#",
+    signupUrl: "https://partner.bybit.com/b/37716",
+    websiteUrl: "https://partner.bybit.com/b/37716",
   },
   {
     id: "bitget",
@@ -310,6 +310,8 @@ function ExchangeCard({ ex }: { ex: Exchange }) {
           <div className="flex flex-col gap-[10px] mt-[16px] lg:mt-0 lg:justify-end">
             <a
               href={ex.signupUrl}
+              target="_blank"
+              rel="noopener noreferrer"
               className="w-full py-[14px] rounded-[12px] font-extrabold text-[14px] text-black flex items-center justify-center gap-2 cursor-pointer font-[family-name:var(--font-display)] transition-all duration-200 hover:-translate-y-[1px] active:translate-y-0"
               style={{
                 background: "linear-gradient(135deg,#ff6a00,#ff8a30)",
