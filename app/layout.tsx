@@ -44,8 +44,43 @@ const leagueSpartan = League_Spartan({
   weight: ["400", "500", "600", "700", "800", "900"],
 });
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://blockto.news";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://blockto.io";
 const OG_IMAGE = `${SITE_URL}/Blockto_SEO.jpeg`;
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${SITE_URL}/#organization`,
+      name: "Blockto",
+      url: SITE_URL,
+      logo: {
+        "@type": "ImageObject",
+        url: `${SITE_URL}/favicon_updated.jpeg`,
+        width: 512,
+        height: 512,
+      },
+      sameAs: [
+        "https://twitter.com/blockto_io",
+        "https://linktree.ee/blockto",
+      ],
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${SITE_URL}/#website`,
+      url: SITE_URL,
+      name: "Blockto — Crypto Terminal",
+      description: "Your crypto intelligence terminal — real-time data, market signals, and breaking news.",
+      publisher: { "@id": `${SITE_URL}/#organization` },
+      potentialAction: {
+        "@type": "SearchAction",
+        target: { "@type": "EntryPoint", urlTemplate: `${SITE_URL}/news?q={search_term_string}` },
+        "query-input": "required name=search_term_string",
+      },
+    },
+  ],
+};
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -102,6 +137,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en" className={`${outfit.variable} ${jetbrainsMono.variable} ${lora.variable} ${leagueSpartan.variable} ${themeCls}`} suppressHydrationWarning>
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <link rel="preconnect" href="https://cms.blockto.io" />
         <link rel="dns-prefetch" href="https://cms.blockto.io" />
         {/* Critical CSS: header visibility must survive CSS-load lag on slow mobile */}
