@@ -88,8 +88,8 @@ const EXCHANGES: Exchange[] = [
         items: [<>Founded 2019 &mdash; George Town, Cayman Islands</>],
       },
     ],
-    signupUrl: "#",
-    websiteUrl: "#",
+    signupUrl: "https://partner.blofin.com/d/Blockto",
+    websiteUrl: "https://partner.blofin.com/d/Blockto",
   },
   {
     id: "bybit",
