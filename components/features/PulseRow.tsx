@@ -40,7 +40,7 @@ export default function PulseRow() {
     refreshInterval: 3_600_000, dedupingInterval: 1_800_000, keepPreviousData: true,
   });
   const { data: markets } = useSWR<MarketCoin[]>("/api/markets", fetcher, {
-    refreshInterval: 60_000, dedupingInterval: 30_000, keepPreviousData: true,
+    refreshInterval: 30_000, dedupingInterval: 5_000, keepPreviousData: true,
   });
 
   // WS price takes priority; fall back to CoinGecko markets while WS connects

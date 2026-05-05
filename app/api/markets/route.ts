@@ -9,12 +9,14 @@ export async function GET() {
       `${BASE}/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=true&price_change_percentage=1h%2C24h%2C7d%2C30d`,
       {
         headers: { "x-cg-pro-api-key": CG_KEY!, Accept: "application/json" },
-        next: { revalidate: 60 },
+        next: { revalidate: 30 },
       }
     );
     if (!res.ok) throw new Error(`CoinGecko markets error: ${res.status}`);
     const json = await res.json();
-    return NextResponse.json(json);
+    return NextResponse.json(json, {
+      headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" },
+    });
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
