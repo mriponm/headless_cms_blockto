@@ -147,8 +147,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <style dangerouslySetInnerHTML={{ __html: `
           .desktop-only{display:none}
           @media(min-width:768px){.desktop-only{display:flex}.mobile-only{display:none}}
-          .ticker-bar{overflow:hidden;-webkit-transform:translateZ(0);transform:translateZ(0)}
-          .ticker-inner{-webkit-transform:translateZ(0);transform:translateZ(0)}
+          .ticker-bar{overflow:hidden;max-height:48px;-webkit-transform:translateZ(0);transform:translateZ(0)}
+          .ticker-inner{display:-webkit-box;display:-ms-flexbox;display:flex;width:max-content;white-space:nowrap;-webkit-transform:translateZ(0);transform:translateZ(0)}
+          .ticker-inner>span{white-space:nowrap;flex-shrink:0}
         ` }} />
       </head>
       <body className="min-h-screen flex flex-col relative" suppressHydrationWarning>
