@@ -144,8 +144,8 @@ const EXCHANGES: Exchange[] = [
         ],
       },
     ],
-    signupUrl: "#",
-    websiteUrl: "#",
+    signupUrl: "https://bonus.bitget.com/2V3GRS",
+    websiteUrl: "https://bonus.bitget.com/2V3GRS",
   },
 ];
 
