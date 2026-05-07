@@ -18,7 +18,7 @@ globalThis.__tw_resolve = (id, from) => {
 
 const config = {
   plugins: {
-    "@tailwindcss/postcss": {},
+    "@tailwindcss/postcss": { base: __dirname },
   },
 };
 

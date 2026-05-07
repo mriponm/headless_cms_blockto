@@ -12,18 +12,14 @@ export async function fetchGraphQL<T = unknown>(
   try {
     const url = WP_API;
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 8_000);
+    const timer = setTimeout(() => controller.abort(), 3_000);
     const fetchOptions: RequestInit = {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ query, variables }),
       signal: controller.signal,
+      next: { revalidate: revalidate === false ? 0 : (revalidate ?? 60) },
     };
-    if (revalidate === false || revalidate === undefined) {
-      fetchOptions.cache = "no-store";
-    } else {
-      fetchOptions.next = { revalidate };
-    }
     const res = await fetch(url, fetchOptions);
     clearTimeout(timer);
 
