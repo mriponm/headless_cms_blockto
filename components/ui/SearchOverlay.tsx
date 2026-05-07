@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { Search, X, TrendingUp, Clock, ArrowRight, Loader2, Newspaper } from "lucide-react";
 
@@ -50,8 +51,11 @@ export default function SearchOverlay({ open, onClose, initialQuery = "" }: Prop
   const [results, setResults] = useState<SearchResults>({ articles: [], coins: [] });
   const [loading, setLoading] = useState(false);
   const [recent, setRecent] = useState<RecentArticle[]>([]);
+  const [mounted, setMounted] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     if (open) {
@@ -111,7 +115,9 @@ export default function SearchOverlay({ open, onClose, initialQuery = "" }: Prop
 
   const hasResults = results.articles.length > 0 || results.coins.length > 0;
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div
       className={`fixed inset-0 z-[300] flex items-start justify-center pt-[12vh] px-4 transition-all duration-200 ${
         open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
@@ -307,6 +313,7 @@ export default function SearchOverlay({ open, onClose, initialQuery = "" }: Prop
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

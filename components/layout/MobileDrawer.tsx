@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
@@ -332,7 +333,9 @@ export default function MobileDrawer({ open, onClose }: Props) {
 
   const isDark = resolved === "dark";
 
-  return (
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <>
       {/* Scrim */}
       <AnimatePresence>
@@ -475,6 +478,7 @@ export default function MobileDrawer({ open, onClose }: Props) {
           </p>
         </div>
       </motion.div>
-    </>
+    </>,
+    document.body
   );
 }
