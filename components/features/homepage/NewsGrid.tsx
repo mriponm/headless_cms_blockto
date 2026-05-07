@@ -1,6 +1,6 @@
 "use client";
 import RelativeTime from "@/components/ui/RelativeTime";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import SectionLabel from "@/components/ui/SectionLabel";
@@ -26,8 +26,6 @@ export default function NewsGrid({ posts, title = "General news", viewAllHref }:
   viewAllHref?: string;
 }) {
   const [page, setPage] = useState(0);
-  const firstId = posts[0]?.id;
-  useEffect(() => { setPage(0); }, [firstId]);
   const totalPages = Math.ceil(posts.length / PER_PAGE);
   const visible = posts.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE);
 

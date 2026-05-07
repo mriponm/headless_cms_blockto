@@ -133,7 +133,7 @@ const EXCHANGES: Exchange[] = [
     taker: "0.06%",
     kyc: "Required",
     kycAccent: false,
-    bonus: "+$50 bonus",
+    bonus: "+$200 bonus",
     featureGroups: [
       {
         label: "Key features",

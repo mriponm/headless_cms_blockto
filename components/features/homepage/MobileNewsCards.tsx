@@ -1,6 +1,6 @@
 "use client";
 import RelativeTime from "@/components/ui/RelativeTime";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import SectionLabel from "@/components/ui/SectionLabel";
@@ -134,8 +134,6 @@ export default function MobileNewsCards({
   paginate = false,
 }: Props) {
   const [page, setPage] = useState(0);
-  const firstId = posts[0]?.id;
-  useEffect(() => { setPage(0); }, [firstId]);
   const unique = posts.filter((p, i, a) => a.findIndex(x => x.id === p.id) === i);
   const totalPages = Math.ceil(unique.length / PER_PAGE);
   const visible = paginate ? unique.slice(page * PER_PAGE, page * PER_PAGE + PER_PAGE) : unique;

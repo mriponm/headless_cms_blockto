@@ -32,7 +32,11 @@ export default function SignalFeedScroll({ children }: { children: React.ReactNo
       onMouseLeave={() => { paused.current = false; }}
       onTouchStart={() => { paused.current = true; }}
       onTouchEnd={() => { paused.current = false; }}
-      className="absolute inset-0 overflow-y-scroll no-scrollbar"
+      className="absolute inset-0 overflow-y-scroll [&::-webkit-scrollbar]:hidden"
+      style={{
+        scrollbarWidth: "none",
+        msOverflowStyle: "none",
+      } as React.CSSProperties}
     >
       {children}
     </div>
