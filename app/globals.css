@@ -2121,6 +2121,8 @@ html.light .pr-exch-bar-wrap { background: rgba(0,0,0,0.07); }
 
 /* ── Rainbow chart ────────────────────────────────────────────── */
 .rbc-wrap { margin-bottom: 10px; }
+
+/* Time-frame buttons */
 .rbc-tf {
   display: flex;
   background: rgba(255,255,255,0.04);
@@ -2148,38 +2150,57 @@ html.light .rbc-tf-btn { color: #aaa; }
   color: #fff !important;
   box-shadow: 0 2px 10px rgba(255,106,0,0.3);
 }
-.rbc-chart-area { padding: 0 18px; }
-.rbc-legend-wrap { padding: 4px 18px 18px; }
-.rbc-zone-labels {
+
+/* Chart area */
+.rbc-chart-area { padding: 0 14px; }
+
+/* Current zone badge under title */
+.rbc-zone-badge {
   display: flex;
-  justify-content: space-between;
-  font-size: 8px;
-  color: #444;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
   font-family: var(--font-display);
-  margin-bottom: 6px;
+  margin-top: 3px;
+  letter-spacing: -0.1px;
 }
-html.light .rbc-zone-labels { color: #aaa; }
-.rbc-bar {
+.rbc-zone-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  animation: rbc-pulse 2s ease-in-out infinite;
+}
+@keyframes rbc-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: 0.55; transform: scale(0.75); }
+}
+
+/* Top legend row (Coinglass style) */
+.rbc-legend-top {
   display: flex;
-  height: 10px;
-  border-radius: 5px;
-  overflow: hidden;
-  gap: 1px;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  padding: 6px 16px 8px;
+  font-size: 8.5px;
+  color: #666;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.1px;
 }
-.rbc-bar-seg { flex: 1; }
-.rbc-arrow-row { position: relative; height: 18px; }
-.rbc-arrow {
-  position: absolute;
-  transform: translateX(-50%);
-  font-size: 11px;
-  font-weight: 900;
-  color: #ff6a00;
-  text-shadow: 0 0 8px rgba(255,106,0,0.5);
-  line-height: 1;
-  margin-top: 2px;
+html.light .rbc-legend-top { color: #999; }
+.rbc-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+.rbc-legend-swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: 2px;
+  flex-shrink: 0;
 }
 
 /* ── 4-col quad grid ──────────────────────────────────────────── */

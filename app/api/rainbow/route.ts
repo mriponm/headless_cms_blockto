@@ -1,25 +1,53 @@
 import { NextResponse } from "next/server";
 
-// CryptoCompare — free, no key, 4yr+ daily BTC/USD data
 const CC_BASE = "https://min-api.cryptocompare.com/data/v2";
+const CACHE: RequestInit = { next: { revalidate: 3600 } };
+
+async function fetchBatch(
+  limit: number,
+  toTs?: number,
+): Promise<[number, number][]> {
+  const ts = toTs ? `&toTs=${toTs}` : "";
+  const res = await fetch(
+    `${CC_BASE}/histoday?fsym=BTC&tsym=USD&limit=${limit}${ts}`,
+    CACHE,
+  );
+  if (!res.ok) throw new Error(`CryptoCompare ${res.status}`);
+  const json = await res.json();
+  if (json.Response !== "Success" || !json.Data?.Data) {
+    throw new Error(json.Message ?? "CryptoCompare error");
+  }
+  return (json.Data.Data as { time: number; close: number }[])
+    .filter((d) => d.close > 0)
+    .map((d) => [d.time * 1000, d.close]);
+}
 
 export async function GET() {
   try {
-    const res = await fetch(
-      `${CC_BASE}/histoday?fsym=BTC&tsym=USD&limit=1460`,
-      { next: { revalidate: 3600 } }   // cache 1hr — daily data doesn't change faster
-    );
-    if (!res.ok) throw new Error(`CryptoCompare error: ${res.status}`);
-    const json = await res.json();
+    // First batch: most recent 2000 days (~5.5 years)
+    const batch1 = await fetchBatch(2000);
 
-    if (json.Response !== "Success" || !json.Data?.Data) {
-      throw new Error(`CryptoCompare: ${json.Message ?? "unknown error"}`);
+    // Second batch: 2000 days before that (~another 5.5 years → ~11 years total)
+    let all = batch1;
+    if (batch1.length >= 1990) {
+      const oldestSec = Math.floor(batch1[0][0] / 1000);
+      try {
+        const batch2 = await fetchBatch(2000, oldestSec);
+        all = [...batch2, ...batch1];
+      } catch {
+        // Use what we have if older data is unavailable
+      }
     }
 
-    // Transform to [timestamp_ms, price] — same format RainbowChart expects
-    const prices: [number, number][] = json.Data.Data.map(
-      (d: { time: number; close: number }) => [d.time * 1000, d.close]
-    );
+    // Deduplicate by timestamp and sort ascending
+    const seen = new Set<number>();
+    const prices: [number, number][] = all
+      .filter(([ts]) => {
+        if (seen.has(ts)) return false;
+        seen.add(ts);
+        return true;
+      })
+      .sort(([a], [b]) => a - b);
 
     return NextResponse.json(prices);
   } catch (err) {
