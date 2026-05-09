@@ -14,7 +14,6 @@ function applyTheme(resolved: "dark" | "light") {
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("dark");
   const [resolved, setResolved] = useState<"dark" | "light">("dark");
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     const stored = (localStorage.getItem("theme") as Theme) || "dark";
@@ -25,7 +24,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     setResolved(r as "dark" | "light");
     applyTheme(r as "dark" | "light");
     document.cookie = `theme=${r}; path=/; max-age=31536000; SameSite=Lax`;
-    setMounted(true);
   }, []);
 
   // Watch system preference when theme === "system"
@@ -52,8 +50,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     document.cookie = `theme=${r}; path=/; max-age=31536000; SameSite=Lax`;
   };
 
-  // Keep legacy toggle for ThemeToggle component
-  if (!mounted) return <>{children}</>;
   return <Ctx.Provider value={{ theme, setTheme, resolved }}>{children}</Ctx.Provider>;
 }
 
