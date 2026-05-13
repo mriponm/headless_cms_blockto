@@ -282,14 +282,14 @@ export default function PricesView() {
             <div className="pr-table-head-full">
               <span>#</span><span>Name</span>
               <span className="text-right">Price</span>
-              <span className="text-right">1h %</span>
+              <span className="text-right pr-head-1h">1h %</span>
               <span className="text-right">24h %</span>
-              <span className="text-right">7d %</span>
+              <span className="text-right pr-head-7d">7d %</span>
               <span className="text-right">Market Cap</span>
               <span className="text-right">Volume (24h)</span>
-              <span className="text-right">Circ. Supply</span>
+              <span className="text-right pr-head-cs">Circ. Supply</span>
               <span className="text-right">Last 7 Days</span>
-              <span></span>
+              <span className="pr-head-buy"></span>
             </div>
             {/* Mobile head */}
             <div className="pr-table-head-mobile">

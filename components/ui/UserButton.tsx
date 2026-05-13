@@ -23,7 +23,7 @@ export default function UserButton() {
   if (!user) {
     return (
       <button
-        className="px-[18px] py-2.5 rounded-[10px] text-[13px] font-extrabold text-black cursor-pointer font-[family-name:var(--font-display)] transition-all duration-150 hover:brightness-110 hover:shadow-[0_4px_20px_rgba(255,106,0,0.4)]"
+        className="px-[14px] xl:px-[18px] py-2 xl:py-2.5 rounded-[10px] text-[12px] xl:text-[13px] font-extrabold text-black cursor-pointer font-[family-name:var(--font-display)] transition-all duration-150 hover:brightness-110 hover:shadow-[0_4px_20px_rgba(255,106,0,0.4)] whitespace-nowrap"
         style={{ background: "var(--gradient-brand)", boxShadow: "0 4px 14px rgba(255,106,0,0.25), inset 0 1px 0 rgba(255,255,255,0.2)" }}
         onClick={() => openModal("signin")}
       >

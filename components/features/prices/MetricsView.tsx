@@ -8,7 +8,7 @@ import { COIN_IDS } from "@/lib/coinIds";
 import { usePriceStore } from "@/lib/store/priceStore";
 import { formatPrice, formatDollarCompact, formatPercent } from "@/lib/utils/formatters";
 
-const fetcher = (url: string) => fetch(url).then((r) => r.json());
+const fetcher = (url: string) => fetch(url).then((r) => { if (!r.ok) throw new Error(`HTTP ${r.status}`); return r.json(); });
 
 // -- Types ----------------------------------------------------
 interface GlobalData {
@@ -159,7 +159,28 @@ export default function MetricsView() {
 
   const { data: global } = useSWR<GlobalData>("/api/global", fetcher, { refreshInterval: 60_000, keepPreviousData: true });
   const { data: fg }     = useSWR<FGResponse>("/api/fear-greed", fetcher, { refreshInterval: 3_600_000, keepPreviousData: true });
-  const { data: mempool }= useSWR<MempoolData>("/api/mempool", fetcher, { refreshInterval: 60_000, keepPreviousData: true });
+  const [mempoolLive, setMempoolLive] = useState(false);
+  const { data: mempool }= useSWR<MempoolData>("/api/mempool", fetcher, {
+    refreshInterval: 60_000,
+    keepPreviousData: true,
+    onSuccess: () => setMempoolLive(true),
+    fallbackData: (() => {
+      const LAST_HALVING_BLOCK = 840_000;
+      const NEXT_HALVING_BLOCK = 1_050_000;
+      const LAST_HALVING_MS = new Date("2024-04-20T00:00:00Z").getTime();
+      const est = LAST_HALVING_BLOCK + Math.floor((Date.now() - LAST_HALVING_MS) / 600_000);
+      const rem = Math.max(0, NEXT_HALVING_BLOCK - est);
+      return {
+        currentBlock: est,
+        blocksRemaining: rem,
+        halvingDate: new Date(Date.now() + rem * 600_000).toISOString(),
+        halvingBlock: NEXT_HALVING_BLOCK,
+        progressPct: ((est % 210_000) / 210_000) * 100,
+        hashratePH: 0,
+        difficultyChange: 0,
+      };
+    })(),
+  });
   const { data: futures }= useSWR<FuturesData>("/api/futures", fetcher, { refreshInterval: 30_000, keepPreviousData: true });
   const { data: gas }    = useSWR<GasData>("/api/gas", fetcher, { refreshInterval: 30_000, keepPreviousData: true });
   const { data: defi }   = useSWR<DefiData>("/api/defillama", fetcher, { refreshInterval: 3_600_000, keepPreviousData: true });
@@ -435,13 +456,13 @@ export default function MetricsView() {
             </div>
           </div>
           <div className="mtr-ng-grid">
-            {futures ? [
-              { k: "Open interest",    v: formatDollarCompact(futures.oiValueUSD) },
+            {futures && typeof futures.oiChange24h === "number" ? [
+              { k: "Open interest",    v: formatDollarCompact(futures.oiValueUSD ?? 0) },
               { k: "OI change 24h",    v: `${futures.oiChange24h >= 0 ? "+" : ""}${futures.oiChange24h.toFixed(2)}%`, c: futures.oiChange24h >= 0 ? "#00d47b" : "#ff3b4f" },
-              { k: "BTC funding rate", v: `${futures.fundingRate >= 0 ? "+" : ""}${(futures.fundingRate * 100).toFixed(4)}%`, c: futures.fundingRate >= 0 ? "#00d47b" : "#ff3b4f" },
-              { k: "Long accounts",    v: `${futures.longPct.toFixed(1)}%`, c: "#00d47b" },
-              { k: "Short accounts",   v: `${futures.shortPct.toFixed(1)}%`, c: "#ff3b4f" },
-              { k: "L/S ratio",        v: futures.lsRatio.toFixed(4), c: futures.lsRatio >= 1 ? "#00d47b" : "#ff3b4f" },
+              { k: "BTC funding rate", v: `${(futures.fundingRate ?? 0) >= 0 ? "+" : ""}${((futures.fundingRate ?? 0) * 100).toFixed(4)}%`, c: (futures.fundingRate ?? 0) >= 0 ? "#00d47b" : "#ff3b4f" },
+              { k: "Long accounts",    v: `${(futures.longPct ?? 0).toFixed(1)}%`, c: "#00d47b" },
+              { k: "Short accounts",   v: `${(futures.shortPct ?? 0).toFixed(1)}%`, c: "#ff3b4f" },
+              { k: "L/S ratio",        v: (futures.lsRatio ?? 0).toFixed(4), c: (futures.lsRatio ?? 0) >= 1 ? "#00d47b" : "#ff3b4f" },
             ].map((n) => (
               <div key={n.k} className="mtr-ng-cell">
                 <div className="mtr-ng-key">{n.k}</div>
@@ -541,19 +562,28 @@ export default function MetricsView() {
         </div>
         <div className="mtr-card-body">
           <div className="mtr-ng-grid">
-            {mempool && defi ? [
-              { k: "BTC hash rate",    v: `${mempool.hashratePH.toFixed(0)} EH/s` },
-              { k: "Current block",    v: mempool.currentBlock.toLocaleString() },
-              { k: "DeFi TVL",         v: formatDollarCompact(defi.totalTvl), brand: true },
-              { k: "Difficulty chg",   v: `${mempool.difficultyChange >= 0 ? "+" : ""}${mempool.difficultyChange.toFixed(2)}%` },
-              { k: "Blocks to halving",v: mempool.blocksRemaining.toLocaleString() },
-              { k: "Halving est.",     v: new Date(mempool.halvingDate).toLocaleDateString("en-US", { month: "short", year: "numeric" }) },
-            ].map((n) => (
-              <div key={n.k} className="mtr-ng-cell">
-                <div className="mtr-ng-key">{n.k}</div>
-                <div className="mtr-ng-val" style={n.brand ? { color: "#ff6a00" } : {}}>{n.v}</div>
-              </div>
-            )) : [0,1,2,3,4,5].map(i => <div key={i} className="mtr-ng-cell"><Skeleton h={40} /></div>)}
+            {mempool && typeof mempool.currentBlock === "number" ? (
+              <>
+                {[
+                  { k: "BTC hash rate",     v: mempoolLive ? `${(mempool.hashratePH ?? 0).toFixed(0)} EH/s` : "—" },
+                  { k: "Current block",     v: (mempool.currentBlock ?? 0).toLocaleString() },
+                  { k: "Difficulty chg",    v: mempoolLive ? `${(mempool.difficultyChange ?? 0) >= 0 ? "+" : ""}${(mempool.difficultyChange ?? 0).toFixed(2)}%` : "—" },
+                  { k: "Blocks to halving", v: (mempool.blocksRemaining ?? 0).toLocaleString() },
+                  { k: "Halving est.",      v: mempool.halvingDate ? new Date(mempool.halvingDate).toLocaleDateString("en-US", { month: "short", year: "numeric" }) : "—" },
+                ].map((n) => (
+                  <div key={n.k} className="mtr-ng-cell">
+                    <div className="mtr-ng-key">{n.k}</div>
+                    <div className="mtr-ng-val">{n.v}</div>
+                  </div>
+                ))}
+                <div className="mtr-ng-cell">
+                  <div className="mtr-ng-key">DeFi TVL</div>
+                  <div className="mtr-ng-val" style={{ color: "#ff6a00" }}>
+                    {defi ? formatDollarCompact(defi.totalTvl) : <Skeleton h={20} />}
+                  </div>
+                </div>
+              </>
+            ) : [0,1,2,3,4,5].map(i => <div key={i} className="mtr-ng-cell"><Skeleton h={40} /></div>)}
           </div>
         </div>
       </div>

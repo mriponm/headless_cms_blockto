@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+export const revalidate = 3600;
+
 export async function GET() {
   // Fetch stablecoins + chains TVL in parallel — each failure handled independently
   const [stableRes, chainsRes] = await Promise.allSettled([

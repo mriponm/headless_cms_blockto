@@ -708,6 +708,11 @@ html.light .search-placeholder        { color: #aaa; }
 .nav-brand-link { transition: opacity 0.15s ease; }
 .nav-brand-link:hover { opacity: 0.85; }
 
+/* ─── Buy nav label — hide "& sell" on iPad (md–xl) ─────────── */
+@media (max-width: 1279px) {
+  .nav-buy-suffix { display: none; }
+}
+
 /* ─── Mobile Drawer ──────────────────────────────────────────── */
 .drawer-brand          { color: #f5f5f5; }
 .drawer-close-btn      { background: rgba(255,255,255,0.05); border: 0.5px solid rgba(255,255,255,0.08); }
@@ -1763,9 +1768,12 @@ html.light .pr-hero-neutral { color: #888; }
   align-items: start;
 }
 @media (min-width: 900px) {
-  .pr-main-grid { grid-template-columns: 1fr 340px; }
+  .pr-main-grid { grid-template-columns: 1fr 300px; }
 }
 @media (min-width: 1200px) {
+  .pr-main-grid { grid-template-columns: 1fr 340px; }
+}
+@media (min-width: 1400px) {
   .pr-main-grid { grid-template-columns: 1fr 380px; }
 }
 
@@ -1774,7 +1782,7 @@ html.light .pr-hero-neutral { color: #888; }
 /* Full-width table head (desktop) */
 .pr-table-head-full {
   display: none;
-  grid-template-columns: 22px 1fr 90px 58px 60px 58px 100px 95px 105px 52px 60px;
+  grid-template-columns: 22px 1fr 90px 65px 95px 85px 50px;
   gap: 8px;
   align-items: center;
   padding: 0 2px 10px;
@@ -1787,6 +1795,9 @@ html.light .pr-hero-neutral { color: #888; }
 }
 @media (min-width: 900px) {
   .pr-table-head-full { display: grid; }
+}
+@media (min-width: 1200px) {
+  .pr-table-head-full { grid-template-columns: 22px 1fr 90px 58px 60px 58px 100px 95px 105px 52px 60px; }
 }
 html.light .pr-table-head-full { color: #aaa; }
 
@@ -1822,14 +1833,19 @@ html.light .pr-table-head-mobile { color: #aaa; }
 }
 @media (min-width: 900px) {
   .pr-coin-row-full {
-    grid-template-columns: 22px 1fr 90px 58px 60px 58px 100px 95px 105px 52px 60px;
+    grid-template-columns: 22px 1fr 90px 65px 95px 85px 50px;
     gap: 8px;
+  }
+}
+@media (min-width: 1200px) {
+  .pr-coin-row-full {
+    grid-template-columns: 22px 1fr 90px 58px 60px 58px 100px 95px 105px 52px 60px;
   }
 }
 html.light .pr-coin-row-full { border-top-color: rgba(0,0,0,0.06); }
 .pr-coin-row-full:hover { background: rgba(255,106,0,0.03); }
 
-/* 1h change — hidden on mobile */
+/* 1h change — hidden on mobile and iPad */
 .pr-chg-1h {
   display: none;
   font-size: 11px;
@@ -1837,9 +1853,9 @@ html.light .pr-coin-row-full { border-top-color: rgba(0,0,0,0.06); }
   text-align: right;
   font-family: var(--font-display);
 }
-@media (min-width: 900px) { .pr-chg-1h { display: block; } }
+@media (min-width: 1200px) { .pr-chg-1h { display: block; } }
 
-/* 7d change — hidden on mobile */
+/* 7d change — hidden on mobile and iPad */
 .pr-chg-7d {
   display: none;
   font-size: 11px;
@@ -1847,7 +1863,7 @@ html.light .pr-coin-row-full { border-top-color: rgba(0,0,0,0.06); }
   text-align: right;
   font-family: var(--font-display);
 }
-@media (min-width: 900px) { .pr-chg-7d { display: block; } }
+@media (min-width: 1200px) { .pr-chg-7d { display: block; } }
 
 /* Market cap, volume, circ supply — hidden on mobile */
 .pr-coin-mc, .pr-coin-vol, .pr-coin-cs {
@@ -1864,6 +1880,8 @@ html.light .pr-coin-cs { color: #aaa; }
 @media (min-width: 900px) {
   .pr-coin-mc { display: block; }
   .pr-coin-vol { display: block; }
+}
+@media (min-width: 1200px) {
   .pr-coin-cs { display: block; }
 }
 
@@ -1890,7 +1908,13 @@ html.light .pr-coin-cs { color: #aaa; }
   white-space: nowrap;
 }
 .pr-buy-btn:hover { filter: brightness(1.1); }
-@media (min-width: 900px) { .pr-buy-btn { display: inline-block; } }
+@media (min-width: 1200px) { .pr-buy-btn { display: inline-block; } }
+
+/* Table header cells hidden on iPad (900–1199px), visible at 1200px+ */
+.pr-head-1h, .pr-head-7d, .pr-head-cs, .pr-head-buy { display: none; }
+@media (min-width: 1200px) {
+  .pr-head-1h, .pr-head-7d, .pr-head-cs, .pr-head-buy { display: block; }
+}
 
 /* Open row — mobile only */
 @media (max-width: 899px) {

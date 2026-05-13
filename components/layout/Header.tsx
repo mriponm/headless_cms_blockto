@@ -84,7 +84,7 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50">
       {/* -- Desktop topbar ----------------------------------- */}
-      <div className="desktop-only glass-nav topbar-shimmer relative hidden md:flex items-center gap-6 px-10 py-3">
+      <div className="desktop-only glass-nav topbar-shimmer relative hidden md:flex items-center gap-3 xl:gap-5 px-5 xl:px-10 py-3">
         {/* Brand */}
         <Link href="/" className="flex-shrink-0 nav-brand-link">
           <BrandLogo height={36} />
@@ -135,16 +135,18 @@ export default function Header() {
                     : "nav-link"
                 }`}
               >
-                {n.label}
+                {n.label === "Buy & sell" ? (
+                  <>Buy<span className="nav-buy-suffix"> &amp; sell</span></>
+                ) : n.label}
               </Link>
             )
           )}
         </nav>
 
-        {/* Search box */}
+        {/* Search — full box on xl+, hidden on iPad */}
         <button
           onClick={() => setSearchOpen(true)}
-          className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-[10px] w-[300px] search-box text-left cursor-pointer transition-all duration-150 hover:border-[rgba(255,106,0,0.3)]"
+          className="hidden xl:flex items-center gap-2.5 px-3.5 py-2.5 rounded-[10px] w-[300px] search-box text-left cursor-pointer transition-all duration-150 hover:border-[rgba(255,106,0,0.3)]"
         >
           <Search size={15} className="text-[#666] flex-shrink-0" />
           <span className="flex-1 text-[13px] font-medium font-[family-name:var(--font-display)] search-placeholder">
@@ -157,6 +159,14 @@ export default function Header() {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
+          {/* Search icon for iPad (md–xl, no full search box) */}
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="flex xl:hidden w-10 h-10 rounded-[10px] items-center justify-center cursor-pointer transition-all duration-200 theme-btn hover:border-[rgba(255,106,0,0.3)] hover:text-[#ff6a00]"
+            aria-label="Search"
+          >
+            <Search size={16} className="text-[#888]" />
+          </button>
           <AuthGateLink
             href="/saved"
             icon={<Bookmark size={16} className="text-[#888]" />}
