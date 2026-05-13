@@ -23,9 +23,10 @@ export async function GET(
       url = `${BASE}/coins/${id}/market_chart?vs_currency=usd&days=${days}&precision=6`;
     }
 
+    const ttl = days === "365" ? 1800 : 60;
     const res = await fetch(url, {
       headers: { "x-cg-pro-api-key": CG_KEY!, Accept: "application/json" },
-      next: { revalidate: 60 },
+      next: { revalidate: ttl },
     });
 
     if (!res.ok) {

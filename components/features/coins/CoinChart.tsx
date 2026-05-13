@@ -79,6 +79,7 @@ function CoinChartInner({
   type,
   interval,
   limit,
+  months,
   isLight,
   height = 320,
   onHoverChange,
@@ -90,6 +91,7 @@ function CoinChartInner({
   type: "candles" | "line";
   interval: string;
   limit: number;
+  months?: number;
   isLight: boolean;
   height?: number;
   onHoverChange?: (data: HoverData | null) => void;
@@ -116,13 +118,16 @@ function CoinChartInner({
   const symUpper = symbol?.toUpperCase() ?? "";
   const isStable = STABLECOINS.has(symUpper);
 
-  // Map interval → CoinGecko days param (used for stablecoins and non-Binance coins)
-  const cgDays = interval === "5m"  ? "1"
+  // Map interval → CoinGecko days param (stablecoins and non-Binance coins)
+  // If months param provided, use it directly (e.g. 6M → 180 days)
+  // CoinGecko Pro plan max = 365 days; "max" returns 401
+  const cgDays = months ? String(months * 30)
+    : interval === "5m"  ? "1"
     : interval === "15m" ? "1"
-    : interval === "1h"  ? "14"
+    : interval === "1h"  ? "7"
     : interval === "4h"  ? "30"
     : interval === "1d"  ? limit >= 300 ? "365" : "90"
-    : interval === "1w"  ? "max"
+    : interval === "1w"  ? "365"
     : "1";
 
   // Only use explicit Binance map — no symbol-based fallback (avoids failed requests)
@@ -131,13 +136,15 @@ function CoinChartInner({
   const useCoinGecko = !binanceSymbol && !isStable;
 
   // -- REST data -------------------------------------------------------------
-  // Stablecoins:       CG market_chart (line)
-  // Binance coins:     Binance klines (candles/line + WebSocket)
-  // Other coins:       CG ohlc (candles) or CG market_chart (line)
+  // Stablecoins:   CG market_chart (line)
+  // Binance coins: Binance klines; 6M tab uses ?months=6 for server-side pagination
+  // Other coins:   CG ohlc/market_chart (max 365 days on current plan)
   const apiUrl = isStable
     ? `/api/crypto/${coinId}/chart?days=${cgDays}&type=line`
     : binanceSymbol
-    ? `/api/binance/${binanceSymbol}?interval=${interval}&limit=${limit}`
+    ? months
+      ? `/api/binance/${binanceSymbol}?interval=${interval}&months=${months}`
+      : `/api/binance/${binanceSymbol}?interval=${interval}&limit=${limit}`
     : `/api/crypto/${coinId}/chart?days=${cgDays}&type=${type === "candles" ? "ohlc" : "line"}`;
 
   type CgMarketChart = { prices: [number, number][]; total_volumes?: [number, number][] };
@@ -147,9 +154,14 @@ function CoinChartInner({
     revalidateOnFocus: false,
   });
 
-  // Signal parent only when data fetch fails (truly no chart data)
+  // Signal parent only when data fetch fails AND SWR has retried (not transient)
+  // Use a timer to avoid hiding the chart on the first failed attempt
   useEffect(() => {
-    if (fetchError && !hasData) onNoChartRef.current?.();
+    if (!fetchError || hasData) return;
+    const t = setTimeout(() => {
+      if (!hasData) onNoChartRef.current?.();
+    }, 4000);
+    return () => clearTimeout(t);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchError, hasData]);
 

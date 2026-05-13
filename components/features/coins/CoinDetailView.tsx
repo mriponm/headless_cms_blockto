@@ -83,7 +83,7 @@ function SparkMini({ prices, w = 90, h = 40 }: { prices: number[]; w?: number; h
   );
 }
 
-const TFS = ["4H", "1D", "1W", "1M", "3M", "1Y", "ALL"] as const;
+const TFS = ["4H", "1D", "1M", "3M", "6M", "1Y", "ALL"] as const;
 type TfLabel = typeof TFS[number];
 
 // Glass card reused throughout
@@ -122,7 +122,11 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
 
   const [showChart, setShowChart]       = useState(true);
   const [chartType, setChartType]       = useState<"candles" | "line">("candles");
-  const [tfLabel, setTfLabel]           = useState<TfLabel>("1D");
+  const [tfLabel, setTfLabel]           = useState<TfLabel>("6M");
+
+  // Reset chart visibility whenever timeframe changes — prevents permanent hide
+  // from a failed fetch on one tab bleeding into other tabs
+  const handleTfChange = (tf: TfLabel) => { setTfLabel(tf); setShowChart(true); };
   const [indicators, setIndicators]     = useState<string[]>(["EMA"]);
   const [chartHover, setChartHover]     = useState<HoverData | null>(null);
   const [inWatchlist, setInWatchlist]   = useState(false);
@@ -418,6 +422,7 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
                 type={chartType}
                 interval={TF_TO_INTERVAL[tfLabel].interval}
                 limit={TF_TO_INTERVAL[tfLabel].limit}
+                months={TF_TO_INTERVAL[tfLabel].months}
                 isLight={isLight}
                 height={chartHeight}
                 onHoverChange={handleHover}
@@ -429,7 +434,7 @@ export default function CoinDetailView({ coin, news }: { coin: CoinDetail; news:
               <div className="flex p-[3px] rounded-[10px] gap-px mt-3"
                 style={{ background: isLight ? "rgba(0,0,0,0.05)" : "rgba(0,0,0,0.4)", border: `0.5px solid ${isLight ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.06)"}` }}>
                 {TFS.map(tf => (
-                  <button key={tf} onClick={() => setTfLabel(tf)}
+                  <button key={tf} onClick={() => handleTfChange(tf)}
                     className="flex-1 py-2 rounded-[7px] text-[10px] font-bold cursor-pointer text-center transition-all font-[family-name:var(--font-data)]"
                     style={tfLabel === tf
                       ? { background: "linear-gradient(135deg,rgba(255,106,0,0.18),rgba(255,106,0,0.08))", color: "var(--color-brand)" }
