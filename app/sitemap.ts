@@ -23,6 +23,8 @@ const STATIC_PAGES: MetadataRoute.Sitemap = [
   { url: `${SITE_URL}/news`, lastModified: new Date(), changeFrequency: "hourly", priority: 0.9 },
   { url: `${SITE_URL}/prices`, lastModified: new Date(), changeFrequency: "always", priority: 0.9 },
   { url: `${SITE_URL}/metrics`, lastModified: new Date(), changeFrequency: "hourly", priority: 0.8 },
+  { url: `${SITE_URL}/buy`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
+  { url: `${SITE_URL}/trading`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.7 },
   { url: `${SITE_URL}/events`, lastModified: new Date(), changeFrequency: "daily", priority: 0.7 },
   { url: `${SITE_URL}/fear-greed`, lastModified: new Date(), changeFrequency: "daily", priority: 0.7 },
   { url: `${SITE_URL}/bitcoin-halving`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.7 },
