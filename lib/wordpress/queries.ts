@@ -38,6 +38,7 @@ async function fetchPostsForSlug(
   first: number,
   catSlug?: string,
   after?: string,
+  revalidate: number | false = false,
 ): Promise<{ nodes: WPPost[]; hasNextPage: boolean; endCursor: string | null }> {
   const whereParts = [`orderby: { field: DATE, order: DESC }`];
   if (catSlug) whereParts.push(`categoryName: "${catSlug}"`);
@@ -51,7 +52,7 @@ async function fetchPostsForSlug(
         pageInfo { hasNextPage endCursor }
       }
     }
-  `, undefined, 60);
+  `, undefined, revalidate);
   return {
     nodes: data?.posts?.nodes ?? [],
     hasNextPage: data?.posts?.pageInfo?.hasNextPage ?? false,
@@ -112,7 +113,7 @@ export async function getPostsPage(
 
   // Single category — simple cursor-based query
   if (slugs.length <= 1) {
-    const r = await fetchPostsForSlug(first, slugs[0], after);
+    const r = await fetchPostsForSlug(first, slugs[0], after, 60);
     return { posts: r.nodes, hasNextPage: r.hasNextPage, endCursor: r.endCursor };
   }
 
@@ -131,7 +132,7 @@ export async function getPostsPage(
   const results = await Promise.all(
     slugs.map((slug, i) =>
       activeIdx.includes(i)
-        ? fetchPostsForSlug(first, slug, cursors[i] ?? undefined)
+        ? fetchPostsForSlug(first, slug, cursors[i] ?? undefined, 60)
         : Promise.resolve({ nodes: [] as WPPost[], hasNextPage: false, endCursor: null })
     )
   );

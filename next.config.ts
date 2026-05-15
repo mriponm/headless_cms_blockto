@@ -3,6 +3,11 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   output: "standalone",
   compress: true,
+  experimental: {
+    // Prevent stale RSC payloads for dynamic routes being served from the
+    // client-side router cache after navigation away and back.
+    staleTimes: { dynamic: 0, static: 180 },
+  },
   images: {
     minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
     formats: ["image/avif", "image/webp"],
@@ -29,6 +34,16 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
+      // Homepage: never cache — must always serve latest posts
+      {
+        source: "/",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "no-store, no-cache, must-revalidate",
+          },
+        ],
+      },
       {
         source: "/_next/static/(.*)",
         headers: [
