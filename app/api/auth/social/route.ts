@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/ssr";
+import { createServerClient } from "@supabase/ssr";
 
 export async function GET(req: NextRequest) {
   const { searchParams, origin } = new URL(req.url);
@@ -8,7 +8,20 @@ export async function GET(req: NextRequest) {
 
   if (!provider) return NextResponse.json({ error: "provider required" }, { status: 400 });
 
-  const supabase = await createSupabaseServerClient();
+  // Placeholder response — cookies will be written directly onto it
+  const response = NextResponse.redirect(new URL("/", origin));
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    {
+      cookies: {
+        getAll: () => req.cookies.getAll(),
+        setAll: (cs) => cs.forEach(({ name, value, options }) => response.cookies.set(name, value, options)),
+      },
+    }
+  );
+
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
@@ -21,5 +34,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: error?.message ?? "OAuth error" }, { status: 500 });
   }
 
-  return NextResponse.redirect(data.url);
+  // Replace the placeholder redirect with the real OAuth URL (cookies already set)
+  response.headers.set("location", data.url);
+  return response;
 }

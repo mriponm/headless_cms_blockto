@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createSupabaseServerClient } from "@/lib/supabase/ssr";
+import { createServerClient } from "@supabase/ssr";
 import { rateLimit, rateLimitResponse } from "@/lib/rateLimit";
 
 function getIP(req: NextRequest): string {
@@ -11,7 +11,6 @@ function getIP(req: NextRequest): string {
 }
 
 export async function POST(req: NextRequest) {
-  // 5 attempts per IP per 15 minutes
   const ip = getIP(req);
   if (!rateLimit(`login:${ip}`, 5, 15 * 60 * 1000)) {
     return rateLimitResponse();
@@ -22,7 +21,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Email and password required" }, { status: 400 });
   }
 
-  const supabase = await createSupabaseServerClient();
+  const response = NextResponse.json({ ok: true }); // placeholder; replaced on success/error
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    {
+      cookies: {
+        getAll: () => req.cookies.getAll(),
+        setAll: (cs) => cs.forEach(({ name, value, options }) => response.cookies.set(name, value, options)),
+      },
+    }
+  );
+
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
@@ -33,5 +44,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: msg }, { status: 400 });
   }
 
-  return NextResponse.json({ user: { id: data.user.id, email: data.user.email, name: data.user.user_metadata?.name, picture: data.user.user_metadata?.avatar_url } });
+  // Reuse response object (session cookies already set on it)
+  const body = { user: { id: data.user.id, email: data.user.email, name: data.user.user_metadata?.name, picture: data.user.user_metadata?.avatar_url } };
+  return NextResponse.json(body, {
+    headers: response.headers,
+  });
 }
