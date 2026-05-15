@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { cookies } from "next/headers";
+import Script from "next/script";
 import { Outfit, JetBrains_Mono, Lora, League_Spartan } from "next/font/google";
 import "./globals.css";
 import Background from "@/components/layout/Background";
@@ -137,9 +138,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en" className={`${outfit.variable} ${jetbrainsMono.variable} ${lora.variable} ${leagueSpartan.variable} ${themeCls}`} suppressHydrationWarning>
       <head>
-        {/* Google Analytics */}
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-GT7FKFQMWX" />
-        <script dangerouslySetInnerHTML={{ __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-GT7FKFQMWX');` }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -156,6 +154,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         ` }} />
       </head>
       <body className="min-h-screen flex flex-col relative" suppressHydrationWarning>
+        <Script src="https://www.googletagmanager.com/gtag/js?id=G-GT7FKFQMWX" strategy="afterInteractive" />
+        <Script id="ga-init" strategy="afterInteractive">{`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-GT7FKFQMWX');`}</Script>
         <SwRegister />
         <UserSyncProvider />
         <AuthModalProvider>

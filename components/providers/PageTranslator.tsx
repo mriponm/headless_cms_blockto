@@ -140,16 +140,21 @@ export default function PageTranslator() {
   async function translatePage(targetLang: string) {
     if (targetLang === "en") { restoreAll(); return; }
 
-    // Clear previous language's translations from store (keep origMap intact).
-    // origMap still holds English originals for every tracked node — no DOM restore needed.
+    // Build reverse map (previousTranslation → englishOriginal) before clearing.
+    // Needed so new DOM nodes that show a previous-language translation can still
+    // recover their English original (e.g. switching NL → DE after React re-render).
+    const reverseStore = new Map<string, string>();
+    store.current.forEach((translated, english) => reverseStore.set(translated, english));
+
     store.current.clear();
 
-    // Collect all current nodes; register any new ones.
-    // Existing nodes already have correct English originals in origMap.
-    // New nodes (React re-renders) produce English text → register as-is.
     const entries = collect();
     entries.forEach(({ node, original }) => {
-      if (!origMap.current.has(node)) origMap.current.set(node, original);
+      if (!origMap.current.has(node)) {
+        // If the DOM is showing a previously-translated string, recover English original.
+        const engOriginal = reverseStore.get(original) ?? original;
+        origMap.current.set(node, engOriginal);
+      }
     });
 
     // ① Load localStorage cache — apply immediately (zero-delay for cached langs)
@@ -175,7 +180,10 @@ export default function PageTranslator() {
 
       // Re-collect — React may have rendered new nodes during the async fetch
       collect().forEach(({ node, original }) => {
-        if (!origMap.current.has(node)) origMap.current.set(node, original);
+        if (!origMap.current.has(node)) {
+          const engOriginal = reverseStore.get(original) ?? original;
+          origMap.current.set(node, engOriginal);
+        }
       });
       applyAll();
     } catch (e) {
@@ -199,14 +207,18 @@ export default function PageTranslator() {
       debounce = setTimeout(async () => {
         const entries = collect();
         entries.forEach(({ node, original }) => {
-          if (!origMap.current.has(node)) origMap.current.set(node, original);
+          if (!origMap.current.has(node)) {
+            // Recover English original via reverse-store lookup in case DOM shows a prior translation
+            const reverseKey = [...store.current.entries()].find(([, v]) => v === original)?.[0];
+            origMap.current.set(node, reverseKey ?? original);
+          }
         });
 
-        // Any new texts not yet in store?
+        // Any new texts not yet in store? Use origMap key (English original).
         const newTexts = [...new Set(
           entries
-            .filter(({ node, original }) => !store.current.has(origMap.current.get(node) ?? original))
-            .map(({ original }) => original)
+            .map(({ node, original }) => origMap.current.get(node) ?? original)
+            .filter(t => !store.current.has(t))
         )].filter(Boolean);
 
         if (newTexts.length) {

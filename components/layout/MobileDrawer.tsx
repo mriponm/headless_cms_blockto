@@ -313,8 +313,10 @@ export default function MobileDrawer({ open, onClose }: Props) {
   const { resolved } = useTheme();
   const drawerRef = useRef<HTMLDivElement>(null);
   const { openModal } = useAuthModal();
+  const [mounted, setMounted] = useState(false);
   const [me, setMe] = useState<{ name?: string; email?: string; picture?: string } | null>(null);
 
+  useEffect(() => { setMounted(true); }, []);
   useEffect(() => {
     fetch("/api/auth/me").then(r => r.ok ? r.json() : null).then(setMe).catch(() => {});
   }, []);
@@ -333,7 +335,7 @@ export default function MobileDrawer({ open, onClose }: Props) {
 
   const isDark = resolved === "dark";
 
-  if (typeof document === "undefined") return null;
+  if (!mounted) return null;
 
   return createPortal(
     <>
