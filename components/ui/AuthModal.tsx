@@ -9,7 +9,7 @@ function openGooglePopup(onComplete: () => void) {
   const left = Math.round(window.screenX + (window.outerWidth - w) / 2);
   const top  = Math.round(window.screenY + (window.outerHeight - h) / 2);
   const popup = window.open(
-    `/api/auth/social?provider=google&popup=1`,
+    `/auth/google`,
     "auth_popup",
     `width=${w},height=${h},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes`
   );

@@ -1,6 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 
+function popupHtml(origin: string, success: boolean) {
+  const script = success
+    ? `(function(){
+        try{var bc=new BroadcastChannel("blockto_auth");bc.postMessage("auth:complete");bc.close();}catch(e){}
+        try{if(window.opener&&!window.opener.closed){window.opener.postMessage("auth:complete","${origin}");}}catch(e){}
+        setTimeout(function(){try{window.close();}catch(e){}window.location.replace("${origin}/");},200);
+      })()`
+    : `window.location.replace("${origin}/");`;
+
+  return `<!DOCTYPE html><html><head><title>Signing in…</title></head><body>
+    <div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0a0a;color:#888;font-family:sans-serif;font-size:14px">
+      ${success ? "Completing sign in…" : "Redirecting…"}
+    </div>
+    <script>${script}</script></body></html>`;
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams, origin } = new URL(req.url);
   const code = searchParams.get("code");
@@ -8,27 +24,14 @@ export async function GET(req: NextRequest) {
   const isPopup = searchParams.get("popup") === "1";
 
   if (!code) {
-    return NextResponse.redirect(`${origin}${next}`);
+    return isPopup
+      ? new NextResponse(popupHtml(origin, false), { headers: { "Content-Type": "text/html" } })
+      : NextResponse.redirect(`${origin}${next}`);
   }
 
-  // Build the response object first so Supabase can write session cookies directly onto it
+  // Create response first so Supabase writes session cookies directly onto it
   const response = isPopup
-    ? new NextResponse(
-        `<!DOCTYPE html><html><body><script>
-          (function(){
-            // Broadcast to all same-origin tabs (handles popup-blocked → tab case)
-            try{var bc=new BroadcastChannel("blockto_auth");bc.postMessage("auth:complete");bc.close();}catch(e){}
-            // Also try direct postMessage if opened as a proper popup
-            try{if(window.opener&&!window.opener.closed){window.opener.postMessage("auth:complete","${origin}");}}catch(e){}
-            // Close self if possible (popup), else redirect back to site (tab)
-            setTimeout(function(){
-              try{window.close();}catch(e){}
-              window.location.replace("${origin}/");
-            },150);
-          })();
-        </script></body></html>`,
-        { headers: { "Content-Type": "text/html" } }
-      )
+    ? new NextResponse(popupHtml(origin, true), { headers: { "Content-Type": "text/html" } })
     : NextResponse.redirect(`${origin}${next}`);
 
   const supabase = createServerClient(
@@ -45,7 +48,10 @@ export async function GET(req: NextRequest) {
   const { error } = await supabase.auth.exchangeCodeForSession(code);
   if (error) {
     console.error("[auth/callback] exchangeCodeForSession failed:", error.message);
-    return NextResponse.redirect(`${origin}/`);
+    // Still try to close popup gracefully
+    return isPopup
+      ? new NextResponse(popupHtml(origin, false), { headers: { "Content-Type": "text/html" } })
+      : NextResponse.redirect(`${origin}/`);
   }
 
   return response;
