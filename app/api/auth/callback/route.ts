@@ -15,8 +15,17 @@ export async function GET(req: NextRequest) {
   const response = isPopup
     ? new NextResponse(
         `<!DOCTYPE html><html><body><script>
-          if(window.opener){window.opener.postMessage("auth:complete","${origin}");window.close();}
-          else{window.location.replace("${encodeURIComponent(next)}");}
+          (function(){
+            // Broadcast to all same-origin tabs (handles popup-blocked → tab case)
+            try{var bc=new BroadcastChannel("blockto_auth");bc.postMessage("auth:complete");bc.close();}catch(e){}
+            // Also try direct postMessage if opened as a proper popup
+            try{if(window.opener&&!window.opener.closed){window.opener.postMessage("auth:complete","${origin}");}}catch(e){}
+            // Close self if possible (popup), else redirect back to site (tab)
+            setTimeout(function(){
+              try{window.close();}catch(e){}
+              window.location.replace("${origin}/");
+            },150);
+          })();
         </script></body></html>`,
         { headers: { "Content-Type": "text/html" } }
       )

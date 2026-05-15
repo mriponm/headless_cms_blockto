@@ -13,12 +13,35 @@ function openGooglePopup(onComplete: () => void) {
     "auth_popup",
     `width=${w},height=${h},left=${left},top=${top},toolbar=no,menubar=no,scrollbars=yes`
   );
+
+  let done = false;
+  function complete() {
+    if (done) return;
+    done = true;
+    cleanup();
+    onComplete();
+  }
+
+  // postMessage path — proper popup
   function onMessage(e: MessageEvent) {
     if (e.origin !== window.location.origin) return;
-    if (e.data === "auth:complete") { cleanup(); onComplete(); }
+    if (e.data === "auth:complete") complete();
   }
+
+  // BroadcastChannel path — popup was blocked, browser opened a tab instead
+  let bc: BroadcastChannel | null = null;
+  try {
+    bc = new BroadcastChannel("blockto_auth");
+    bc.onmessage = (e) => { if (e.data === "auth:complete") complete(); };
+  } catch { /* unsupported */ }
+
   const poll = setInterval(() => { if (popup?.closed) cleanup(); }, 500);
-  function cleanup() { clearInterval(poll); window.removeEventListener("message", onMessage); }
+  function cleanup() {
+    clearInterval(poll);
+    window.removeEventListener("message", onMessage);
+    if (bc) { bc.close(); bc = null; }
+  }
+
   window.addEventListener("message", onMessage);
   popup?.focus();
 }
