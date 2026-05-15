@@ -6,7 +6,7 @@ interface Props {
 }
 
 export default function BrandLogo({ height = 36, className = "" }: Props) {
-  const width = Math.round(height * 4);
+  const width = Math.round(height * 3);
   return (
     <>
       <Image
@@ -16,6 +16,7 @@ export default function BrandLogo({ height = 36, className = "" }: Props) {
         height={height}
         quality={100}
         priority
+        sizes={`${width * 2}px`}
         className={`logo-themed logo-dark ${className}`}
       />
       <Image
@@ -25,6 +26,7 @@ export default function BrandLogo({ height = 36, className = "" }: Props) {
         height={height}
         quality={100}
         priority
+        sizes={`${width * 2}px`}
         className={`logo-themed logo-light ${className}`}
       />
     </>
