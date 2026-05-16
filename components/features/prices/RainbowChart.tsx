@@ -169,37 +169,29 @@ export default function RainbowChart() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [xMin, xMax, logYMin, logYMax]);
 
-  // ── Price line + live state ─────────────────────────────────────────────────
-  const { pricePath, lastPt, currentPrice, currentBand } = useMemo(() => {
+  // ── Historical price path — expensive spline; stable, no live dependency ───
+  const pricePath = useMemo(() => {
     const arr = Array.isArray(raw) ? raw : [];
     const pts = arr
       .filter(([ts]) => ts >= xMin && ts <= now)
-      .map(([ts, p]) => ({ ts, p }));
-
-    const liveP = live ?? (pts.length ? pts[pts.length - 1].p : 0);
-    if (pts.length && liveP !== pts[pts.length - 1].p) {
-      pts.push({ ts: now, p: liveP });
-    }
-
+      .map(([ts, p]) => ({ x: toX(ts), y: toY(p) }));
     // Downsample to ≤500 points for path performance
     const step = Math.max(1, Math.floor(pts.length / 500));
     const sampled = pts.filter((_, i) => i % step === 0 || i === pts.length - 1);
-
-    const mapped = sampled.map(({ ts, p }) => ({ x: toX(ts), y: toY(p) }));
-    const pricePath = buildSplinePath(mapped);
-    const lastPt = mapped.length ? mapped[mapped.length - 1] : null;
-
-    const currentPrice = liveP;
-    const currentDay = dayFromGenesis(now);
-    const offset = currentPrice > 0
-      ? Math.log10(currentPrice) - regLog10(currentDay)
-      : 0;
-    const currentBand =
-      [...BANDS].find((b) => offset >= b.lo && offset < b.hi) ?? BANDS[4];
-
-    return { pricePath, lastPt, currentPrice, currentBand };
+    return buildSplinePath(sampled);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [raw, xMin, xMax, now, live, logYMin, logYMax]);
+  }, [raw, xMin, logYMin, logYMax]);
+
+  // ── Live dot + band — cheap; updates on each price tick ─────────────────────
+  const { lastPt, currentPrice, currentBand } = useMemo(() => {
+    const liveP = live ?? 0;
+    const lastPt = liveP > 0 ? { x: toX(now), y: toY(liveP) } : null;
+    const currentDay = dayFromGenesis(now);
+    const offset = liveP > 0 ? Math.log10(liveP) - regLog10(currentDay) : 0;
+    const currentBand = [...BANDS].find((b) => offset >= b.lo && offset < b.hi) ?? BANDS[4];
+    return { lastPt, currentPrice: liveP, currentBand };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [live, logYMin, logYMax]);
 
   // ── X-axis year labels ──────────────────────────────────────────────────────
   const xLabels = useMemo(() => {

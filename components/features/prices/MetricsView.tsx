@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import Link from "next/link";
 import useSWR from "swr";
 import RainbowChart from "./RainbowChart";
@@ -98,10 +98,21 @@ function formatCountdown(halvingDate: string, now: number) {
   return `~${d}d ${h}h`;
 }
 
-// -- Coin row — icon + link from pre-enriched route data ------
-function CoinRow({ coin, type }: { coin: BinanceCoin; type: "up" | "dn" }) {
+// -- Halving countdown — isolated so only this re-renders every second --
+const HalvingCountdown = memo(function HalvingCountdown({ halvingDate }: { halvingDate: string }) {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
+  return <>{formatCountdown(halvingDate, now)}</>;
+});
+
+// -- Coin row — subscribes to its own price so only it re-renders on tick --
+const CoinRow = memo(function CoinRow({ coin, type }: { coin: BinanceCoin; type: "up" | "dn" }) {
+  const livePrice = usePriceStore((s) => s.prices[`${coin.symbol.toUpperCase()}USDT`]);
+  const price = livePrice ?? coin.price;
   const sym  = coin.symbol.toUpperCase();
-  // cgId and image come from the enriched gainers route (CoinGecko top 250)
   const icon = coin.image || (COIN_ICONS as Record<string, string>)[sym];
   const id   = coin.cgId  || COIN_IDS[sym];
   const href = id ? `/coins/${id}` : null;
@@ -131,13 +142,13 @@ function CoinRow({ coin, type }: { coin: BinanceCoin; type: "up" | "dn" }) {
           <div className="mtr-sy" data-no-translate>{sym}</div>
         </div>
       </div>
-      <div className="mtr-pr">{formatPrice(coin.price)}</div>
+      <div className="mtr-pr">{formatPrice(price)}</div>
       <div className={`mtr-chg ${type}`}>{formatPercent(coin.change24h)}</div>
     </div>
   );
 
   return href ? <Link href={href} className="block">{inner}</Link> : inner;
-}
+});
 
 // -- Skeleton -------------------------------------------------
 function Skeleton({ h = 20 }: { h?: number }) {
@@ -145,17 +156,17 @@ function Skeleton({ h = 20 }: { h?: number }) {
 }
 
 // -- Main Component --------------------------------------------
+const CONV_SYMBOLS: Record<string, string> = {
+  BTC: "BTCUSDT", ETH: "ETHUSDT", SOL: "SOLUSDT", BNB: "BNBUSDT", XRP: "XRPUSDT",
+};
+
 export default function MetricsView() {
-  const prices = usePriceStore((s) => s.prices);
-  const changes = usePriceStore((s) => s.changes);
-  const [now, setNow] = useState(Date.now());
+  // Precise selectors — avoids re-render on every other coin tick
+  const btcPrice  = usePriceStore((s) => s.prices["BTCUSDT"] ?? 0);
+  const btcChange = usePriceStore((s) => s.changes["BTCUSDT"] ?? 0);
   const [convAmount, setConvAmount] = useState("1");
   const [convFrom, setConvFrom] = useState("BTC");
-
-  useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(t);
-  }, []);
+  const convPrice = usePriceStore((s) => s.prices[CONV_SYMBOLS[convFrom] ?? "BTCUSDT"] ?? 0);
 
   const { data: global } = useSWR<GlobalData>("/api/global", fetcher, { refreshInterval: 60_000, keepPreviousData: true });
   const { data: fg }     = useSWR<FGResponse>("/api/fear-greed", fetcher, { refreshInterval: 3_600_000, keepPreviousData: true });
@@ -192,8 +203,6 @@ export default function MetricsView() {
   const btcDom = global?.btc_dominance ?? 0;
   const btcDomChange = global?.btc_dominance_24h_percentage_change ?? null;
   const ethDom = global?.eth_dominance ?? 0;
-  const btcPrice  = prices["BTCUSDT"] ?? 0;
-  const btcChange = changes["BTCUSDT"] ?? 0;
 
   // Altcoin season — computed instantly from CoinGecko 30d data (zero loading)
   // Methodology: % of top 100 alts that outperformed BTC over 30 days
@@ -219,11 +228,7 @@ export default function MetricsView() {
   const otherDom = Math.max(0, 100 - btcDom - ethDom);
 
   // Converter
-  const convBinanceMap: Record<string, string> = {
-    BTC: "BTCUSDT", ETH: "ETHUSDT", SOL: "SOLUSDT", BNB: "BNBUSDT", XRP: "XRPUSDT",
-  };
-  const convPrice = prices[convBinanceMap[convFrom] ?? "BTCUSDT"] ?? btcPrice;
-  const convResult = parseFloat(convAmount || "0") * convPrice;
+  const convResult = parseFloat(convAmount || "0") * (convPrice || btcPrice);
 
   const fgValue = fg?.current?.value ?? 0;
   const fgLabel = fg?.current?.value_classification ?? "—";
@@ -352,7 +357,7 @@ export default function MetricsView() {
             <div className="text-center">
               <div className="mtr-hlv-title">Next halving event</div>
               <div className="mtr-hlv-days">
-                {mempool ? formatCountdown(mempool.halvingDate, now) : "—"}
+                {mempool ? <HalvingCountdown halvingDate={mempool.halvingDate} /> : "—"}
               </div>
               <div className="mtr-hlv-sub">
                 {mempool ? `Est. ${new Date(mempool.halvingDate).toLocaleDateString("en-US", { month: "long", year: "numeric" })}` : "Loading…"}
@@ -402,9 +407,7 @@ export default function MetricsView() {
               <div className="mtr-col-head"><span>Asset</span><span className="text-right">Price</span><span className="text-right">24h</span></div>
               {gainersData?.gainers
                 ? gainersData.gainers.slice(0, 5).map((c) => (
-                    <CoinRow key={c.symbol} type="up"
-                      coin={{ ...c, price: prices[`${c.symbol}USDT`] ?? c.price }}
-                    />
+                    <CoinRow key={c.symbol} type="up" coin={c} />
                   ))
                 : [0,1,2,3,4].map(i => <div key={i} className="mtr-coin-row"><Skeleton h={36} /></div>)
               }
@@ -421,9 +424,7 @@ export default function MetricsView() {
               <div className="mtr-col-head"><span>Asset</span><span className="text-right">Price</span><span className="text-right">24h</span></div>
               {gainersData?.losers
                 ? gainersData.losers.slice(0, 5).map((c) => (
-                    <CoinRow key={c.symbol} type="dn"
-                      coin={{ ...c, price: prices[`${c.symbol}USDT`] ?? c.price }}
-                    />
+                    <CoinRow key={c.symbol} type="dn" coin={c} />
                   ))
                 : [0,1,2,3,4].map(i => <div key={i} className="mtr-coin-row"><Skeleton h={36} /></div>)
               }
@@ -611,7 +612,7 @@ export default function MetricsView() {
                 className="mtr-conv-input"
                 style={{ width: 80, cursor: "pointer" }}
               >
-                {Object.keys(convBinanceMap).map((s) => <option key={s}>{s}</option>)}
+                {Object.keys(CONV_SYMBOLS).map((s) => <option key={s}>{s}</option>)}
               </select>
             </div>
             <span className="mtr-conv-eq">=</span>

@@ -124,6 +124,13 @@ body::before {
   border: 0.5px solid rgba(255,255,255,0.08);
   border-radius: var(--radius-card);
 }
+/* Reduce blur on mobile — blur(30px) is GPU-intensive on iOS Safari */
+@media (max-width: 768px) {
+  .glass-strong {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+}
 .glass-nav {
   background: rgba(8,8,8,0.97);
   backdrop-filter: blur(20px);
