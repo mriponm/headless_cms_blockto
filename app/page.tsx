@@ -10,6 +10,7 @@ import CategoryNewsSection from "@/components/features/homepage/CategoryNewsSect
 import Sidebar from "@/components/features/homepage/Sidebar";
 import MobileNewsCards from "@/components/features/homepage/MobileNewsCards";
 import { getPosts } from "@/lib/wordpress/queries";
+import BFCacheRefresh from "@/components/layout/BFCacheRefresh";
 
 export default async function HomePage() {
   const [latestPosts, generalPosts, bitcoinPosts, ethereumPosts, altcoinPosts] = await Promise.all([
@@ -34,6 +35,8 @@ export default async function HomePage() {
    .slice(0, 100);
 
   return (
+    <>
+    <BFCacheRefresh />
     <div className="relative z-[2] max-w-[1440px] mx-auto px-3 md:px-10 pt-4">
       {/* Mobile only */}
       <FadeIn delay={0.05}><BreakingBanner post={breakingPost} /></FadeIn>
@@ -146,5 +149,6 @@ export default async function HomePage() {
         </div>
       </div>
     </div>
+    </>
   );
 }
