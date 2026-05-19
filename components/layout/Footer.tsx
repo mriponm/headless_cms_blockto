@@ -158,7 +158,7 @@ export default function Footer() {
 
           {/* Brand + newsletter */}
           <div>
-            <Link href="/" className="inline-block mb-3">
+            <Link href="/" prefetch={false} className="inline-block mb-3">
               <BrandLogo height={34} />
             </Link>
 

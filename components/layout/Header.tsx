@@ -86,7 +86,7 @@ export default function Header() {
       {/* -- Desktop topbar ----------------------------------- */}
       <div className="desktop-only glass-nav topbar-shimmer relative hidden md:flex items-center gap-3 xl:gap-5 px-5 xl:px-10 py-3">
         {/* Brand */}
-        <Link href="/" className="flex-shrink-0 nav-brand-link">
+        <Link href="/" prefetch={false} className="flex-shrink-0 nav-brand-link">
           <BrandLogo height={36} />
         </Link>
 
@@ -210,7 +210,7 @@ export default function Header() {
 
       {/* -- Mobile topbar ------------------------------------ */}
       <div className="mobile-only glass-nav flex md:hidden items-center gap-3 px-3 py-3">
-        <Link href="/">
+        <Link href="/" prefetch={false}>
           <BrandLogo height={32} />
         </Link>
         <div className="ml-auto flex items-center gap-2">
