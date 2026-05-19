@@ -58,7 +58,7 @@ const jsonLd = {
       url: SITE_URL,
       logo: {
         "@type": "ImageObject",
-        url: `${SITE_URL}/favicon_final.jpeg`,
+        url: `${SITE_URL}/blogto_seo_logo.jpeg`,
         width: 512,
         height: 512,
       },
@@ -118,17 +118,17 @@ export const metadata: Metadata = {
     capable: true,
     statusBarStyle: "black-translucent",
     title: "Blockto",
-    startupImage: "/favicon_final.jpeg",
+    startupImage: "/blogto_seo_logo.jpeg",
   },
   icons: {
-    icon: "/favicon_final.jpeg",
-    apple: "/favicon_final.jpeg",
-    shortcut: "/favicon_final.jpeg",
+    icon: "/blogto_seo_logo.jpeg",
+    apple: "/blogto_seo_logo.jpeg",
+    shortcut: "/blogto_seo_logo.jpeg",
   },
   other: {
     "mobile-web-app-capable": "yes",
     "msapplication-TileColor": "#0a0a0a",
-    "msapplication-TileImage": "/favicon_final.jpeg",
+    "msapplication-TileImage": "/blogto_seo_logo.jpeg",
   },
 };
 
