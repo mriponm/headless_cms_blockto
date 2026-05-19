@@ -2,9 +2,9 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Blockto — Crypto Terminal",
+    name: "Blockto - Crypto News",
     short_name: "Blockto",
-    description: "Real-time crypto market analytics, news, prices, and trading data.",
+    description: "Follow Bitcoin, Ethereum and trending altcoins with live crypto prices, market signals, whale activity and breaking news on Blockto.",
     start_url: "/",
     display: "standalone",
     background_color: "#0a0a0a",
